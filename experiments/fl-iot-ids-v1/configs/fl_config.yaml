@@ -13,3 +13,9 @@ client:
 runtime:
   seed: 42
   device: "cpu"
+
+mlflow:
+  enabled: true
+  tracking_uri: "file:/app/outputs/mlruns"
+  experiment_name: "fl-iot-ids-v1"
+  run_name: "smoke-test-baseline"
