@@ -3,9 +3,9 @@
 ![CI](https://github.com/SAIFBKKK/qi-fl-ids-iot/actions/workflows/ci.yml/badge.svg)
 ![Python](https://img.shields.io/badge/python-3.11-blue.svg)
 ![License](https://img.shields.io/badge/license-MIT-green.svg)
-![Version](https://img.shields.io/badge/version-v1.0.0-purple.svg)
+![Version](https://img.shields.io/badge/version-v1.1.0-purple.svg)
 ![Flower](https://img.shields.io/badge/Flower-≥1.20-orange.svg)
-![Status](https://img.shields.io/badge/docker-in--progress-yellow.svg)
+![Status](https://img.shields.io/badge/docker-stable-brightgreen.svg)
 
 > **Projet de Fin d'Études (PFE)** — Génie Informatique · Réseaux & Intelligence Artificielle  
 > Federated Learning-based Intrusion Detection System for IoT/WSN,  
