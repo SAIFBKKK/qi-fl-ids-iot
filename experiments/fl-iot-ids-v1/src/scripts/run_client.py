@@ -3,17 +3,16 @@ from __future__ import annotations
 import argparse
 import logging
 from collections import OrderedDict
-from pathlib import Path
 from typing import Any
 
 import flwr as fl
 import numpy as np
 import torch
 import torch.nn as nn
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
 from src.common.config import get_project_root, load_yaml_config
 from src.data.dataloader import create_dataloaders_for_node
-from src.model.evaluate import evaluate_model
 from src.model.network import MLPClassifier
 from src.model.train import train_one_epoch
 
@@ -107,7 +106,10 @@ class IoTFLClient(fl.client.NumPyClient):
         return (
             get_parameters(self.model),
             len(self.train_loader.dataset),
-            {"loss": last_loss, "accuracy": last_acc},
+            {
+                "loss": last_loss,
+                "accuracy": last_acc,
+            },
         )
 
     def evaluate(self, parameters, config):
@@ -115,26 +117,45 @@ class IoTFLClient(fl.client.NumPyClient):
         flog.info("[%s] evaluate() started", self.node_id)
 
         set_parameters(self.model, parameters)
-
+        self.model.eval()
         criterion = nn.CrossEntropyLoss()
-        metrics = evaluate_model(
-            model=self.model,
-            loader=self.eval_loader,
-            criterion=criterion,
-            device=self.device,
-        )
 
-        loss = float(metrics["loss"])
-        acc = float(metrics["accuracy"])
+        all_preds = []
+        all_labels = []
+        loss = 0.0
+
+        with torch.no_grad():
+            for x, y in self.eval_loader:
+                x, y = x.to(self.device), y.to(self.device)
+                outputs = self.model(x)
+
+                loss += criterion(outputs, y).item()
+                preds = torch.argmax(outputs, dim=1)
+
+                all_preds.extend(preds.cpu().numpy())
+                all_labels.extend(y.cpu().numpy())
+
+        loss /= len(self.eval_loader)
+
+        acc = accuracy_score(all_labels, all_preds)
+        f1_macro = f1_score(all_labels, all_preds, average="macro", zero_division=0)
+        precision = precision_score(all_labels, all_preds, average="macro", zero_division=0)
+        recall = recall_score(all_labels, all_preds, average="macro", zero_division=0)
 
         flog.info(
-            "[%s] evaluate() done | loss=%.4f | acc=%.4f",
+            "[%s] evaluate() done | loss=%.4f | acc=%.4f | f1_macro=%.4f",
             self.node_id,
             loss,
             acc,
+            f1_macro,
         )
 
-        return loss, len(self.eval_loader.dataset), {"accuracy": acc}
+        return float(loss), len(self.eval_loader.dataset), {
+            "accuracy": float(acc),
+            "f1_macro": float(f1_macro),
+            "precision_macro": float(precision),
+            "recall_macro": float(recall),
+        }
 
 
 def main() -> None:

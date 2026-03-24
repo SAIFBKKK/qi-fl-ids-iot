@@ -13,6 +13,26 @@ from src.common.config import load_yaml_config
 logger = logging.getLogger("run_server")
 
 
+def weighted_average(metrics):
+    if not metrics:
+        return {}
+
+    total_examples = sum(num_examples for num_examples, _ in metrics)
+    if total_examples == 0:
+        return {}
+
+    aggregated = {}
+
+    for num_examples, metric_dict in metrics:
+        for key, value in metric_dict.items():
+            aggregated[key] = aggregated.get(key, 0.0) + float(value) * num_examples
+
+    for key in aggregated:
+        aggregated[key] /= total_examples
+
+    return aggregated
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run Flower server for local V1")
     parser.add_argument("--config", type=str, default=None, help="Path to YAML config file")
@@ -87,6 +107,8 @@ def main() -> None:
         min_fit_clients=min_clients,
         min_evaluate_clients=min_clients,
         min_available_clients=min_clients,
+        fit_metrics_aggregation_fn=weighted_average,
+        evaluate_metrics_aggregation_fn=weighted_average,
     )
 
     start_time = time.time()
@@ -108,6 +130,14 @@ def main() -> None:
 
         for rnd, loss in getattr(history, "losses_centralized", []):
             mlflow_logger.log_metrics({"centralized_loss": float(loss)}, step=rnd)
+
+        metrics_dist = getattr(history, "metrics_distributed", {})
+        for metric_name, values in metrics_dist.items():
+            for rnd, val in values:
+                mlflow_logger.log_metrics(
+                    {f"global_{metric_name}": float(val)},
+                    step=rnd,
+                )
 
         if args.config is not None:
             config_path = Path(__file__).resolve().parents[2] / args.config
