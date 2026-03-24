@@ -4,7 +4,6 @@ from collections import OrderedDict
 
 import flwr as fl
 import torch
-import torch.nn as nn
 from flwr.client import ClientApp
 from flwr.common import Context
 

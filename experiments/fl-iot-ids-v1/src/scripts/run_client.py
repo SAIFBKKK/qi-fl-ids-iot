@@ -3,7 +3,6 @@ from __future__ import annotations
 import argparse
 import logging
 from collections import OrderedDict
-from pathlib import Path
 from typing import Any
 
 import flwr as fl

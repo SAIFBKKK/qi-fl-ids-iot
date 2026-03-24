@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import logging
 from logging.handlers import RotatingFileHandler
-from pathlib import Path
 
 from src.common.paths import OUTPUTS_DIR
 
