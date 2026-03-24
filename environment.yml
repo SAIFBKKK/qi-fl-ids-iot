@@ -1,0 +1,22 @@
+name: qfl
+channels:
+  - conda-forge
+  - pytorch
+  - nvidia
+dependencies:
+  - python=3.11
+  - numpy
+  - scipy
+  - pandas
+  - scikit-learn
+  - matplotlib
+  - pytorch
+  - pytorch-cuda=12.1
+  - cvxpy
+  - pip
+  - pip:
+      - flwr
+      - pennylane
+      - qiskit
+      - ray
+      - hydra-core

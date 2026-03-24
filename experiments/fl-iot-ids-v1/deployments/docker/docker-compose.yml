@@ -1,0 +1,93 @@
+name: fl-iot-ids-v1
+
+services:
+
+  # ── Flower server ────────────────────────────────────────────────────────
+  fl-server:
+    build:
+      context: ../../          # root = experiments/fl-iot-ids-v1/
+      dockerfile: deployments/docker/base.Dockerfile
+    image: fl-iot-ids-v1:latest
+    container_name: fl-server
+    command:
+      [
+        "python", "-m", "src.scripts.run_server",
+        "--config", "configs/fl_config.yaml"
+      ]
+    ports:
+      - "8080:8080"
+    volumes:
+      - ../../configs:/app/configs:ro
+      - ../../artifacts:/app/artifacts:ro
+      - ../../data:/app/data:ro
+      - ../../outputs:/app/outputs
+    restart: "no"
+    networks:
+      - flnet
+
+  # ── Flower client — node 1 ───────────────────────────────────────────────
+  fl-client-1:
+    image: fl-iot-ids-v1:latest   # reuse the image built by fl-server
+    container_name: fl-client-1
+    command:
+      [
+        "python", "-m", "src.scripts.run_client",
+        "--config", "configs/fl_config.yaml",
+        "--node-id", "node1"
+      ]
+    depends_on:
+      - fl-server
+    volumes:
+      - ../../configs:/app/configs:ro
+      - ../../artifacts:/app/artifacts:ro
+      - ../../data:/app/data:ro
+      - ../../outputs:/app/outputs
+    restart: "no"
+    networks:
+      - flnet
+
+  # ── Flower client — node 2 ───────────────────────────────────────────────
+  fl-client-2:
+    image: fl-iot-ids-v1:latest
+    container_name: fl-client-2
+    command:
+      [
+        "python", "-m", "src.scripts.run_client",
+        "--config", "configs/fl_config.yaml",
+        "--node-id", "node2"
+      ]
+    depends_on:
+      - fl-server
+    volumes:
+      - ../../configs:/app/configs:ro
+      - ../../artifacts:/app/artifacts:ro
+      - ../../data:/app/data:ro
+      - ../../outputs:/app/outputs
+    restart: "no"
+    networks:
+      - flnet
+
+  # ── Flower client — node 3 ───────────────────────────────────────────────
+  fl-client-3:
+    image: fl-iot-ids-v1:latest
+    container_name: fl-client-3
+    command:
+      [
+        "python", "-m", "src.scripts.run_client",
+        "--config", "configs/fl_config.yaml",
+        "--node-id", "node3"
+      ]
+    depends_on:
+      - fl-server
+    volumes:
+      - ../../configs:/app/configs:ro
+      - ../../artifacts:/app/artifacts:ro
+      - ../../data:/app/data:ro
+      - ../../outputs:/app/outputs
+    restart: "no"
+    networks:
+      - flnet
+
+networks:
+  flnet:
+    driver: bridge

@@ -1,0 +1,59 @@
+```mermaid
+flowchart TB
+    subgraph IoT["IoT Edge Layer"]
+        N1["IoT Node 1\nCollector + Preprocessor + FL Client + Inference"]
+        N2["IoT Node 2\nCollector + Preprocessor + FL Client + Inference"]
+        N3["IoT Node 3\nCollector + Preprocessor + FL Client + Inference"]
+    end
+
+    subgraph FL["Federated Learning Layer"]
+        FS["Flower FL Server\nAggregation + Strategy + Global Model"]
+    end
+
+    subgraph DATA["Data Platform"]
+        B["Bronze\nRaw traffic / CSV / PCAP metadata"]
+        S["Silver\nCleaned + validated + aligned features"]
+        G["Gold\nTrain-ready datasets / partitions"]
+    end
+
+    subgraph MLOPS["MLOps Layer"]
+        DVC["DVC\nData + pipeline versioning"]
+        MLF["MLflow\nExperiments + metrics + artifacts + registry"]
+        GIT["Git\nCode versioning"]
+    end
+
+    subgraph SERVE["Serving Layer"]
+        API["FastAPI IDS Service\nPrediction /health /model-info"]
+        REG["Model Store / Registry"]
+    end
+
+    subgraph OBS["Observability"]
+        MON["Monitoring\nLogs + metrics + drift + system health"]
+    end
+
+    B --> S --> G
+    G --> N1
+    G --> N2
+    G --> N3
+
+    N1 <--> FS
+    N2 <--> FS
+    N3 <--> FS
+
+    FS --> REG
+    REG --> API
+
+    GIT --> FS
+    GIT --> API
+    DVC --> B
+    DVC --> S
+    DVC --> G
+    MLF --> FS
+    MLF --> API
+
+    N1 --> MON
+    N2 --> MON
+    N3 --> MON
+    FS --> MON
+    API --> MON
+```

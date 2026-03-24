@@ -1,0 +1,29 @@
+flowchart LR
+    subgraph EdgeNode1[Edge Node]
+        IoTSim[iot-simulator]
+        EdgeX[EdgeX minimal]
+        FE[feature-extractor]
+        IDS[local-ids]
+        FLC[fl-client]
+    end
+
+    subgraph CloudFog[Cloud / Fog]
+        FLS[fl-server]
+        QI[qi-aggregator]
+        MLF[MLflow]
+        GRAF[Grafana]
+    end
+
+    IoTSim --> EdgeX
+    EdgeX --> FE
+    FE --> IDS
+    IDS --> FLC
+
+    FLC <--> FLS
+    FLS <--> QI
+
+    FLC --> MLF
+    FLS --> MLF
+    QI --> MLF
+
+    MLF --> GRAF

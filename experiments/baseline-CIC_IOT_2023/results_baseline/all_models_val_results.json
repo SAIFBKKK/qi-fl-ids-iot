@@ -1,0 +1,32 @@
+{
+  "logreg": {
+    "accuracy": 0.0528,
+    "balanced_accuracy": 0.1054,
+    "macro_f1": 0.0381,
+    "weighted_f1": 0.0394
+  },
+  "sgd": {
+    "accuracy": 0.3216,
+    "balanced_accuracy": 0.1613,
+    "macro_f1": 0.1332,
+    "weighted_f1": 0.3334
+  },
+  "rf": {
+    "accuracy": 0.9593,
+    "balanced_accuracy": 0.5623,
+    "macro_f1": 0.5559,
+    "weighted_f1": 0.9612
+  },
+  "hgb": {
+    "accuracy": 0.9272,
+    "balanced_accuracy": 0.5195,
+    "macro_f1": 0.5125,
+    "weighted_f1": 0.9295
+  },
+  "mlp": {
+    "accuracy": 0.8561,
+    "balanced_accuracy": 0.3439,
+    "macro_f1": 0.3444,
+    "weighted_f1": 0.8442
+  }
+}

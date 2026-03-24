@@ -1,0 +1,6 @@
+{
+  "accuracy": 0.9528,
+  "macro_f1": 0.5673,
+  "weighted_f1": 0.9524,
+  "balanced_accuracy": 0.5552
+}

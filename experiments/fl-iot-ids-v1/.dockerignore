@@ -1,0 +1,121 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Jupyter / notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# =========================
+# Git / editor / OS noise
+# =========================
+.git/
+.gitignore
+.gitattributes
+
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+# Logs / outputs / runtime
+# =========================
+outputs/
+logs/
+*.log
+
+# Docker noise
+docker-compose.override.yml
+
+# =========================
+# Build / packaging
+# =========================
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# =========================
+# Large references / docs not needed at runtime
+# =========================
+references/
+docs/references/
+*.pptx
+
+# PDFs and office docs not required to run the FL system
+*.pdf
+*.doc
+*.docx
+*.ppt
+
+# Keep only if they are required at runtime elsewhere.
+# If you later decide some docs must stay, we can whitelist them.
+
+# =========================
+# Local data not needed in image
+# =========================
+data/raw/
+data/interim/
+data/external/
+data/tmp/
+tmp/
+temp/
+
+# =========================
+# Optional experiment artifacts
+# =========================
+mlruns/
+dvc.lock
+.dvc/
+.dvclive/
+
+# =========================
+# Environment / secrets
+# =========================
+.env
+.env.*
+*.pem
+*.key
+*.crt
+
+# =========================
+# Node / frontend leftovers
+# =========================
+node_modules/
+
+# =========================
+# Keep required runtime assets
+# =========================
+# Do NOT ignore:
+# - src/
+# - configs/
+# - artifacts/
+# - data/processed/
+# - pyproject.toml
+# - requirements.txt
+# - requirements-lock.txt
+# - README.md

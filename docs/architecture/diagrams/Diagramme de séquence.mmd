@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant IoT as IoT Simulator
+    participant EdgeX as EdgeX
+    participant FE as Feature Extractor
+    participant IDS as Local IDS
+    participant Client as FL Client
+    participant Server as FL Server
+    participant QI as QI Aggregator
+    participant ML as MLflow/Grafana
+
+    IoT->>EdgeX: Envoie trafic / événements
+    EdgeX->>FE: Fournit lectures locales
+    FE->>IDS: Transforme en features
+    Server->>Client: Envoie modèle global
+    IDS->>Client: Fournit poids locaux mis à jour
+    Client->>Server: Envoie update locale + métriques
+    Server->>QI: Demande agrégation QI
+    QI-->>Server: Retourne nouveau modèle global
+    Server->>ML: Envoie métriques du round
+    ML-->>Server: Dashboard / tracking

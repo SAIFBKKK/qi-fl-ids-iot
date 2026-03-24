@@ -1,0 +1,15 @@
+server:
+  host: "0.0.0.0"
+  port: 8080
+  num_rounds: 3
+  min_clients: 3
+
+client:
+  server_address: "fl-server:8080"
+  local_epochs: 1
+  batch_size: 256
+  learning_rate: 0.001
+
+runtime:
+  seed: 42
+  device: "cpu"

@@ -1,0 +1,108 @@
+# ================================================================
+# QUANTUM-INSPIRED FEDERATED IDS FOR IOT — .gitignore
+# ================================================================
+
+# --- Python ---
+__pycache__/
+*.py[codz]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.installed.cfg
+.pdm-python
+.pdm-build/
+.pixi/
+__pypackages__/
+
+# --- Environments ---
+.env
+.envrc
+.venv/
+venv/
+env/
+ENV/
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# --- ML / FL Artifacts (JAMAIS versionnés) ---
+*.npz
+*.npy
+*.pkl
+*.h5
+*.hdf5
+*.safetensors
+*.msgpack
+*.pt
+*.pth
+*.onnx
+
+# --- Datasets & données réseau (JAMAIS versionnés) ---
+*.csv
+*.arff
+*.pcap
+*.pcapng
+*.pcap.csv
+*.zip
+*.tar.gz
+*.gz
+*.7z
+
+# --- Logs & outputs ---
+outputs/logs/*.log
+outputs/checkpoints/
+outputs/metrics/
+outputs/reports/
+
+# --- Tests / coverage ---
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+htmlcov/
+.pytest_cache/
+*.cover
+
+# --- IDE ---
+.idea/
+.vscode/
+.cursorignore
+.cursorindexingignore
+.ruff_cache/
+.mypy_cache/
+.dmypy.json
+.pyre/
+.pytype/
+cython_debug/
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- DVC (si utilisé plus tard) ---
+# /data.dvc
+# .dvc/tmp/
+
+# ================================================================
+# EXCEPTIONS — ne jamais ignorer ces fichiers
+# ================================================================
+!**/README.md
+!**/.gitkeep
+!configs/**/*.yaml
+!experiments/**/results*/*.json
+!experiments/**/figures/*.png
+!experiments/**/figures/*.svg
+!docs/**/*.png
+!docs/**/*.svg
+!docs/**/*.mmd
+!docs/**/*.pdf
+!deployments/docker/*.Dockerfile
+!deployments/docker/docker-compose.yml

@@ -1,0 +1,10 @@
+{
+  "accuracy": 0.982,
+  "macro_f1": 0.6947,
+  "attack_precision": 0.9823,
+  "attack_recall": 0.9996,
+  "attack_f1": 0.9909,
+  "benign_precision": 0.9419,
+  "benign_recall": 0.2527,
+  "benign_f1": 0.3984
+}

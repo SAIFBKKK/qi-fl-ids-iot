@@ -1,0 +1,10 @@
+{
+  "model": "rf",
+  "accuracy": 0.9518,
+  "balanced_accuracy": 0.5186,
+  "macro_f1": 0.5106,
+  "weighted_f1": 0.9547,
+  "top1_accuracy": 0.9518,
+  "top3_accuracy": 0.982,
+  "top5_accuracy": 0.9928
+}

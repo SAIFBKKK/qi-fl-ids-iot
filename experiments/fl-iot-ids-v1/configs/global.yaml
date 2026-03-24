@@ -1,0 +1,12 @@
+project_name: fl-iot-ids-v1
+seed: 42
+
+paths:
+  artifacts_dir: artifacts
+  data_dir: data
+  outputs_dir: outputs
+
+baseline:
+  feature_names: artifacts/feature_names.pkl
+  scaler: artifacts/scaler_robust.pkl
+  label_mapping: artifacts/label_mapping_34.pkl

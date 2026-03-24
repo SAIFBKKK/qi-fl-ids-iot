@@ -1,0 +1,31 @@
+flowchart TB
+    subgraph Laptop1[Machine hôte / Docker Compose]
+        subgraph Edge1[Container Group - Edge Node 1]
+            C1[iot-simulator-1]
+            C2[feature-extractor-1]
+            C3[local-ids-1]
+            C4[fl-client-1]
+        end
+
+        subgraph Edge2[Container Group - Edge Node 2]
+            D1[iot-simulator-2]
+            D2[feature-extractor-2]
+            D3[local-ids-2]
+            D4[fl-client-2]
+        end
+
+        subgraph ServerSide[Container Group - Server]
+            S1[fl-server]
+            S2[qi-aggregator]
+            S3[mlflow]
+            S4[grafana]
+            S5[edgex-core]
+        end
+    end
+
+    C4 <--> S1
+    D4 <--> S1
+    S1 <--> S2
+    S1 --> S3
+    S2 --> S3
+    S3 --> S4

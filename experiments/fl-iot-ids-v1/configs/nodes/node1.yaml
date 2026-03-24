@@ -1,0 +1,3 @@
+node_id: node1
+raw_dir: data/raw/node1
+processed_dir: data/processed/node1
