@@ -1,6 +1,6 @@
 # Quantum-Inspired Federated Learning for IoT Intrusion Detection
 
-[![CI/CD Pipeline](https://github.com/SAIFBKKK/qi-fl-ids-iot/actions/workflows/ci.yml/badge.svg)](https://github.com/SAIFBKKK/qi-fl-ids-io/actions)
+[![CI/CD Pipeline](https://github.com/SAIFBKKK/qi-fl-ids-iot/actions/workflows/ci.yml/badge.svg)](https://github.com/SAIFBKKK/qi-fl-ids-iot/actions)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-EE4C2C.svg)](https://pytorch.org/)
 [![Flower Framework](https://img.shields.io/badge/Flower-1.20%2B-FF6B6B.svg)](https://flower.ai)
