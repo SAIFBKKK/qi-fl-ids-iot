@@ -1,6 +1,6 @@
 # Quantum-Inspired Federated Learning for IoT Intrusion Detection
 
-[![CI/CD Pipeline](https://github.com/SAIFBKKK/qi-fl-ids-iot/actions/workflows/ci.yml/badge.svg)](https://github.com/SAIFBKKK/Quantum-Inspired-Federated-IDS-FOR-IOT/actions)
+[![CI/CD Pipeline](https://github.com/SAIFBKKK/qi-fl-ids-iot/actions/workflows/ci.yml/badge.svg)](https://github.com/SAIFBKKK/qi-fl-ids-io/actions)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-EE4C2C.svg)](https://pytorch.org/)
 [![Flower Framework](https://img.shields.io/badge/Flower-1.20%2B-FF6B6B.svg)](https://flower.ai)
@@ -10,7 +10,7 @@
 [![Status: Stable](https://img.shields.io/badge/Status-Stable-brightgreen.svg)](#current-status)
 
 **Final Year Project (PFE)** — Computer Science, Networks & Artificial Intelligence  
-École Nationale d'Ingénieurs de Tunis (ENIT)
+Military Academy
 
 ---
 
@@ -687,7 +687,7 @@ This work includes research concepts from:
 
 ## Acknowledgments
 
-- **ENIT** for institutional support and research infrastructure
+- Military Academy for institutional support and research infrastructure
 - **CIC** for the CIC-IoT-2023 dataset
 - **Flower Team** for the federated learning framework
 - **PyTorch Foundation** for deep learning capabilities
