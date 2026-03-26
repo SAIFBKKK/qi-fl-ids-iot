@@ -1,0 +1,33 @@
+gantt
+  title Quantum-Inspired Federated IDS for IoT — Roadmap Final (25 mars–1er juin 2026)
+  dateFormat YYYY-MM-DD
+  axisFormat %b %d
+  excludes weekends
+
+  section Phase
+  Learning + Spec           :done, learn, 2026-02-01, 2026-03-24
+  
+  section V1 (FL Baseline)
+  S1: Eval protocol setup   :s1, 2026-03-25, 7d
+  S2: FedAvg baseline       :s2, after s1, 7d
+  
+  section V2 (Robustesse)
+  S3: Non-IID study         :s3, after s2, 7d
+  S4: FedProx + class-weight :s4, after s3, 7d
+  
+  section V3 (QI + Monitoring)
+  S5: QGA integration       :s5, after s4, 7d
+  S6: FedTN (opt) + ablation :s6, after s5, 7d
+  S7: Figures + demo        :s7, after s6, 7d
+  
+  section Soutenance
+  S8: Rapport + slides      :s8, after s7, 14d
+  Buffer / contingence      :crit, buff, after s8, 7d
+  Defense ready ⭐          :crit,milestone, after buff, 1d
+
+  section Milestones
+  V1 complete (Docker ✓)    :milestone, m1, 2026-04-08, 1d
+  V2 stable (FedProx ✓)     :milestone, m2, 2026-04-22, 1d
+  QI modules done           :milestone, m3, 2026-05-06, 1d
+  Démo ready                :milestone, m4, 2026-05-20, 1d
+  Final delivery (1er juin) :crit,milestone, m5, 2026-06-01, 1d

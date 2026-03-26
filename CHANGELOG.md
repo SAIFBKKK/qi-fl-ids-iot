@@ -25,7 +25,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Professional README without emojis for GitHub publication
 - Comprehensive release notes and changelog
 - CONTRIBUTING.md with code standards and testing guidelines
 - GitHub badges for CI/CD, Python version, framework versions
@@ -276,11 +275,6 @@ v4.0.0: Production deployment
 ### Lead Developer
 
 - **Saif Eddinne Boukhatem** — Project Creator & Lead Developer
-
-### Academic Advisors
-
-- **Dr. [Advisor Name]** — Technical Guidance
-- **[Additional Advisors]** — Research Support
 
 ### Research Base
 
