@@ -1,0 +1,22 @@
+{
+  "generated_at": "2026-04-16T10:58:18.090212Z",
+  "experiment_name": "exp_flat_fedavg_normal_none",
+  "architecture": "flat_34",
+  "fl_strategy": "fedavg",
+  "data_scenario": "normal_noniid",
+  "imbalance_strategy": "none",
+  "num_rounds": 10,
+  "completed_rounds": 10,
+  "num_clients": 3,
+  "feature_count": 28,
+  "num_classes": 34,
+  "duration_sec": 2323.13,
+  "final_distributed_loss": 17.92929189424909,
+  "status": "success",
+  "final_accuracy": 0.4239647242526613,
+  "final_macro_f1": 0.2947923745191489,
+  "final_recall_macro": 0.39094390349494923,
+  "final_benign_recall": 0.16055507472128394,
+  "final_false_positive_rate": 0.8394449252787161,
+  "final_rare_class_recall": 0.023629186909751004
+}

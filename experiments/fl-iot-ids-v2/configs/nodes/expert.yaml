@@ -1,0 +1,7 @@
+node:
+  id: node3
+  role: rare_attack_expert
+  batch_size: 128
+  local_epochs: 2
+  cpu_profile: standard
+  rarity_aware_training: true

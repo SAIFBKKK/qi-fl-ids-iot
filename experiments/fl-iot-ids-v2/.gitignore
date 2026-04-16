@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+.env
+
+# Build
+build/
+dist/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+outputs/logs/
+*.log
+
+# Runtime outputs
+outputs/metrics/
+outputs/reports/*
+!outputs/reports/baselines/
+!outputs/reports/baselines/**
+outputs/figures/
+outputs/checkpoints/
+
+# MLflow
+mlruns/
+
+# Data
+data/raw/
+data/processed/
+
+# Artifacts generated locally
+artifacts/shared/*.pkl
+artifacts/scenario_artifacts/**
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/

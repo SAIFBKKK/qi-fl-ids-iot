@@ -1,0 +1,5 @@
+imbalance:
+  name: light_oversampling
+  enabled: true
+  mode: local_only
+  max_growth_factor: 2.0

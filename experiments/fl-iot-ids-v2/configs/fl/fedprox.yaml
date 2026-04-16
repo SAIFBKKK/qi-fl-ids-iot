@@ -1,0 +1,20 @@
+strategy:
+  name: fedprox
+  num_rounds: 10
+  fraction_train: 1.0
+  fraction_evaluate: 1.0
+  min_train_nodes: 3
+  min_evaluate_nodes: 3
+  min_available_nodes: 3
+  weighted_by_num_examples: true
+
+train:
+  local_epochs: 1
+  batch_size: 256
+  learning_rate: 0.001
+  optimizer: adam
+  proximal_mu: 0.01
+
+evaluation:
+  centralized_eval: true
+  federated_eval: true

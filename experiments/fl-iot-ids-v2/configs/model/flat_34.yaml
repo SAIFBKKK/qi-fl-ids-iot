@@ -1,0 +1,8 @@
+model:
+  name: flat_34
+  family: mlp
+  input_dim: 28
+  hidden_dims: [128, 64]
+  output_dim: 34
+  dropout: 0.1
+  activation: relu

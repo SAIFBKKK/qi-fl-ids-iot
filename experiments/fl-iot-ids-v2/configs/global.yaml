@@ -1,0 +1,42 @@
+project:
+  name: fl-iot-ids-v2
+  stage: research-benchmark
+  seed: 42
+  output_root: outputs
+  tracking_uri: file:./mlruns
+
+dataset:
+  name: CICIoT2023
+  num_classes: 34
+  label_column: label_id
+  feature_count: 28
+
+flower:
+  runtime: simulation
+  framework: flower
+  modern_api: true
+  use_serverapp_clientapp: true
+
+evaluation:
+  primary_metrics:
+    - macro_f1
+    - benign_recall
+    - false_positive_rate
+    - critical_family_recall
+  secondary_metrics:
+    - weighted_f1
+    - accuracy
+    - precision_macro
+    - recall_macro
+    - round_stability
+    - bytes_per_round
+    - round_duration_sec
+
+tracking:
+  enable_mlflow: true
+  log_system_metrics: true
+  log_artifacts: true
+
+monitoring:
+  enable_prometheus: false
+  enable_grafana: false

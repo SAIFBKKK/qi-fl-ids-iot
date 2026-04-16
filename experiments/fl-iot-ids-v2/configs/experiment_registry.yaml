@@ -1,0 +1,24 @@
+experiments:
+  - name: exp_flat_fedavg_normal_none
+    architecture: flat_34
+    fl_strategy: fedavg
+    data_scenario: normal_noniid
+    imbalance_strategy: none
+
+  - name: exp_flat_fedprox_normal_classweights
+    architecture: flat_34
+    fl_strategy: fedprox
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+
+  - name: exp_flat_scaffold_absentlocal_classweights
+    architecture: flat_34
+    fl_strategy: scaffold
+    data_scenario: absent_local
+    imbalance_strategy: class_weights
+
+  - name: exp_hierarchical_fedprox_rareexpert_classweights
+    architecture: hierarchical
+    fl_strategy: fedprox
+    data_scenario: rare_expert
+    imbalance_strategy: class_weights

@@ -1,0 +1,2 @@
+# Freeze later with pip freeze > requirements-lock.txt
+# Keep protobuf on 5.x with Flower 1.29 to avoid runtime/gencode mismatch warnings.
