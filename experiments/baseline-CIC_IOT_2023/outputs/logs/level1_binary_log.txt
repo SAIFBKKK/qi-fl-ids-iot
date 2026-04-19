@@ -1,0 +1,162 @@
+
+================================================================================
+CONFIGURATION
+================================================================================
+Input dir: E:\dataset\processed_merged_full\hierarchical_prepared\binary
+Output dir: E:\dataset\processed_merged_full\hierarchical_models\level1_binary
+Device: cuda
+Architecture: 32 -> 64 -> 2
+Max epochs: 50
+Learning rate: 0.0005
+
+================================================================================
+LOAD ARTIFACTS
+================================================================================
+Train: (14604524, 32) (14604524,)
+Val  : (3129541, 32) (3129541,)
+Test : (3129541, 32) (3129541,)
+Label mapping: {'benign': 0, 'attack': 1}
+Summary: {'n_train': 14604524, 'n_val': 3129541, 'n_test': 3129541, 'n_features': 32, 'n_classes': 2, 'target_col': 'binary_label'}
+
+================================================================================
+CLASS WEIGHTS
+================================================================================
+
+--- Binary class weights ---
+   class_id  raw_weight  clipped_weight
+0         0    9.960691             5.0
+1         1    0.526425             1.0
+
+================================================================================
+BUILD TENSORS AND LOADERS
+================================================================================
+Train batches: 7132
+Val batches  : 1529
+Test batches : 1529
+
+================================================================================
+BUILD MODEL
+================================================================================
+
+================================================================================
+TRAINING
+================================================================================
+Epoch 001/50 | train_loss=0.107180 | val_loss=0.094091 | val_macro_f1=0.833138 | val_recall=0.968052
+  -> New best model at epoch 1
+Epoch 002/50 | train_loss=0.089993 | val_loss=0.090735 | val_macro_f1=0.834674 | val_recall=0.969925
+  -> New best model at epoch 2
+Epoch 003/50 | train_loss=0.088088 | val_loss=0.111837 | val_macro_f1=0.815862 | val_recall=0.972068
+  -> No improvement. patience=1/8
+Epoch 004/50 | train_loss=0.087263 | val_loss=0.095591 | val_macro_f1=0.826622 | val_recall=0.972295
+  -> No improvement. patience=2/8
+Epoch 005/50 | train_loss=0.086864 | val_loss=0.087482 | val_macro_f1=0.839651 | val_recall=0.970133
+  -> New best model at epoch 5
+Epoch 006/50 | train_loss=0.086825 | val_loss=0.089902 | val_macro_f1=0.834277 | val_recall=0.971449
+  -> No improvement. patience=1/8
+Epoch 007/50 | train_loss=0.086488 | val_loss=0.085392 | val_macro_f1=0.845126 | val_recall=0.969856
+  -> New best model at epoch 7
+Epoch 008/50 | train_loss=0.086317 | val_loss=0.096378 | val_macro_f1=0.828373 | val_recall=0.972710
+  -> No improvement. patience=1/8
+Epoch 009/50 | train_loss=0.086032 | val_loss=0.101193 | val_macro_f1=0.818132 | val_recall=0.972218
+  -> No improvement. patience=2/8
+Epoch 010/50 | train_loss=0.085842 | val_loss=0.118795 | val_macro_f1=0.809336 | val_recall=0.971048
+  -> No improvement. patience=3/8
+Epoch 011/50 | train_loss=0.086001 | val_loss=0.104821 | val_macro_f1=0.814321 | val_recall=0.971887
+  -> No improvement. patience=4/8
+Epoch 012/50 | train_loss=0.085930 | val_loss=0.099074 | val_macro_f1=0.819989 | val_recall=0.972273
+  -> No improvement. patience=5/8
+Epoch 013/50 | train_loss=0.085873 | val_loss=0.097940 | val_macro_f1=0.821156 | val_recall=0.972406
+  -> No improvement. patience=6/8
+Epoch 014/50 | train_loss=0.085909 | val_loss=0.099635 | val_macro_f1=0.821419 | val_recall=0.972820
+  -> No improvement. patience=7/8
+Epoch 015/50 | train_loss=0.085960 | val_loss=0.082911 | val_macro_f1=0.855953 | val_recall=0.967546
+  -> New best model at epoch 15
+Epoch 016/50 | train_loss=0.085803 | val_loss=0.087175 | val_macro_f1=0.840652 | val_recall=0.970256
+  -> No improvement. patience=1/8
+Epoch 017/50 | train_loss=0.085824 | val_loss=0.092505 | val_macro_f1=0.831081 | val_recall=0.972900
+  -> No improvement. patience=2/8
+Epoch 018/50 | train_loss=0.085938 | val_loss=0.110638 | val_macro_f1=0.812033 | val_recall=0.971600
+  -> No improvement. patience=3/8
+Epoch 019/50 | train_loss=0.085737 | val_loss=0.094673 | val_macro_f1=0.827087 | val_recall=0.972582
+  -> No improvement. patience=4/8
+Epoch 020/50 | train_loss=0.085836 | val_loss=0.084878 | val_macro_f1=0.844425 | val_recall=0.971013
+  -> No improvement. patience=5/8
+Epoch 021/50 | train_loss=0.085725 | val_loss=0.111107 | val_macro_f1=0.811175 | val_recall=0.971458
+  -> No improvement. patience=6/8
+Epoch 022/50 | train_loss=0.085612 | val_loss=0.084590 | val_macro_f1=0.847020 | val_recall=0.969730
+  -> No improvement. patience=7/8
+Epoch 023/50 | train_loss=0.085687 | val_loss=0.098541 | val_macro_f1=0.821777 | val_recall=0.972992
+  -> No improvement. patience=8/8
+Early stopping triggered at epoch 23
+Training time (sec): 5542.21
+Best epoch: 15
+Best validation macro-F1: 0.855953
+
+================================================================================
+LOAD BEST CHECKPOINT
+================================================================================
+
+================================================================================
+FINAL VALIDATION EVALUATION
+================================================================================
+
+--- Validation metrics ---
+              metric     value
+0           accuracy  0.964137
+1           macro_f1  0.855953
+2        weighted_f1  0.968254
+3    macro_precision  0.792294
+4       macro_recall  0.967546
+5  balanced_accuracy  0.967546
+6               loss  0.082911
+
+================================================================================
+FINAL TEST EVALUATION
+================================================================================
+
+--- Test metrics ---
+              metric     value
+0           accuracy  0.964144
+1           macro_f1  0.856057
+2        weighted_f1  0.968268
+3    macro_precision  0.792301
+4       macro_recall  0.967933
+5  balanced_accuracy  0.967933
+6               loss  0.082719
+
+================================================================================
+CLASSIFICATION REPORT
+================================================================================
+
+--- Classification report ---
+              precision    recall  f1-score       support
+benign         0.586127  0.972144  0.731324  1.570950e+05
+attack         0.998475  0.963721  0.980790  2.972446e+06
+accuracy       0.964144  0.964144  0.964144  9.641439e-01
+macro avg      0.792301  0.967933  0.856057  3.129541e+06
+weighted avg   0.977776  0.964144  0.968268  3.129541e+06
+
+================================================================================
+CONFUSION MATRIX
+================================================================================
+Saved confusion matrix plot: E:\dataset\processed_merged_full\hierarchical_models\level1_binary\confusion_matrix_test.png
+
+================================================================================
+SAVE RESULTS
+================================================================================
+Saved files:
+- classification_report_test.csv
+- confusion_matrix_test.csv
+- confusion_matrix_test.png
+- label_mapping.pkl
+- loss_curve.png
+- mlp_model_state.pt
+- run_summary.json
+- test_metrics.csv
+- training_history.csv
+- val_macro_f1_curve.png
+- val_metrics.csv
+
+================================================================================
+DONE
+================================================================================

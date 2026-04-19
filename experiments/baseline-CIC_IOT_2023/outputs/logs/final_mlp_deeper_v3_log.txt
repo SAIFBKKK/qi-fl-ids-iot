@@ -1,0 +1,379 @@
+
+================================================================================
+CONFIGURATION
+================================================================================
+Data dir: E:\dataset\processed_merged_full\minority_balancing_v3\training_ready
+Output dir: E:\dataset\processed_merged_full\final_mlp_deeper_balanced_v3_results
+Device: cuda
+Architecture: 32 -> 128 -> 64 -> 34
+Loss: CrossEntropyLoss
+Sampler: None
+Scheduler: ReduceLROnPlateau
+Max epochs: 100
+Early stopping patience: 14
+Learning rate: 0.0005
+
+================================================================================
+LOAD ARTIFACTS
+================================================================================
+
+--- Label mapping ---
+                      label  label_id
+0          BACKDOOR_MALWARE         0
+1                    BENIGN         1
+2          BROWSERHIJACKING         2
+3          COMMANDINJECTION         3
+4    DDOS-ACK_FRAGMENTATION         4
+5           DDOS-HTTP_FLOOD         5
+6           DDOS-ICMP_FLOOD         6
+7   DDOS-ICMP_FRAGMENTATION         7
+8         DDOS-PSHACK_FLOOD         8
+9          DDOS-RSTFINFLOOD         9
+10           DDOS-SLOWLORIS        10
+11  DDOS-SYNONYMOUSIP_FLOOD        11
+12           DDOS-SYN_FLOOD        12
+13           DDOS-TCP_FLOOD        13
+14           DDOS-UDP_FLOOD        14
+15   DDOS-UDP_FRAGMENTATION        15
+16     DICTIONARYBRUTEFORCE        16
+17             DNS_SPOOFING        17
+18           DOS-HTTP_FLOOD        18
+19            DOS-SYN_FLOOD        19
+20            DOS-TCP_FLOOD        20
+21            DOS-UDP_FLOOD        21
+22       MIRAI-GREETH_FLOOD        22
+23        MIRAI-GREIP_FLOOD        23
+24           MIRAI-UDPPLAIN        24
+25         MITM-ARPSPOOFING        25
+26      RECON-HOSTDISCOVERY        26
+27             RECON-OSSCAN        27
+28          RECON-PINGSWEEP        28
+29           RECON-PORTSCAN        29
+30             SQLINJECTION        30
+31         UPLOADING_ATTACK        31
+32        VULNERABILITYSCAN        32
+33                      XSS        33
+Train: (7139999, 32) (7139999,)
+Val  : (1530000, 32) (1530000,)
+Test : (1530001, 32) (1530001,)
+Feature count: 32
+First features: ['Header_Length', 'Protocol Type', 'Time_To_Live', 'Rate', 'fin_flag_number', 'syn_flag_number', 'rst_flag_number', 'psh_flag_number', 'ack_flag_number', 'ece_flag_number']
+
+================================================================================
+TRAIN CLASS DISTRIBUTION
+================================================================================
+
+--- Train class counts ---
+label
+RECON-OSSCAN               210000
+MIRAI-GREETH_FLOOD         210000
+VULNERABILITYSCAN          210000
+DDOS-RSTFINFLOOD           210000
+BACKDOOR_MALWARE           210000
+SQLINJECTION               210000
+DDOS-UDP_FLOOD             210000
+DDOS-HTTP_FLOOD            210000
+RECON-HOSTDISCOVERY        210000
+DDOS-ACK_FRAGMENTATION     210000
+DOS-HTTP_FLOOD             210000
+DDOS-ICMP_FRAGMENTATION    210000
+MITM-ARPSPOOFING           210000
+DNS_SPOOFING               210000
+DDOS-ICMP_FLOOD            210000
+DDOS-TCP_FLOOD             210000
+RECON-PORTSCAN             210000
+MIRAI-GREIP_FLOOD          210000
+BENIGN                     210000
+DDOS-PSHACK_FLOOD          210000
+DICTIONARYBRUTEFORCE       210000
+DOS-TCP_FLOOD              210000
+BROWSERHIJACKING           210000
+UPLOADING_ATTACK           210000
+DDOS-SYN_FLOOD             210000
+DDOS-SYNONYMOUSIP_FLOOD    210000
+DDOS-SLOWLORIS             210000
+MIRAI-UDPPLAIN             210000
+DOS-SYN_FLOOD              210000
+COMMANDINJECTION           210000
+DOS-UDP_FLOOD              210000
+XSS                        210000
+DDOS-UDP_FRAGMENTATION     210000
+RECON-PINGSWEEP            209999
+
+================================================================================
+BUILD TENSORS AND LOADERS
+================================================================================
+Train batches: 3487
+Val batches  : 748
+Test batches : 748
+
+================================================================================
+BUILD MODEL
+================================================================================
+
+================================================================================
+TRAINING
+================================================================================
+Epoch 001/100 | lr=0.0005000 | train_loss=2.081460 | val_loss=1.699949 | val_macro_f1=0.346012 | val_recall=0.376982
+  -> New best model at epoch 1
+Epoch 002/100 | lr=0.0005000 | train_loss=1.753499 | val_loss=1.558311 | val_macro_f1=0.425586 | val_recall=0.446972
+  -> New best model at epoch 2
+Epoch 003/100 | lr=0.0005000 | train_loss=1.675071 | val_loss=1.514450 | val_macro_f1=0.435157 | val_recall=0.453947
+  -> New best model at epoch 3
+Epoch 004/100 | lr=0.0005000 | train_loss=1.637213 | val_loss=1.521089 | val_macro_f1=0.438064 | val_recall=0.461188
+  -> New best model at epoch 4
+Epoch 005/100 | lr=0.0005000 | train_loss=1.639031 | val_loss=1.653352 | val_macro_f1=0.385984 | val_recall=0.413335
+  -> No improvement. patience=1/14
+Epoch 006/100 | lr=0.0005000 | train_loss=1.607290 | val_loss=1.657231 | val_macro_f1=0.378745 | val_recall=0.414284
+  -> No improvement. patience=2/14
+Epoch 007/100 | lr=0.0005000 | train_loss=1.601952 | val_loss=1.858868 | val_macro_f1=0.317665 | val_recall=0.359680
+  -> No improvement. patience=3/14
+Epoch 008/100 | lr=0.0005000 | train_loss=1.585377 | val_loss=1.577740 | val_macro_f1=0.403784 | val_recall=0.434139
+  -> No improvement. patience=4/14
+Epoch 009/100 | lr=0.0005000 | train_loss=1.578673 | val_loss=1.498791 | val_macro_f1=0.444523 | val_recall=0.468329
+  -> New best model at epoch 9
+Epoch 010/100 | lr=0.0005000 | train_loss=1.571836 | val_loss=1.742154 | val_macro_f1=0.346391 | val_recall=0.390699
+  -> No improvement. patience=1/14
+Epoch 011/100 | lr=0.0005000 | train_loss=1.580071 | val_loss=1.597400 | val_macro_f1=0.388253 | val_recall=0.418765
+  -> No improvement. patience=2/14
+Epoch 012/100 | lr=0.0005000 | train_loss=1.561797 | val_loss=1.626238 | val_macro_f1=0.405250 | val_recall=0.438195
+  -> No improvement. patience=3/14
+Epoch 013/100 | lr=0.0005000 | train_loss=1.556444 | val_loss=1.638357 | val_macro_f1=0.400950 | val_recall=0.435763
+  -> No improvement. patience=4/14
+Epoch 014/100 | lr=0.0005000 | train_loss=1.541464 | val_loss=1.735284 | val_macro_f1=0.362524 | val_recall=0.401559
+  -> No improvement. patience=5/14
+Epoch 015/100 | lr=0.0002500 | train_loss=1.488890 | val_loss=1.716663 | val_macro_f1=0.383285 | val_recall=0.420947
+  -> No improvement. patience=6/14
+Epoch 016/100 | lr=0.0002500 | train_loss=1.470691 | val_loss=1.725120 | val_macro_f1=0.392282 | val_recall=0.428713
+  -> No improvement. patience=7/14
+Epoch 017/100 | lr=0.0002500 | train_loss=1.462643 | val_loss=1.974069 | val_macro_f1=0.332073 | val_recall=0.373518
+  -> No improvement. patience=8/14
+Epoch 018/100 | lr=0.0002500 | train_loss=1.456980 | val_loss=1.907630 | val_macro_f1=0.327942 | val_recall=0.375117
+  -> No improvement. patience=9/14
+Epoch 019/100 | lr=0.0002500 | train_loss=1.442908 | val_loss=2.060314 | val_macro_f1=0.264121 | val_recall=0.322339
+  -> No improvement. patience=10/14
+Epoch 020/100 | lr=0.0001250 | train_loss=1.427902 | val_loss=1.598539 | val_macro_f1=0.443799 | val_recall=0.468201
+  -> No improvement. patience=11/14
+Epoch 021/100 | lr=0.0001250 | train_loss=1.413546 | val_loss=1.566631 | val_macro_f1=0.463262 | val_recall=0.488985
+  -> New best model at epoch 21
+Epoch 022/100 | lr=0.0001250 | train_loss=1.411763 | val_loss=1.586838 | val_macro_f1=0.452141 | val_recall=0.476773
+  -> No improvement. patience=1/14
+Epoch 023/100 | lr=0.0001250 | train_loss=1.403855 | val_loss=1.561800 | val_macro_f1=0.456465 | val_recall=0.481014
+  -> No improvement. patience=2/14
+Epoch 024/100 | lr=0.0001250 | train_loss=1.394611 | val_loss=1.723529 | val_macro_f1=0.415368 | val_recall=0.445646
+  -> No improvement. patience=3/14
+Epoch 025/100 | lr=0.0001250 | train_loss=1.396895 | val_loss=1.581004 | val_macro_f1=0.452468 | val_recall=0.476195
+  -> No improvement. patience=4/14
+Epoch 026/100 | lr=0.0001250 | train_loss=1.395045 | val_loss=1.586474 | val_macro_f1=0.437780 | val_recall=0.465108
+  -> No improvement. patience=5/14
+Epoch 027/100 | lr=0.0000625 | train_loss=1.376587 | val_loss=1.564967 | val_macro_f1=0.454174 | val_recall=0.479427
+  -> No improvement. patience=6/14
+Epoch 028/100 | lr=0.0000625 | train_loss=1.368097 | val_loss=1.927966 | val_macro_f1=0.386969 | val_recall=0.428334
+  -> No improvement. patience=7/14
+Epoch 029/100 | lr=0.0000625 | train_loss=1.369844 | val_loss=1.559142 | val_macro_f1=0.461671 | val_recall=0.485650
+  -> No improvement. patience=8/14
+Epoch 030/100 | lr=0.0000625 | train_loss=1.366086 | val_loss=1.540965 | val_macro_f1=0.453879 | val_recall=0.479450
+  -> No improvement. patience=9/14
+Epoch 031/100 | lr=0.0000625 | train_loss=1.362624 | val_loss=1.565061 | val_macro_f1=0.461610 | val_recall=0.487128
+  -> No improvement. patience=10/14
+Epoch 032/100 | lr=0.0000313 | train_loss=1.353629 | val_loss=1.571505 | val_macro_f1=0.459314 | val_recall=0.482326
+  -> No improvement. patience=11/14
+Epoch 033/100 | lr=0.0000313 | train_loss=1.351731 | val_loss=1.541787 | val_macro_f1=0.468576 | val_recall=0.493230
+  -> New best model at epoch 33
+Epoch 034/100 | lr=0.0000313 | train_loss=1.350077 | val_loss=1.806783 | val_macro_f1=0.348714 | val_recall=0.398976
+  -> No improvement. patience=1/14
+Epoch 035/100 | lr=0.0000313 | train_loss=1.348757 | val_loss=1.690833 | val_macro_f1=0.415225 | val_recall=0.447826
+  -> No improvement. patience=2/14
+Epoch 036/100 | lr=0.0000313 | train_loss=1.346441 | val_loss=1.562226 | val_macro_f1=0.449568 | val_recall=0.474925
+  -> No improvement. patience=3/14
+Epoch 037/100 | lr=0.0000313 | train_loss=1.344278 | val_loss=1.563181 | val_macro_f1=0.466519 | val_recall=0.491127
+  -> No improvement. patience=4/14
+Epoch 038/100 | lr=0.0000313 | train_loss=1.341875 | val_loss=1.574922 | val_macro_f1=0.461794 | val_recall=0.487761
+  -> No improvement. patience=5/14
+Epoch 039/100 | lr=0.0000156 | train_loss=1.337044 | val_loss=1.516769 | val_macro_f1=0.481220 | val_recall=0.505910
+  -> New best model at epoch 39
+Epoch 040/100 | lr=0.0000156 | train_loss=1.335749 | val_loss=1.549445 | val_macro_f1=0.468320 | val_recall=0.492305
+  -> No improvement. patience=1/14
+Epoch 041/100 | lr=0.0000156 | train_loss=1.335225 | val_loss=1.555791 | val_macro_f1=0.448610 | val_recall=0.474930
+  -> No improvement. patience=2/14
+Epoch 042/100 | lr=0.0000156 | train_loss=1.332528 | val_loss=1.563913 | val_macro_f1=0.465693 | val_recall=0.487692
+  -> No improvement. patience=3/14
+Epoch 043/100 | lr=0.0000156 | train_loss=1.331623 | val_loss=1.525070 | val_macro_f1=0.484189 | val_recall=0.509982
+  -> New best model at epoch 43
+Epoch 044/100 | lr=0.0000156 | train_loss=1.329755 | val_loss=1.459739 | val_macro_f1=0.486847 | val_recall=0.510543
+  -> New best model at epoch 44
+Epoch 045/100 | lr=0.0000156 | train_loss=1.329314 | val_loss=1.525444 | val_macro_f1=0.473825 | val_recall=0.497388
+  -> No improvement. patience=1/14
+Epoch 046/100 | lr=0.0000156 | train_loss=1.327605 | val_loss=1.502996 | val_macro_f1=0.476074 | val_recall=0.497929
+  -> No improvement. patience=2/14
+Epoch 047/100 | lr=0.0000156 | train_loss=1.328254 | val_loss=1.500497 | val_macro_f1=0.485378 | val_recall=0.508489
+  -> No improvement. patience=3/14
+Epoch 048/100 | lr=0.0000156 | train_loss=1.325411 | val_loss=1.465652 | val_macro_f1=0.491476 | val_recall=0.515816
+  -> New best model at epoch 48
+Epoch 049/100 | lr=0.0000156 | train_loss=1.324767 | val_loss=1.540382 | val_macro_f1=0.469533 | val_recall=0.492675
+  -> No improvement. patience=1/14
+Epoch 050/100 | lr=0.0000156 | train_loss=1.323229 | val_loss=1.473911 | val_macro_f1=0.484631 | val_recall=0.507039
+  -> No improvement. patience=2/14
+Epoch 051/100 | lr=0.0000156 | train_loss=1.321964 | val_loss=1.534707 | val_macro_f1=0.462104 | val_recall=0.485594
+  -> No improvement. patience=3/14
+Epoch 052/100 | lr=0.0000156 | train_loss=1.323979 | val_loss=1.552329 | val_macro_f1=0.472827 | val_recall=0.496828
+  -> No improvement. patience=4/14
+Epoch 053/100 | lr=0.0000156 | train_loss=1.321203 | val_loss=1.514422 | val_macro_f1=0.478298 | val_recall=0.500441
+  -> No improvement. patience=5/14
+Epoch 054/100 | lr=0.0000078 | train_loss=1.316584 | val_loss=1.396252 | val_macro_f1=0.492045 | val_recall=0.515853
+  -> New best model at epoch 54
+Epoch 055/100 | lr=0.0000078 | train_loss=1.316271 | val_loss=1.567015 | val_macro_f1=0.464584 | val_recall=0.491158
+  -> No improvement. patience=1/14
+Epoch 056/100 | lr=0.0000078 | train_loss=1.315043 | val_loss=1.420946 | val_macro_f1=0.475065 | val_recall=0.500028
+  -> No improvement. patience=2/14
+Epoch 057/100 | lr=0.0000078 | train_loss=1.314545 | val_loss=1.567979 | val_macro_f1=0.464493 | val_recall=0.489615
+  -> No improvement. patience=3/14
+Epoch 058/100 | lr=0.0000078 | train_loss=1.313671 | val_loss=1.699159 | val_macro_f1=0.436262 | val_recall=0.468877
+  -> No improvement. patience=4/14
+Epoch 059/100 | lr=0.0000078 | train_loss=1.313371 | val_loss=1.445656 | val_macro_f1=0.492408 | val_recall=0.516806
+  -> New best model at epoch 59
+Epoch 060/100 | lr=0.0000078 | train_loss=1.312525 | val_loss=1.484327 | val_macro_f1=0.478531 | val_recall=0.499833
+  -> No improvement. patience=1/14
+Epoch 061/100 | lr=0.0000078 | train_loss=1.312102 | val_loss=1.421427 | val_macro_f1=0.493231 | val_recall=0.517858
+  -> New best model at epoch 61
+Epoch 062/100 | lr=0.0000078 | train_loss=1.311349 | val_loss=1.410168 | val_macro_f1=0.489783 | val_recall=0.512507
+  -> No improvement. patience=1/14
+Epoch 063/100 | lr=0.0000078 | train_loss=1.311156 | val_loss=1.403932 | val_macro_f1=0.493156 | val_recall=0.516553
+  -> No improvement. patience=2/14
+Epoch 064/100 | lr=0.0000078 | train_loss=1.310441 | val_loss=1.387359 | val_macro_f1=0.498562 | val_recall=0.522653
+  -> New best model at epoch 64
+Epoch 065/100 | lr=0.0000078 | train_loss=1.309134 | val_loss=1.465265 | val_macro_f1=0.480732 | val_recall=0.503233
+  -> No improvement. patience=1/14
+Epoch 066/100 | lr=0.0000078 | train_loss=1.308634 | val_loss=1.551518 | val_macro_f1=0.469746 | val_recall=0.494686
+  -> No improvement. patience=2/14
+Epoch 067/100 | lr=0.0000078 | train_loss=1.308089 | val_loss=1.500595 | val_macro_f1=0.476792 | val_recall=0.499246
+  -> No improvement. patience=3/14
+Epoch 068/100 | lr=0.0000078 | train_loss=1.307521 | val_loss=1.456345 | val_macro_f1=0.483443 | val_recall=0.506569
+  -> No improvement. patience=4/14
+Epoch 069/100 | lr=0.0000078 | train_loss=1.307484 | val_loss=1.556857 | val_macro_f1=0.464812 | val_recall=0.491637
+  -> No improvement. patience=5/14
+Epoch 070/100 | lr=0.0000039 | train_loss=1.305637 | val_loss=1.565699 | val_macro_f1=0.463818 | val_recall=0.489561
+  -> No improvement. patience=6/14
+Epoch 071/100 | lr=0.0000039 | train_loss=1.304961 | val_loss=1.503505 | val_macro_f1=0.473709 | val_recall=0.496828
+  -> No improvement. patience=7/14
+Epoch 072/100 | lr=0.0000039 | train_loss=1.304666 | val_loss=1.642653 | val_macro_f1=0.454379 | val_recall=0.481907
+  -> No improvement. patience=8/14
+Epoch 073/100 | lr=0.0000039 | train_loss=1.304496 | val_loss=1.426565 | val_macro_f1=0.486206 | val_recall=0.508000
+  -> No improvement. patience=9/14
+Epoch 074/100 | lr=0.0000039 | train_loss=1.304555 | val_loss=1.449054 | val_macro_f1=0.482291 | val_recall=0.505199
+  -> No improvement. patience=10/14
+Epoch 075/100 | lr=0.0000020 | train_loss=1.303266 | val_loss=1.411013 | val_macro_f1=0.483788 | val_recall=0.505178
+  -> No improvement. patience=11/14
+Epoch 076/100 | lr=0.0000020 | train_loss=1.302909 | val_loss=1.378064 | val_macro_f1=0.481059 | val_recall=0.505880
+  -> No improvement. patience=12/14
+Epoch 077/100 | lr=0.0000020 | train_loss=1.302683 | val_loss=1.363537 | val_macro_f1=0.497091 | val_recall=0.521508
+  -> No improvement. patience=13/14
+Epoch 078/100 | lr=0.0000020 | train_loss=1.303216 | val_loss=1.521960 | val_macro_f1=0.454041 | val_recall=0.483012
+  -> No improvement. patience=14/14
+Early stopping triggered at epoch 78
+Training time (sec): 6655.8
+Best epoch: 64
+Best validation macro-F1: 0.498562
+
+================================================================================
+LOAD BEST CHECKPOINT
+================================================================================
+
+================================================================================
+FINAL VALIDATION EVALUATION
+================================================================================
+
+--- Validation metrics ---
+              metric     value
+0           accuracy  0.522653
+1           macro_f1  0.498562
+2        weighted_f1  0.498562
+3    macro_precision  0.560556
+4       macro_recall  0.522653
+5  balanced_accuracy  0.522653
+6               loss  1.387359
+
+================================================================================
+FINAL TEST EVALUATION
+================================================================================
+
+--- Test metrics ---
+              metric     value
+0           accuracy  0.522968
+1           macro_f1  0.499024
+2        weighted_f1  0.499024
+3    macro_precision  0.561734
+4       macro_recall  0.522968
+5  balanced_accuracy  0.522968
+6               loss  1.387479
+
+================================================================================
+CLASSIFICATION REPORT
+================================================================================
+
+--- Classification report (head) ---
+                         precision    recall  f1-score       support
+BACKDOOR_MALWARE          0.371602  0.193489  0.254475  4.500000e+04
+BENIGN                    0.363863  0.576933  0.446270  4.500000e+04
+BROWSERHIJACKING          0.428355  0.321000  0.366988  4.500000e+04
+COMMANDINJECTION          0.403964  0.364133  0.383016  4.500000e+04
+DDOS-ACK_FRAGMENTATION    0.977062  0.980667  0.978861  4.500000e+04
+DDOS-HTTP_FLOOD           0.850190  0.438244  0.578362  4.500000e+04
+DDOS-ICMP_FLOOD           0.993014  0.995067  0.994039  4.500000e+04
+DDOS-ICMP_FRAGMENTATION   0.992946  0.972889  0.982815  4.500000e+04
+DDOS-PSHACK_FLOOD         0.912131  0.982000  0.945777  4.500000e+04
+DDOS-RSTFINFLOOD          0.340292  0.993667  0.506967  4.500000e+04
+DDOS-SLOWLORIS            0.651331  0.926178  0.764811  4.500000e+04
+DDOS-SYNONYMOUSIP_FLOOD   0.000000  0.000000  0.000000  4.500000e+04
+DDOS-SYN_FLOOD            0.976526  0.013867  0.027345  4.500000e+04
+DDOS-TCP_FLOOD            0.046672  0.036933  0.041236  4.500000e+04
+DDOS-UDP_FLOOD            0.608101  0.938422  0.737985  4.500000e+04
+DDOS-UDP_FRAGMENTATION    0.997213  0.978089  0.987558  4.500000e+04
+DICTIONARYBRUTEFORCE      0.227477  0.187178  0.205369  4.500000e+04
+DNS_SPOOFING              0.590449  0.475889  0.527015  4.500000e+04
+DOS-HTTP_FLOOD            0.727168  0.782222  0.753691  4.500000e+04
+DOS-SYN_FLOOD             0.716254  0.068156  0.124467  4.500000e+04
+DOS-TCP_FLOOD             0.017989  0.038356  0.024491  4.500000e+04
+DOS-UDP_FLOOD             0.841544  0.387578  0.530727  4.500000e+04
+MIRAI-GREETH_FLOOD        0.987329  0.884844  0.933282  4.500000e+04
+MIRAI-GREIP_FLOOD         0.899824  0.976489  0.936590  4.500000e+04
+MIRAI-UDPPLAIN            0.998611  0.990378  0.994477  4.500000e+04
+MITM-ARPSPOOFING          0.504976  0.381133  0.434400  4.500000e+04
+RECON-HOSTDISCOVERY       0.431039  0.460867  0.445454  4.500000e+04
+RECON-OSSCAN              0.342757  0.056578  0.097124  4.500000e+04
+RECON-PINGSWEEP           0.342559  0.288527  0.313230  4.500100e+04
+RECON-PORTSCAN            0.389106  0.196533  0.261158  4.500000e+04
+SQLINJECTION              0.327491  0.586711  0.420350  4.500000e+04
+UPLOADING_ATTACK          0.270695  0.406067  0.324842  4.500000e+04
+VULNERABILITYSCAN         0.312794  0.730889  0.438098  4.500000e+04
+XSS                       0.257644  0.170956  0.205533  4.500000e+04
+accuracy                  0.522968  0.522968  0.522968  5.229683e-01
+macro avg                 0.561734  0.522968  0.499024  1.530001e+06
+weighted avg              0.561734  0.522968  0.499024  1.530001e+06
+
+================================================================================
+CONFUSION MATRIX
+================================================================================
+Saved confusion matrix plot: E:\dataset\processed_merged_full\final_mlp_deeper_balanced_v3_results\confusion_matrix_test.png
+
+================================================================================
+SAVE RESULTS
+================================================================================
+Saved files:
+- classification_report_test.csv
+- confusion_matrix_test.csv
+- confusion_matrix_test.png
+- feature_names.pkl
+- label_mapping.pkl
+- learning_rate_curve.png
+- loss_curve.png
+- mlp_model_state.pt
+- run_summary.json
+- test_metrics.csv
+- training_history.csv
+- val_macro_f1_curve.png
+- val_metrics.csv
+
+================================================================================
+DONE
+================================================================================

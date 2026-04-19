@@ -23,6 +23,7 @@ __pypackages__/
 .env
 .envrc
 .venv/
+.venv.zip
 venv/
 env/
 ENV/

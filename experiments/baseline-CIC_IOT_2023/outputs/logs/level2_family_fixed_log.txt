@@ -1,0 +1,202 @@
+
+================================================================================
+CONFIGURATION
+================================================================================
+Input dir: E:\dataset\processed_merged_full\hierarchical_prepared\family
+Output dir: E:\dataset\processed_merged_full\hierarchical_models\level2_family_fixed
+Device: cuda
+Architecture: 32 -> 64 -> 8
+Max epochs: 60
+Learning rate: 0.0005
+
+================================================================================
+LOAD ARTIFACTS
+================================================================================
+Original label mapping: {'ddos': 1, 'dos': 2, 'mirai': 3, 'recon': 4, 'web': 5, 'spoofing': 6, 'bruteforce': 7, 'malware': 8}
+Summary: {'n_train': 13871416, 'n_val': 2972446, 'n_test': 2972447, 'n_features': 32, 'n_classes': 8, 'target_col': 'attack_family_id'}
+
+================================================================================
+REMAP LABELS TO CONTIGUOUS IDS
+================================================================================
+New contiguous label mapping: {'ddos': 0, 'dos': 1, 'mirai': 2, 'recon': 3, 'web': 4, 'spoofing': 5, 'bruteforce': 6, 'malware': 7}
+Contiguous id map: {1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 7: 6, 8: 7}
+
+================================================================================
+VALIDATE TARGET RANGES
+================================================================================
+train: min=0, max=7, unique=[0, 1, 2, 3, 4, 5, 6, 7]
+val: min=0, max=7, unique=[0, 1, 2, 3, 4, 5, 6, 7]
+test: min=0, max=7, unique=[0, 1, 2, 3, 4, 5, 6, 7]
+
+================================================================================
+DATA SHAPES
+================================================================================
+Train: (13871416, 32) (13871416,)
+Val  : (2972446, 32) (2972446,)
+Test : (2972447, 32) (2972447,)
+
+================================================================================
+CLASS WEIGHTS
+================================================================================
+
+--- Family class weights ---
+   class_id  raw_weight  clipped_weight
+0         0    0.204086        1.000000
+1         1    0.613826        1.000000
+2         2    1.052046        1.052046
+3         3    3.679163        3.679163
+4         4   19.054143        8.000000
+5         5    5.682752        5.682752
+6         6   82.567952        8.000000
+7         7  123.851929        8.000000
+
+================================================================================
+BUILD TENSORS AND LOADERS
+================================================================================
+Train batches: 6774
+Val batches  : 1452
+Test batches : 1452
+
+================================================================================
+BUILD MODEL
+================================================================================
+
+================================================================================
+TRAINING
+================================================================================
+Epoch 001/60 | train_loss=0.579670 | val_loss=0.868851 | val_macro_f1=0.485110 | val_recall=0.487789
+  -> New best model at epoch 1
+Epoch 002/60 | train_loss=0.504923 | val_loss=0.703623 | val_macro_f1=0.410534 | val_recall=0.444122
+  -> No improvement. patience=1/10
+Epoch 003/60 | train_loss=0.493176 | val_loss=0.558602 | val_macro_f1=0.478427 | val_recall=0.486056
+  -> No improvement. patience=2/10
+Epoch 004/60 | train_loss=0.485336 | val_loss=0.730573 | val_macro_f1=0.436824 | val_recall=0.460358
+  -> No improvement. patience=3/10
+Epoch 005/60 | train_loss=0.480393 | val_loss=1.056683 | val_macro_f1=0.226780 | val_recall=0.248250
+  -> No improvement. patience=4/10
+Epoch 006/60 | train_loss=0.477943 | val_loss=1.149773 | val_macro_f1=0.458617 | val_recall=0.475958
+  -> No improvement. patience=5/10
+Epoch 007/60 | train_loss=0.473002 | val_loss=0.758391 | val_macro_f1=0.515582 | val_recall=0.510428
+  -> New best model at epoch 7
+Epoch 008/60 | train_loss=0.474018 | val_loss=0.690555 | val_macro_f1=0.511844 | val_recall=0.512164
+  -> No improvement. patience=1/10
+Epoch 009/60 | train_loss=0.468503 | val_loss=0.877558 | val_macro_f1=0.507192 | val_recall=0.506858
+  -> No improvement. patience=2/10
+Epoch 010/60 | train_loss=0.468409 | val_loss=1.406655 | val_macro_f1=0.530571 | val_recall=0.525811
+  -> New best model at epoch 10
+Epoch 011/60 | train_loss=0.466340 | val_loss=0.646179 | val_macro_f1=0.462582 | val_recall=0.481115
+  -> No improvement. patience=1/10
+Epoch 012/60 | train_loss=0.467064 | val_loss=0.856736 | val_macro_f1=0.521247 | val_recall=0.519405
+  -> No improvement. patience=2/10
+Epoch 013/60 | train_loss=0.465631 | val_loss=0.956380 | val_macro_f1=0.550149 | val_recall=0.536280
+  -> New best model at epoch 13
+Epoch 014/60 | train_loss=0.463632 | val_loss=1.817106 | val_macro_f1=0.570072 | val_recall=0.550459
+  -> New best model at epoch 14
+Epoch 015/60 | train_loss=0.464648 | val_loss=0.629547 | val_macro_f1=0.470709 | val_recall=0.484819
+  -> No improvement. patience=1/10
+Epoch 016/60 | train_loss=0.463334 | val_loss=0.882812 | val_macro_f1=0.400960 | val_recall=0.428937
+  -> No improvement. patience=2/10
+Epoch 017/60 | train_loss=0.465766 | val_loss=0.795160 | val_macro_f1=0.445487 | val_recall=0.464635
+  -> No improvement. patience=3/10
+Epoch 018/60 | train_loss=0.461963 | val_loss=0.952600 | val_macro_f1=0.571261 | val_recall=0.551951
+  -> New best model at epoch 18
+Epoch 019/60 | train_loss=0.462273 | val_loss=0.609971 | val_macro_f1=0.467045 | val_recall=0.483081
+  -> No improvement. patience=1/10
+Epoch 020/60 | train_loss=0.462533 | val_loss=1.054116 | val_macro_f1=0.560263 | val_recall=0.542926
+  -> No improvement. patience=2/10
+Epoch 021/60 | train_loss=0.464203 | val_loss=0.637453 | val_macro_f1=0.535125 | val_recall=0.528453
+  -> No improvement. patience=3/10
+Epoch 022/60 | train_loss=0.466468 | val_loss=0.723377 | val_macro_f1=0.502096 | val_recall=0.506518
+  -> No improvement. patience=4/10
+Epoch 023/60 | train_loss=0.460981 | val_loss=0.897737 | val_macro_f1=0.486377 | val_recall=0.496925
+  -> No improvement. patience=5/10
+Epoch 024/60 | train_loss=0.462668 | val_loss=0.771543 | val_macro_f1=0.482555 | val_recall=0.492038
+  -> No improvement. patience=6/10
+Epoch 025/60 | train_loss=0.462147 | val_loss=0.732351 | val_macro_f1=0.525408 | val_recall=0.522788
+  -> No improvement. patience=7/10
+Epoch 026/60 | train_loss=0.462124 | val_loss=0.825122 | val_macro_f1=0.497969 | val_recall=0.502527
+  -> No improvement. patience=8/10
+Epoch 027/60 | train_loss=0.461544 | val_loss=0.610329 | val_macro_f1=0.507003 | val_recall=0.509400
+  -> No improvement. patience=9/10
+Epoch 028/60 | train_loss=0.461324 | val_loss=0.530854 | val_macro_f1=0.528844 | val_recall=0.521787
+  -> No improvement. patience=10/10
+Early stopping triggered at epoch 28
+Training time (sec): 5284.08
+Best epoch: 18
+Best validation macro-F1: 0.571261
+
+================================================================================
+LOAD BEST CHECKPOINT
+================================================================================
+
+================================================================================
+FINAL VALIDATION EVALUATION
+================================================================================
+
+--- Validation metrics ---
+              metric     value
+0           accuracy  0.826423
+1           macro_f1  0.571261
+2        weighted_f1  0.797683
+3    macro_precision  0.834365
+4       macro_recall  0.551951
+5  balanced_accuracy  0.551951
+6               loss  0.952600
+
+================================================================================
+FINAL TEST EVALUATION
+================================================================================
+
+--- Test metrics ---
+              metric     value
+0           accuracy  0.826466
+1           macro_f1  0.573582
+2        weighted_f1  0.797704
+3    macro_precision  0.836907
+4       macro_recall  0.553500
+5  balanced_accuracy  0.553500
+6               loss  0.536249
+
+================================================================================
+CLASSIFICATION REPORT
+================================================================================
+
+--- Classification report ---
+              precision    recall  f1-score       support
+ddos           0.807931  0.971222  0.882083  1.820589e+06
+dos            0.783288  0.307713  0.441847  6.053110e+05
+mirai          0.999406  0.990962  0.995166  3.531750e+05
+recon          0.784056  0.899751  0.837929  1.009890e+05
+web            0.543135  0.257641  0.349496  1.950000e+04
+spoofing       0.793614  0.850710  0.821171  6.538300e+04
+bruteforce     0.983824  0.148667  0.258301  4.500000e+03
+malware        1.000000  0.001333  0.002663  3.000000e+03
+accuracy       0.826466  0.826466  0.826466  8.264659e-01
+macro avg      0.836907  0.553500  0.573582  2.972447e+06
+weighted avg   0.823260  0.826466  0.797704  2.972447e+06
+
+================================================================================
+CONFUSION MATRIX
+================================================================================
+Saved confusion matrix plot: E:\dataset\processed_merged_full\hierarchical_models\level2_family_fixed\confusion_matrix_test.png
+
+================================================================================
+SAVE RESULTS
+================================================================================
+Saved files:
+- classification_report_test.csv
+- confusion_matrix_test.csv
+- confusion_matrix_test.png
+- label_mapping.pkl
+- loss_curve.png
+- mlp_model_state.pt
+- original_label_mapping.pkl
+- run_summary.json
+- test_metrics.csv
+- training_history.csv
+- val_macro_f1_curve.png
+- val_metrics.csv
+
+================================================================================
+DONE
+================================================================================

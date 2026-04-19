@@ -1,0 +1,43 @@
+Train raw distribution: {1: 6930000, 0: 210000}
+Train balanced distribution: {0: 210000, 1: 210000}
+Epoch 001 | lr=0.0005000 | train_loss=0.121532 | val_macro_f1=0.614970 | thr=0.38
+Epoch 002 | lr=0.0005000 | train_loss=0.103323 | val_macro_f1=0.618453 | thr=0.40
+Epoch 003 | lr=0.0005000 | train_loss=0.099292 | val_macro_f1=0.625051 | thr=0.32
+Epoch 004 | lr=0.0005000 | train_loss=0.096546 | val_macro_f1=0.633880 | thr=0.38
+Epoch 005 | lr=0.0005000 | train_loss=0.094206 | val_macro_f1=0.623529 | thr=0.30
+Epoch 006 | lr=0.0005000 | train_loss=0.093454 | val_macro_f1=0.623254 | thr=0.42
+Epoch 007 | lr=0.0005000 | train_loss=0.091435 | val_macro_f1=0.626437 | thr=0.42
+Epoch 008 | lr=0.0005000 | train_loss=0.091206 | val_macro_f1=0.643868 | thr=0.40
+Epoch 009 | lr=0.0005000 | train_loss=0.089850 | val_macro_f1=0.628093 | thr=0.32
+Epoch 010 | lr=0.0005000 | train_loss=0.090926 | val_macro_f1=0.637137 | thr=0.34
+Epoch 011 | lr=0.0005000 | train_loss=0.088386 | val_macro_f1=0.636722 | thr=0.36
+Epoch 012 | lr=0.0005000 | train_loss=0.088351 | val_macro_f1=0.636309 | thr=0.42
+Epoch 013 | lr=0.0002500 | train_loss=0.086834 | val_macro_f1=0.643098 | thr=0.34
+Epoch 014 | lr=0.0002500 | train_loss=0.085123 | val_macro_f1=0.649602 | thr=0.42
+Epoch 015 | lr=0.0002500 | train_loss=0.084282 | val_macro_f1=0.636629 | thr=0.30
+Epoch 016 | lr=0.0002500 | train_loss=0.085590 | val_macro_f1=0.654804 | thr=0.38
+Epoch 017 | lr=0.0002500 | train_loss=0.083219 | val_macro_f1=0.662893 | thr=0.36
+Epoch 018 | lr=0.0002500 | train_loss=0.082201 | val_macro_f1=0.674627 | thr=0.36
+Epoch 019 | lr=0.0002500 | train_loss=0.081881 | val_macro_f1=0.647751 | thr=0.32
+Epoch 020 | lr=0.0002500 | train_loss=0.082410 | val_macro_f1=0.676498 | thr=0.36
+Epoch 021 | lr=0.0002500 | train_loss=0.081805 | val_macro_f1=0.674270 | thr=0.36
+Epoch 022 | lr=0.0002500 | train_loss=0.082025 | val_macro_f1=0.644121 | thr=0.32
+Epoch 023 | lr=0.0002500 | train_loss=0.081458 | val_macro_f1=0.633331 | thr=0.38
+Epoch 024 | lr=0.0002500 | train_loss=0.082788 | val_macro_f1=0.668747 | thr=0.38
+Epoch 025 | lr=0.0001250 | train_loss=0.080349 | val_macro_f1=0.685608 | thr=0.34
+Epoch 026 | lr=0.0001250 | train_loss=0.079632 | val_macro_f1=0.684974 | thr=0.34
+Epoch 027 | lr=0.0001250 | train_loss=0.078968 | val_macro_f1=0.668180 | thr=0.36
+Epoch 028 | lr=0.0001250 | train_loss=0.078728 | val_macro_f1=0.687231 | thr=0.34
+Epoch 029 | lr=0.0001250 | train_loss=0.078110 | val_macro_f1=0.676145 | thr=0.36
+Epoch 030 | lr=0.0001250 | train_loss=0.077643 | val_macro_f1=0.689546 | thr=0.34
+Epoch 031 | lr=0.0001250 | train_loss=0.077105 | val_macro_f1=0.680074 | thr=0.38
+Epoch 032 | lr=0.0001250 | train_loss=0.077779 | val_macro_f1=0.659361 | thr=0.38
+Epoch 033 | lr=0.0001250 | train_loss=0.076963 | val_macro_f1=0.683366 | thr=0.38
+Epoch 034 | lr=0.0001250 | train_loss=0.076663 | val_macro_f1=0.690600 | thr=0.34
+Epoch 035 | lr=0.0001250 | train_loss=0.077019 | val_macro_f1=0.682765 | thr=0.34
+Epoch 036 | lr=0.0001250 | train_loss=0.077059 | val_macro_f1=0.687097 | thr=0.36
+Epoch 037 | lr=0.0001250 | train_loss=0.076531 | val_macro_f1=0.688206 | thr=0.36
+Epoch 038 | lr=0.0001250 | train_loss=0.077596 | val_macro_f1=0.686503 | thr=0.34
+Epoch 039 | lr=0.0000625 | train_loss=0.075975 | val_macro_f1=0.696111 | thr=0.34
+Epoch 040 | lr=0.0000625 | train_loss=0.075663 | val_macro_f1=0.682368 | thr=0.34
+Saved to E:\dataset\processed_merged_full\hierarchical_final_v4_models\level1_binary
