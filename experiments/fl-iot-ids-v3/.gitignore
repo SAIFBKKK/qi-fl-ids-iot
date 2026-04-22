@@ -1,0 +1,179 @@
+# ============================================================
+# .gitignore — Quantum-Inspired Federated IDS for IoT
+# ============================================================
+
+# -----------------------------
+# IDE / OS
+# -----------------------------
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# -----------------------------
+# Python cache / environments
+# -----------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.python-version
+.venv/
+venv/
+env/
+ENV/
+
+# -----------------------------
+# Build / packaging
+# -----------------------------
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# -----------------------------
+# Testing / coverage / linting
+# -----------------------------
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+coverage.xml
+htmlcov/
+
+# -----------------------------
+# Jupyter
+# -----------------------------
+.ipynb_checkpoints/
+*.html
+
+# -----------------------------
+# Logs
+# -----------------------------
+*.log
+logs/
+
+# -----------------------------
+# Local runtime outputs
+# -----------------------------
+outputs/
+checkpoints/
+tmp/
+temp/
+
+# -----------------------------
+# Experiment tracking
+# -----------------------------
+mlruns/
+wandb/
+.neptune/
+.aim/
+
+# -----------------------------
+# ML serialized artifacts
+# -----------------------------
+*.pt
+*.pth
+*.ckpt
+*.onnx
+*.pkl
+*.joblib
+*.pickle
+*.npz
+*.npy
+*.h5
+*.hdf5
+*.safetensors
+
+# -----------------------------
+# Dataset files (anywhere in repo)
+# -----------------------------
+*.csv
+*.arff
+*.parquet
+*.feather
+*.pcap
+*.pcapng
+*.zip
+*.tar.gz
+*.gz
+*.7z
+
+# -----------------------------
+# Docker local overrides
+# -----------------------------
+deployments/docker/docker-compose.override.yml
+
+# ============================================================
+# EXCEPTIONS — these override all rules above
+# ============================================================
+!**/README.md
+!**/README.txt
+!**/.gitkeep
+!**/samples/
+!**/data/splits/partition_manifest.json
+!experiments/**/results_baseline/*.json
+!experiments/**/results_baseline/*.csv
+!experiments/**/figures/*.png
+!docs/**/*.png
+!docs/**/*.svg
+!docs/**/*.mmd
+
+# ================================================================
+# FL-IOT-IDS-V1 SPECIFIC
+# ================================================================
+
+# --- ML binary artifacts (complète les *.pkl déjà listés) -------
+*.npz
+*.npy
+*.h5
+*.safetensors
+*.msgpack
+
+# --- Dataset formats --------------------------------------------
+*.csv
+*.arff
+*.pcap
+*.pcapng
+
+# --- Flower framework runtime -----------------------------------
+.flwr/
+
+# --- Experiment tracking (si MLflow / W&B ajouté plus tard) ----
+mlruns/
+wandb/
+.neptune/
+
+# --- References dupliquées (jamais re-tracker) ------------------
+references/
+
+# ================================================================
+# EXCEPTIONS — ne pas ignorer ces fichiers utiles
+# ================================================================
+!data/README.md
+!data/.gitkeep
+!data/raw/.gitkeep
+!data/processed/**/.gitkeep
+!data/splits/partition_manifest.json
+!data/samples/**
+
+!artifacts/.gitkeep
+!outputs/
+!outputs/.gitkeep
+!outputs/logs/.gitkeep
+!outputs/checkpoints/.gitkeep
+!outputs/metrics/.gitkeep
+!outputs/reports/
+!outputs/reports/.gitkeep
+!outputs/reports/*.html
+!outputs/reports/*.md
+!outputs/reports/*.csv
+!outputs/reports/*.json
+
+# Garder les résultats légers si tu veux les versionner plus tard
+# !outputs/metrics/*.json
