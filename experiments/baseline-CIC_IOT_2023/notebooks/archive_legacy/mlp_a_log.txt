@@ -1,0 +1,367 @@
+
+================================================================================
+CONFIGURATION
+================================================================================
+Dataset: E:\dataset\processed_merged_full\augmentation_controlled\dataset_34classes_augmented_controlled.csv
+Output dir: E:\dataset\processed_merged_full\baseline_mlp_a_results
+Architecture A: 32 -> 64 -> 34
+
+================================================================================
+LOAD DATASET
+================================================================================
+Shape: (21167228, 34)
+
+--- HEAD ---
+   Header_Length  Protocol Type  Time_To_Live         Rate  fin_flag_number  syn_flag_number  rst_flag_number  psh_flag_number  ack_flag_number  ece_flag_number  ack_count  HTTP  HTTPS  DNS  Telnet  SMTP  SSH  IRC   TCP   UDP  DHCP   ARP  ICMP  IGMP  Tot sum   Min     Max     AVG        Std       IAT  Number   Variance              label  label_id_34
+0          19.92            6.0         63.36  25893.96300              0.0              0.0              0.0             0.99             0.99              0.0       99.0   0.0   0.01  0.0     0.0   0.0  0.0  0.0  0.99  0.00   0.0  0.01  0.00   0.0   6421.0  60.0   481.0   64.21   42.10000  0.000039   100.0    1772.41  DDOS-PSHACK_FLOOD            8
+1           0.00           47.0         64.00   3703.84130              0.0              0.0              0.0             0.00             0.00              0.0        0.0   0.0   0.00  0.0     0.0   0.0  0.0  0.0  0.00  0.00   0.0  0.00  0.01   0.0  57320.0  98.0   578.0  573.20   48.00000  0.000271   100.0    2304.00  MIRAI-GREIP_FLOOD           23
+2           7.92           17.0         65.91  19673.09600              0.0              0.0              0.0             0.00             0.00              0.0        0.0   0.0   0.00  0.0     0.0   0.0  0.0  0.0  0.00  0.99   0.0  0.00  0.01   0.0   6010.0  60.0    70.0   60.10    1.00000  0.000057   100.0       1.00      DOS-UDP_FLOOD           21
+3          20.40            6.0        110.50    261.66483              0.1              0.0              0.3             0.20             0.40              0.0        4.0   0.0   0.50  0.0     0.0   0.0  0.0  0.0  0.70  0.20   0.0  0.10  0.00   0.0   2223.0  54.0  1500.0  222.30  451.59668  0.004766    10.0  203939.56       DNS_SPOOFING           17
+4           0.32            1.0         63.96  28944.20000              0.0              0.0              0.0             0.00             0.01              0.0        1.0   0.0   0.01  0.0     0.0   0.0  0.0  0.0  0.01  0.00   0.0  0.00  0.99   0.0   6006.0  60.0    66.0   60.06    0.60000  0.000035   100.0       0.36    DDOS-ICMP_FLOOD            6
+
+================================================================================
+SANITY CHECKS
+================================================================================
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 21167228 entries, 0 to 21167227
+Data columns (total 34 columns):
+ #   Column           Dtype  
+---  ------           -----  
+ 0   Header_Length    float64
+ 1   Protocol Type    float64
+ 2   Time_To_Live     float64
+ 3   Rate             float64
+ 4   fin_flag_number  float64
+ 5   syn_flag_number  float64
+ 6   rst_flag_number  float64
+ 7   psh_flag_number  float64
+ 8   ack_flag_number  float64
+ 9   ece_flag_number  float64
+ 10  ack_count        float64
+ 11  HTTP             float64
+ 12  HTTPS            float64
+ 13  DNS              float64
+ 14  Telnet           float64
+ 15  SMTP             float64
+ 16  SSH              float64
+ 17  IRC              float64
+ 18  TCP              float64
+ 19  UDP              float64
+ 20  DHCP             float64
+ 21  ARP              float64
+ 22  ICMP             float64
+ 23  IGMP             float64
+ 24  Tot sum          float64
+ 25  Min              float64
+ 26  Max              float64
+ 27  AVG              float64
+ 28  Std              float64
+ 29  IAT              float64
+ 30  Number           float64
+ 31  Variance         float64
+ 32  label            object 
+ 33  label_id_34      int64  
+dtypes: float64(32), int64(1), object(1)
+memory usage: 5.4+ GB
+None
+
+--- Missing values (top 20) ---
+Header_Length    0
+Min              0
+UDP              0
+DHCP             0
+ARP              0
+ICMP             0
+IGMP             0
+Tot sum          0
+Max              0
+Protocol Type    0
+AVG              0
+Std              0
+IAT              0
+Number           0
+Variance         0
+label            0
+TCP              0
+IRC              0
+SSH              0
+SMTP             0
+
+Duplicate rows: 303622
+Dropping duplicates...
+Shape after drop_duplicates: (20863606, 34)
+
+--- Class distribution ---
+label
+DDOS-ICMP_FLOOD            1893583
+DDOS-UDP_FLOOD             1876996
+DDOS-SYN_FLOOD             1749348
+DOS-UDP_FLOOD              1720950
+DDOS-PSHACK_FLOOD          1637353
+DDOS-TCP_FLOOD             1538829
+DDOS-RSTFINFLOOD           1248655
+DDOS-SYNONYMOUSIP_FLOOD    1166360
+DOS-SYN_FLOOD              1133753
+DOS-TCP_FLOOD              1112260
+BENIGN                     1047297
+MIRAI-GREETH_FLOOD          895892
+MIRAI-UDPPLAIN              764963
+MIRAI-GREIP_FLOOD           693641
+DDOS-ICMP_FRAGMENTATION     431183
+VULNERABILITYSCAN           356287
+DDOS-UDP_FRAGMENTATION      273415
+DDOS-ACK_FRAGMENTATION      271537
+MITM-ARPSPOOFING            268962
+DNS_SPOOFING                166925
+RECON-HOSTDISCOVERY         127863
+RECON-OSSCAN                 92323
+RECON-PORTSCAN               76789
+DOS-HTTP_FLOOD               68445
+BROWSERHIJACKING             30000
+SQLINJECTION                 30000
+DICTIONARYBRUTEFORCE         30000
+COMMANDINJECTION             30000
+DDOS-HTTP_FLOOD              27597
+DDOS-SLOWLORIS               22400
+BACKDOOR_MALWARE             20000
+XSS                          20000
+RECON-PINGSWEEP              20000
+UPLOADING_ATTACK             20000
+
+Number of classes: 34
+Imbalance ratio: 94.68
+
+================================================================================
+FEATURES AND LABELS
+================================================================================
+Feature count: 32
+First features: ['Header_Length', 'Protocol Type', 'Time_To_Live', 'Rate', 'fin_flag_number', 'syn_flag_number', 'rst_flag_number', 'psh_flag_number', 'ack_flag_number', 'ece_flag_number']
+X shape: (20863606, 32)
+y shape: (20863606,)
+
+================================================================================
+LABEL ENCODING
+================================================================================
+
+--- Encoded labels ---
+                      label  label_id
+0          BACKDOOR_MALWARE         0
+1                    BENIGN         1
+2          BROWSERHIJACKING         2
+3          COMMANDINJECTION         3
+4    DDOS-ACK_FRAGMENTATION         4
+5           DDOS-HTTP_FLOOD         5
+6           DDOS-ICMP_FLOOD         6
+7   DDOS-ICMP_FRAGMENTATION         7
+8         DDOS-PSHACK_FLOOD         8
+9          DDOS-RSTFINFLOOD         9
+10           DDOS-SLOWLORIS        10
+11  DDOS-SYNONYMOUSIP_FLOOD        11
+12           DDOS-SYN_FLOOD        12
+13           DDOS-TCP_FLOOD        13
+14           DDOS-UDP_FLOOD        14
+15   DDOS-UDP_FRAGMENTATION        15
+16     DICTIONARYBRUTEFORCE        16
+17             DNS_SPOOFING        17
+18           DOS-HTTP_FLOOD        18
+19            DOS-SYN_FLOOD        19
+20            DOS-TCP_FLOOD        20
+21            DOS-UDP_FLOOD        21
+22       MIRAI-GREETH_FLOOD        22
+23        MIRAI-GREIP_FLOOD        23
+24           MIRAI-UDPPLAIN        24
+25         MITM-ARPSPOOFING        25
+26      RECON-HOSTDISCOVERY        26
+27             RECON-OSSCAN        27
+28          RECON-PINGSWEEP        28
+29           RECON-PORTSCAN        29
+30             SQLINJECTION        30
+31         UPLOADING_ATTACK        31
+32        VULNERABILITYSCAN        32
+33                      XSS        33
+
+================================================================================
+TRAIN / VAL / TEST SPLIT
+================================================================================
+Train: (14604524, 32) (14604524,)
+Val  : (3129541, 32) (3129541,)
+Test : (3129541, 32) (3129541,)
+
+================================================================================
+CLASS WEIGHTS
+================================================================================
+
+--- Top class weights ---
+    class_id     weight                 label
+0          0  30.681773      BACKDOOR_MALWARE
+28        28  30.681773       RECON-PINGSWEEP
+31        31  30.681773      UPLOADING_ATTACK
+33        33  30.681773                   XSS
+10        10  27.394440        DDOS-SLOWLORIS
+5          5  22.235471       DDOS-HTTP_FLOOD
+16        16  20.454515  DICTIONARYBRUTEFORCE
+2          2  20.454515      BROWSERHIJACKING
+30        30  20.454515          SQLINJECTION
+3          3  20.454515      COMMANDINJECTION
+18        18   8.965287        DOS-HTTP_FLOOD
+29        29   7.991234        RECON-PORTSCAN
+27        27   6.646626          RECON-OSSCAN
+26        26   4.799169   RECON-HOSTDISCOVERY
+17        17   3.676099          DNS_SPOOFING
+
+================================================================================
+SCALING
+================================================================================
+Scaled train: (14604524, 32) float32
+Scaled val  : (3129541, 32) float32
+Scaled test : (3129541, 32) float32
+
+================================================================================
+TRAIN MLP
+================================================================================
+Iteration 1, loss = 0.61751232
+Validation score: 0.757771
+Iteration 2, loss = 0.52000110
+Validation score: 0.744520
+Iteration 3, loss = 0.51082363
+Validation score: 0.743971
+Iteration 4, loss = 0.50607436
+Validation score: 0.761226
+Iteration 5, loss = 0.51071135
+Validation score: 0.762848
+Iteration 6, loss = 0.50602168
+Validation score: 0.738133
+Iteration 7, loss = 0.50639257
+Validation score: 0.761611
+Iteration 8, loss = 0.50579489
+Validation score: 0.759111
+Iteration 9, loss = 0.50886434
+Validation score: 0.762955
+Iteration 10, loss = 0.50727344
+Validation score: 0.763223
+Iteration 11, loss = 0.50701226
+Validation score: 0.760561
+Iteration 12, loss = 0.50447567
+Validation score: 0.762992
+Iteration 13, loss = 0.50258349
+Validation score: 0.761829
+Iteration 14, loss = 0.50172990
+Validation score: 0.764081
+Iteration 15, loss = 0.49925985
+Validation score: 0.763588
+Iteration 16, loss = 0.49694198
+Validation score: 0.762028
+Iteration 17, loss = 0.49642232
+Validation score: 0.762748
+Iteration 18, loss = 0.49483654
+Validation score: 0.762994
+Iteration 19, loss = 0.49368132
+Validation score: 0.765879
+Iteration 20, loss = 0.49302073
+Validation score: 0.763365
+Iteration 21, loss = 0.49271406
+Validation score: 0.761634
+Iteration 22, loss = 0.49211769
+Validation score: 0.765014
+Iteration 23, loss = 0.49178050
+Validation score: 0.765638
+Iteration 24, loss = 0.49186467
+Validation score: 0.764460
+Iteration 25, loss = 0.49524323
+Validation score: 0.764120
+Validation score did not improve more than tol=0.000100 for 5 consecutive epochs. Stopping.
+
+================================================================================
+VALIDATION EVALUATION
+================================================================================
+
+--- Validation metrics ---
+              metric     value
+0           accuracy  0.765916
+1           macro_f1  0.608852
+2        weighted_f1  0.758339
+3    macro_precision  0.665736
+4       macro_recall  0.598447
+5  balanced_accuracy  0.598447
+
+================================================================================
+TEST EVALUATION
+================================================================================
+
+--- Test metrics ---
+              metric     value
+0           accuracy  0.766398
+1           macro_f1  0.610129
+2        weighted_f1  0.758832
+3    macro_precision  0.667196
+4       macro_recall  0.599595
+5  balanced_accuracy  0.599595
+
+================================================================================
+CLASSIFICATION REPORT
+================================================================================
+
+--- Classification report (head) ---
+                         precision    recall  f1-score       support
+BACKDOOR_MALWARE          0.404494  0.024000  0.045312  3.000000e+03
+BENIGN                    0.705066  0.904045  0.792253  1.570940e+05
+BROWSERHIJACKING          0.379099  0.151556  0.216542  4.500000e+03
+COMMANDINJECTION          0.512516  0.172889  0.258558  4.500000e+03
+DDOS-ACK_FRAGMENTATION    0.994985  0.984017  0.989471  4.073100e+04
+DDOS-HTTP_FLOOD           0.823175  0.626329  0.711385  4.140000e+03
+DDOS-ICMP_FLOOD           0.996495  0.996053  0.996274  2.840380e+05
+DDOS-ICMP_FRAGMENTATION   0.994347  0.981756  0.988011  6.467800e+04
+DDOS-PSHACK_FLOOD         0.999156  0.997268  0.998211  2.456030e+05
+DDOS-RSTFINFLOOD          0.999689  0.996647  0.998166  1.872990e+05
+DDOS-SLOWLORIS            0.701637  0.561310  0.623677  3.360000e+03
+DDOS-SYNONYMOUSIP_FLOOD   0.423092  0.674160  0.519902  1.749540e+05
+DDOS-SYN_FLOOD            0.535614  0.477687  0.504995  2.624020e+05
+DDOS-TCP_FLOOD            0.661131  0.797989  0.723142  2.308240e+05
+DDOS-UDP_FLOOD            0.683690  0.874623  0.767459  2.815500e+05
+DDOS-UDP_FRAGMENTATION    0.994853  0.980372  0.987559  4.101200e+04
+DICTIONARYBRUTEFORCE      0.475700  0.256667  0.333430  4.500000e+03
+DNS_SPOOFING              0.666667  0.502596  0.573120  2.503800e+04
+DOS-HTTP_FLOOD            0.822581  0.904062  0.861399  1.026700e+04
+DOS-SYN_FLOOD             0.607463  0.353698  0.447081  1.700630e+05
+DOS-TCP_FLOOD             0.610013  0.430727  0.504927  1.668390e+05
+DOS-UDP_FLOOD             0.801774  0.554687  0.655726  2.581420e+05
+MIRAI-GREETH_FLOOD        0.987295  0.992328  0.989805  1.343840e+05
+MIRAI-GREIP_FLOOD         0.994574  0.981354  0.987920  1.040460e+05
+MIRAI-UDPPLAIN            0.981477  0.994701  0.988045  1.147440e+05
+MITM-ARPSPOOFING          0.672282  0.631073  0.651026  4.034400e+04
+RECON-HOSTDISCOVERY       0.550703  0.623234  0.584728  1.917900e+04
+RECON-OSSCAN              0.402597  0.017909  0.034292  1.384800e+04
+RECON-PINGSWEEP           0.424061  0.541667  0.475703  3.000000e+03
+RECON-PORTSCAN            0.483494  0.244118  0.324430  1.151900e+04
+SQLINJECTION              0.399294  0.326889  0.359482  4.500000e+03
+UPLOADING_ATTACK          0.259525  0.313333  0.283902  3.000000e+03
+VULNERABILITYSCAN         0.550419  0.486163  0.516300  5.344300e+04
+XSS                       0.185714  0.030333  0.052149  3.000000e+03
+accuracy                  0.766398  0.766398  0.766398  7.663977e-01
+macro avg                 0.667196  0.599595  0.610129  3.129541e+06
+weighted avg              0.771198  0.766398  0.758832  3.129541e+06
+
+================================================================================
+CONFUSION MATRIX
+================================================================================
+Saved confusion matrix plot: E:\dataset\processed_merged_full\baseline_mlp_a_results\confusion_matrix_test.png
+
+================================================================================
+SAVE RESULTS
+================================================================================
+Saved files:
+- class_weights.pkl
+- classification_report_test.csv
+- confusion_matrix_test.csv
+- confusion_matrix_test.png
+- feature_names.pkl
+- label_mapping.pkl
+- mlp_model.pkl
+- run_summary.json
+- scaler.pkl
+- test_metrics.csv
+- val_metrics.csv
+
+================================================================================
+DONE
+================================================================================

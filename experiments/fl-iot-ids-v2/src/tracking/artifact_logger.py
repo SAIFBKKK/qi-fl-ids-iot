@@ -210,6 +210,9 @@ class BaselineArtifactTracker:
         if error_message:
             summary["error_message"] = error_message
 
+        if hasattr(self, "strategy") and hasattr(self.strategy, "best_round_info"):
+            summary["best_round"] = self.strategy.best_round_info
+
         if final_row:
             for metric_name in ("distributed_loss",) + EVALUATE_METRIC_KEYS:
                 value = final_row.get(metric_name)

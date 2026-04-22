@@ -1,0 +1,101 @@
+<style>
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{font-size:10px;font-weight:500;color:var(--color-text-secondary);text-align:left;padding:6px 8px;border-bottom:0.5px solid var(--color-border-secondary);white-space:nowrap}
+td{padding:5px 8px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary)}
+.best{color:var(--color-text-success);font-weight:500}
+.bad{color:var(--color-text-danger)}
+.warn{color:var(--color-text-warning)}
+.badge{display:inline-block;font-size:9px;padding:1px 5px;border-radius:3px;margin-left:4px}
+.b-g{background:var(--color-background-success);color:var(--color-text-success)}
+.b-r{background:var(--color-background-danger);color:var(--color-text-danger)}
+.b-a{background:var(--color-background-warning);color:var(--color-text-warning)}
+.section{font-size:12px;font-weight:500;color:var(--color-text-secondary);margin:16px 0 6px}
+</style>
+
+<div class="section">normal_noniid — comparaison algorithmes</div>
+<table>
+  <thead>
+    <tr><th>Exp</th><th>Stratégie</th><th>F1 Macro</th><th>Accuracy</th><th>Benign Recall</th><th>FPR</th><th>Recall Macro</th><th>Temps</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td><td>FedAvg</td>
+      <td class="best">0.605 <span class="badge b-g">BEST</span></td>
+      <td class="best">0.713</td>
+      <td>0.866</td>
+      <td class="best">0.134</td>
+      <td class="best">0.692</td>
+      <td>955s</td>
+    </tr>
+    <tr>
+      <td>8</td><td>FedProx μ=0</td>
+      <td>0.595</td><td>0.700</td><td>0.848</td><td>0.152</td><td>0.680</td><td>1027s</td>
+    </tr>
+    <tr>
+      <td>2b</td><td>FedProx μ=0.01</td>
+      <td class="warn">0.529</td><td>0.641</td><td>0.784</td><td class="warn">0.216</td><td>0.619</td><td>1181s</td>
+    </tr>
+    <tr>
+      <td>2a</td><td>SCAFFOLD</td>
+      <td class="bad">0.001 <span class="badge b-r">COLLAPSE</span></td>
+      <td class="bad">0.028</td>
+      <td class="bad">0.0</td>
+      <td class="bad">1.0</td>
+      <td class="bad">0.012</td>
+      <td>1135s</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="section">absent_local — comparaison algorithmes</div>
+<table>
+  <thead>
+    <tr><th>Exp</th><th>Stratégie</th><th>F1 Macro</th><th>Accuracy</th><th>Benign Recall</th><th>FPR</th><th>Recall Macro</th><th>Temps</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>3</td><td>FedProx μ=0.01</td>
+      <td class="best">0.357 <span class="badge b-g">BEST</span></td>
+      <td class="best">0.588</td>
+      <td class="best">0.890</td>
+      <td class="best">0.110</td>
+      <td class="best">0.451</td>
+      <td>849s</td>
+    </tr>
+    <tr>
+      <td>2</td><td>FedAvg</td>
+      <td>0.338</td><td>0.517</td><td>0.919</td><td>0.081</td><td>0.476</td><td>827s</td>
+    </tr>
+    <tr>
+      <td>4</td><td>SCAFFOLD</td>
+      <td class="bad">0.002 <span class="badge b-r">COLLAPSE</span></td>
+      <td class="bad">0.035</td>
+      <td class="bad">0.0</td>
+      <td class="bad">1.0</td>
+      <td class="bad">0.024</td>
+      <td>1033s</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="section">rare_expert — comparaison stratégies</div>
+<table>
+  <thead>
+    <tr><th>Exp</th><th>Stratégie</th><th>F1 Macro</th><th>Accuracy</th><th>Benign Recall</th><th>FPR</th><th>Recall Macro</th><th>Temps</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>5</td><td>FedAvg (baseline)</td>
+      <td class="best">0.487 <span class="badge b-g">BEST</span></td>
+      <td class="best">0.560</td>
+      <td>0.9999</td>
+      <td>0.0001</td>
+      <td class="best">0.559</td>
+      <td>724s</td>
+    </tr>
+    <tr>
+      <td>6</td><td>FedProx μ=0.01 + expert×2</td>
+      <td class="warn">0.307</td><td>0.627</td><td>0.998</td><td>0.002</td><td>0.329</td><td>779s</td>
+    </tr>
+  </tbody>
+</table>

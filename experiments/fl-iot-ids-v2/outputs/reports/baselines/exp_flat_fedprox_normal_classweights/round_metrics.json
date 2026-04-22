@@ -1,0 +1,193 @@
+{
+  "generated_at": "2026-04-17T19:36:42.277161Z",
+  "experiment_name": "exp_flat_fedprox_normal_classweights",
+  "rounds": [
+    {
+      "round": 1,
+      "distributed_loss": 7.15639328557057,
+      "train_loss_last": 1.7113029887590099,
+      "train_time_sec": 62.16409229681423,
+      "update_size_bytes": 56712.0,
+      "accuracy": 0.3092951445322804,
+      "macro_f1": 0.1820077682049819,
+      "recall_macro": 0.26966771160930647,
+      "benign_recall": 0.0006777157863942943,
+      "false_positive_rate": 0.9993222842136057,
+      "rare_class_recall": 0.025742942012172844
+    },
+    {
+      "round": 2,
+      "distributed_loss": 6.798032997202378,
+      "train_loss_last": 1.5708412027227416,
+      "train_time_sec": 69.36912764304084,
+      "update_size_bytes": 56712.0,
+      "accuracy": 0.4057450198694657,
+      "macro_f1": 0.28086109731228465,
+      "recall_macro": 0.3568610277849758,
+      "benign_recall": 0.0003866853371278179,
+      "false_positive_rate": 0.9996133146628722,
+      "rare_class_recall": 0.10723097886913871
+    },
+    {
+      "round": 3,
+      "distributed_loss": 7.9032794635860855,
+      "train_loss_last": 1.4263141486143143,
+      "train_time_sec": 87.60224472339364,
+      "update_size_bytes": 56712.0,
+      "accuracy": 0.419839257298944,
+      "macro_f1": 0.3119172752240989,
+      "recall_macro": 0.4003173020708941,
+      "benign_recall": 0.1383774658278585,
+      "false_positive_rate": 0.8616225341721415,
+      "rare_class_recall": 0.1469199876849758
+    }
+  ],
+  "history": {
+    "losses_distributed": [
+      {
+        "round": 1,
+        "loss": 7.15639328557057
+      },
+      {
+        "round": 2,
+        "loss": 6.798032997202378
+      },
+      {
+        "round": 3,
+        "loss": 7.9032794635860855
+      }
+    ],
+    "losses_centralized": [],
+    "metrics_distributed_fit": {
+      "train_loss_last": [
+        {
+          "round": 1,
+          "value": 1.7113029887590099
+        },
+        {
+          "round": 2,
+          "value": 1.5708412027227416
+        },
+        {
+          "round": 3,
+          "value": 1.4263141486143143
+        }
+      ],
+      "train_time_sec": [
+        {
+          "round": 1,
+          "value": 62.16409229681423
+        },
+        {
+          "round": 2,
+          "value": 69.36912764304084
+        },
+        {
+          "round": 3,
+          "value": 87.60224472339364
+        }
+      ],
+      "update_size_bytes": [
+        {
+          "round": 1,
+          "value": 56712.0
+        },
+        {
+          "round": 2,
+          "value": 56712.0
+        },
+        {
+          "round": 3,
+          "value": 56712.0
+        }
+      ]
+    },
+    "metrics_distributed": {
+      "accuracy": [
+        {
+          "round": 1,
+          "value": 0.3092951445322804
+        },
+        {
+          "round": 2,
+          "value": 0.4057450198694657
+        },
+        {
+          "round": 3,
+          "value": 0.419839257298944
+        }
+      ],
+      "macro_f1": [
+        {
+          "round": 1,
+          "value": 0.1820077682049819
+        },
+        {
+          "round": 2,
+          "value": 0.28086109731228465
+        },
+        {
+          "round": 3,
+          "value": 0.3119172752240989
+        }
+      ],
+      "recall_macro": [
+        {
+          "round": 1,
+          "value": 0.26966771160930647
+        },
+        {
+          "round": 2,
+          "value": 0.3568610277849758
+        },
+        {
+          "round": 3,
+          "value": 0.4003173020708941
+        }
+      ],
+      "benign_recall": [
+        {
+          "round": 1,
+          "value": 0.0006777157863942943
+        },
+        {
+          "round": 2,
+          "value": 0.0003866853371278179
+        },
+        {
+          "round": 3,
+          "value": 0.1383774658278585
+        }
+      ],
+      "false_positive_rate": [
+        {
+          "round": 1,
+          "value": 0.9993222842136057
+        },
+        {
+          "round": 2,
+          "value": 0.9996133146628722
+        },
+        {
+          "round": 3,
+          "value": 0.8616225341721415
+        }
+      ],
+      "rare_class_recall": [
+        {
+          "round": 1,
+          "value": 0.025742942012172844
+        },
+        {
+          "round": 2,
+          "value": 0.10723097886913871
+        },
+        {
+          "round": 3,
+          "value": 0.1469199876849758
+        }
+      ]
+    },
+    "metrics_centralized": {}
+  }
+}

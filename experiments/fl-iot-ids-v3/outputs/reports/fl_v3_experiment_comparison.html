@@ -1,0 +1,77 @@
+<style>
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.exp{background:var(--color-background-secondary);border-radius:var(--border-radius-lg);padding:14px;border:0.5px solid var(--color-border-tertiary)}
+.exp-title{font-size:13px;font-weight:500;margin-bottom:10px;color:var(--color-text-primary)}
+.row{display:flex;justify-content:space-between;font-size:12px;padding:3px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.lbl{color:var(--color-text-secondary)}
+.val{font-weight:500}
+.green{color:var(--color-text-success)}
+.red{color:var(--color-text-danger)}
+.amber{color:var(--color-text-warning)}
+.badge{font-size:10px;padding:2px 6px;border-radius:4px;margin-left:6px}
+.b-best{background:var(--color-background-success);color:var(--color-text-success)}
+.b-warn{background:var(--color-background-warning);color:var(--color-text-warning)}
+.b-bad{background:var(--color-background-danger);color:var(--color-text-danger)}
+</style>
+<div class="grid">
+  <div class="exp">
+    <div class="exp-title">FedAvg — normal_noniid <span class="badge b-best">BEST</span></div>
+    <div class="row"><span class="lbl">F1 Macro</span><span class="val green">0.605</span></div>
+    <div class="row"><span class="lbl">Accuracy</span><span class="val">0.713</span></div>
+    <div class="row"><span class="lbl">Benign Recall</span><span class="val">0.866</span></div>
+    <div class="row"><span class="lbl">FPR</span><span class="val green">0.134</span></div>
+    <div class="row"><span class="lbl">Recall Macro</span><span class="val">0.692</span></div>
+    <div class="row"><span class="lbl">Train Loss</span><span class="val">0.643</span></div>
+    <div class="row"><span class="lbl">Time</span><span class="val">955s</span></div>
+  </div>
+  <div class="exp">
+    <div class="exp-title">FedProx μ=0.01 — normal_noniid <span class="badge b-warn">WORSE</span></div>
+    <div class="row"><span class="lbl">F1 Macro</span><span class="val amber">0.529</span></div>
+    <div class="row"><span class="lbl">Accuracy</span><span class="val">0.641</span></div>
+    <div class="row"><span class="lbl">Benign Recall</span><span class="val">0.784</span></div>
+    <div class="row"><span class="lbl">FPR</span><span class="val amber">0.216</span></div>
+    <div class="row"><span class="lbl">Recall Macro</span><span class="val">0.619</span></div>
+    <div class="row"><span class="lbl">Train Loss</span><span class="val">0.818</span></div>
+    <div class="row"><span class="lbl">Time</span><span class="val">1181s</span></div>
+  </div>
+  <div class="exp">
+    <div class="exp-title">FedAvg — rare_expert <span class="badge b-bad">COLLAPSED</span></div>
+    <div class="row"><span class="lbl">F1 Macro</span><span class="val red">0.302</span></div>
+    <div class="row"><span class="lbl">Accuracy</span><span class="val">0.570</span></div>
+    <div class="row"><span class="lbl">Benign Recall</span><span class="val green">0.9999</span></div>
+    <div class="row"><span class="lbl">FPR</span><span class="val red">0.00001</span></div>
+    <div class="row"><span class="lbl">Recall Macro</span><span class="val red">0.338</span></div>
+    <div class="row"><span class="lbl">Train Loss</span><span class="val">0.748</span></div>
+    <div class="row"><span class="lbl">Time</span><span class="val">776s</span></div>
+  </div>
+</div>
+<div style="position:relative;width:100%;height:220px">
+<canvas id="ch" role="img" aria-label="Comparaison F1 Macro et Benign Recall entre expériences"></canvas>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+new Chart(document.getElementById('ch'),{
+  type:'bar',
+  data:{
+    labels:['FedAvg\nnormal_noniid','FedProx μ=0.01\nnormal_noniid','FedAvg\nrare_expert'],
+    datasets:[
+      {label:'F1 Macro',data:[0.605,0.529,0.302],backgroundColor:'#185FA5',borderWidth:0},
+      {label:'Benign Recall',data:[0.866,0.784,0.9999],backgroundColor:'#1D9E75',borderWidth:0},
+      {label:'Recall Macro',data:[0.692,0.619,0.338],backgroundColor:'#BA7517',borderWidth:0}
+    ]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{
+      x:{ticks:{font:{size:10}}},
+      y:{min:0,max:1.05,ticks:{font:{size:10}}}
+    }
+  }
+});
+</script>
+<div style="display:flex;gap:20px;margin-top:8px;font-size:11px;color:var(--color-text-secondary)">
+  <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;background:#185FA5;display:inline-block;border-radius:2px"></span>F1 Macro</span>
+  <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;background:#1D9E75;display:inline-block;border-radius:2px"></span>Benign Recall</span>
+  <span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;background:#BA7517;display:inline-block;border-radius:2px"></span>Recall Macro</span>
+</div>

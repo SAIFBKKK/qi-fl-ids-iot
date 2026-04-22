@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(du -sh ./experiments/fl-iot-ids-v* 2>/dev/null)",
+      "Bash(du -sh ./data/* 2>/dev/null | sort -h)",
+      "Bash(ls -lh ./experiments/baseline-CIC_IOT_2023/notebooks/*.log 2>/dev/null | head -20)",
+      "Bash(find . -name \".venv.zip\" -o -name \"*.pkl\" -o -name \"*.pt\" -o -name \"*.pth\" 2>/dev/null | head -20)",
+      "Bash(find ./experiments/baseline-CIC_IOT_2023 -type f -name \"*.pkl\" | xargs ls -lh 2>/dev/null | head -10)",
+      "Bash(find ./experiments/baseline-CIC_IOT_2023 -type f -name \"*.pt\" | xargs ls -lh 2>/dev/null)",
+      "Bash(find ./experiments/fl-iot-ids-v2 -maxdepth 3 -type f \\\\\\( -name \"*.pkl\" -o -name \"*.pt\" -o -name \"*.pth\" \\\\\\) 2>/dev/null | head -10)",
+      "Bash(find ./experiments/fl-iot-ids-v2/data/processed -type f -name \"*.npz\" | xargs ls -lh)",
+      "Bash(find ./experiments/fl-iot-ids-v2/data/raw -type f -name \"*.csv\" | xargs du -sh 2>/dev/null)",
+      "Bash(du -sh ./experiments/fl-iot-ids-v2/outputs/* 2>/dev/null)",
+      "Skill(update-config)",
+      "Read(//c/Users/saifb/.claude/**)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(python -c ' *)",
+      "Bash(python *)"
+    ]
+  }
+}

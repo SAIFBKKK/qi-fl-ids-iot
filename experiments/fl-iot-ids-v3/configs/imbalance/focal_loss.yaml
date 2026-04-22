@@ -1,0 +1,6 @@
+imbalance:
+  name: focal_loss
+  focal_gamma: 2.0
+  description: >
+    Focal Loss sans ponderation.
+    Concentre l'apprentissage sur les exemples difficiles.

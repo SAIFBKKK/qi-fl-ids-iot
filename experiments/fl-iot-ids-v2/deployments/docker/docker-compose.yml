@@ -1,0 +1,58 @@
+name: fl-iot-ids-v2
+
+# ── Usage ────────────────────────────────────────────────────────────────────
+#   Build image:
+#     docker compose build
+#
+#   Run a single experiment (simulation mode):
+#     docker compose run --rm fl-simulation --experiment exp_flat_fedprox_normal_classweights
+#
+#   Run MLflow UI to inspect results:
+#     docker compose up mlflow
+#     → open http://localhost:5000
+#
+# NOTE: v2 uses Flower simulation mode (all clients run in-process via Ray).
+#       Distributed server/client mode is planned for v3.
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── FL Simulation (primary entry point) ──────────────────────────────────
+  fl-simulation:
+    build:
+      context: ../../                            # root = experiments/fl-iot-ids-v2/
+      dockerfile: deployments/docker/base.Dockerfile
+    image: fl-iot-ids-v2:latest
+    container_name: fl-simulation
+    entrypoint: ["python", "-m", "src.scripts.run_experiment"]
+    command: ["--experiment", "exp_flat_fedprox_normal_classweights"]
+    volumes:
+      - ../../data:/app/data:ro                  # pre-processed partitions (read-only)
+      - ../../configs:/app/configs:ro            # experiment configs (read-only)
+      - ../../outputs:/app/outputs               # results written here
+      - ../../mlruns:/app/mlruns                 # MLflow tracking
+    environment:
+      - PYTHONUNBUFFERED=1
+      - RAY_DISABLE_IMPORT_WARNING=1
+    restart: "no"
+    networks:
+      - flnet
+
+  # ── MLflow UI ─────────────────────────────────────────────────────────────
+  mlflow:
+    image: python:3.11-slim
+    container_name: fl-mlflow
+    command: >
+      bash -c "pip install mlflow --quiet &&
+               mlflow ui --host 0.0.0.0 --port 5000 --backend-store-uri /mlruns"
+    ports:
+      - "5000:5000"
+    volumes:
+      - ../../mlruns:/mlruns:ro
+    restart: unless-stopped
+    networks:
+      - flnet
+
+networks:
+  flnet:
+    driver: bridge

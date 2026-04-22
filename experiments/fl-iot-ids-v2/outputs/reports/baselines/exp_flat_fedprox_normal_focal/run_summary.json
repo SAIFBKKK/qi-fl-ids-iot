@@ -1,0 +1,22 @@
+{
+  "generated_at": "2026-04-20T05:21:30.504885Z",
+  "experiment_name": "exp_flat_fedprox_normal_focal",
+  "architecture": "flat_34_v1style",
+  "fl_strategy": "fedprox",
+  "data_scenario": "normal_noniid",
+  "imbalance_strategy": "focal_loss_weighted",
+  "num_rounds": 3,
+  "completed_rounds": 3,
+  "num_clients": 3,
+  "feature_count": 28,
+  "num_classes": 34,
+  "duration_sec": 335.84,
+  "final_distributed_loss": 11.76884696802935,
+  "status": "success",
+  "final_accuracy": 0.38253614370686795,
+  "final_macro_f1": 0.2647368969396843,
+  "final_recall_macro": 0.37744774366874845,
+  "final_benign_recall": 0.2551595178355708,
+  "final_false_positive_rate": 0.7448404821644292,
+  "final_rare_class_recall": 0.1593616628032554
+}

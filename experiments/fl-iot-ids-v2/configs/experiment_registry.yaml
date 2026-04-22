@@ -22,3 +22,111 @@ experiments:
     fl_strategy: fedprox
     data_scenario: rare_expert
     imbalance_strategy: class_weights
+
+  - name: exp_flat_fedprox_normal_classweights_smoke
+    architecture: flat_34
+    fl_strategy: fedprox
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+
+  - name: exp_flat_fedavg_normal_classweights_v1style
+    architecture: flat_34
+    fl_strategy: fedavg
+    fl_config: fedavg_v1style
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+
+  - name: exp_flat_fedprox_normal_classweights_v1style
+    architecture: flat_34
+    fl_strategy: fedprox
+    fl_config: fedprox_v1style
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+
+  - name: exp_flat_fedavg_normal_focalloss
+    architecture: flat_34
+    fl_strategy: fedavg
+    data_scenario: normal_noniid
+    imbalance_strategy: focal_loss
+
+  - name: exp_flat_fedavg_normal_focalloss_weighted
+    architecture: flat_34
+    fl_strategy: fedavg
+    data_scenario: normal_noniid
+    imbalance_strategy: focal_loss_weighted
+
+  - name: exp_flat_fedavg_rareexpert_focalloss
+    architecture: flat_34
+    fl_strategy: fedavg
+    data_scenario: rare_expert
+    imbalance_strategy: focal_loss
+
+  # ── Amélioration v2 : points positifs v1 + Focal Loss ──────────────────
+
+  - name: exp_flat_fedavg_normal_focal
+    architecture: flat_34_v1style
+    fl_strategy: fedavg
+    fl_config: fedavg_v1style_focal
+    data_scenario: normal_noniid
+    imbalance_strategy: focal_loss
+    description: >
+      FedAvg v1style hyperparams + Focal Loss (gamma=2).
+      Baseline improvement candidate #1.
+
+  - name: exp_flat_fedavg_normal_focal_weighted
+    architecture: flat_34_v1style
+    fl_strategy: fedavg
+    fl_config: fedavg_v1style_focal
+    data_scenario: normal_noniid
+    imbalance_strategy: focal_loss_weighted
+    description: >
+      FedAvg v1style + Focal Loss + class_weights combinés.
+      Baseline improvement candidate #2.
+
+  - name: exp_flat_fedavg_rareexpert_focal
+    architecture: flat_34_v1style
+    fl_strategy: fedavg
+    fl_config: fedavg_v1style_focal
+    data_scenario: rare_expert
+    imbalance_strategy: focal_loss_weighted
+    description: >
+      FedAvg v1style + Focal Loss weighted + scénario rare_expert.
+      Meilleure config sur données spécialisées.
+
+  - name: exp_flat_fedprox_normal_focal
+    architecture: flat_34_v1style
+    fl_strategy: fedprox
+    fl_config: fedprox_v1style
+    data_scenario: normal_noniid
+    imbalance_strategy: focal_loss_weighted
+    description: >
+      FedProx v1style + Focal Loss weighted.
+      Test si terme proximal aide avec focal loss.
+
+  # ── Correction gamma — gamma=2 trop agressif sur 34 classes ────────────
+
+  - name: exp_flat_fedavg_normal_focal_gamma05
+    architecture: flat_34_v1style
+    fl_strategy: fedavg
+    fl_config: fedavg_v1style_focal
+    data_scenario: normal_noniid
+    imbalance_strategy: focal_loss_gamma05
+    description: "Focal Loss gamma=0.5 — plus doux, évite la déstabilisation"
+
+  - name: exp_flat_fedavg_normal_focal_gamma1
+    architecture: flat_34_v1style
+    fl_strategy: fedavg
+    fl_config: fedavg_v1style_focal
+    data_scenario: normal_noniid
+    imbalance_strategy: focal_loss_gamma1
+    description: "Focal Loss gamma=1.0 — compromis entre doux et focus"
+
+  # ── rare_expert sans Focal Loss — candidat le plus prometteur ───────────
+
+  - name: exp_flat_fedavg_rareexpert_classweights
+    architecture: flat_34_v1style
+    fl_strategy: fedavg
+    fl_config: fedavg_v1style_focal
+    data_scenario: rare_expert
+    imbalance_strategy: class_weights
+    description: "rare_expert + class_weights — meilleur setup sans Focal Loss"

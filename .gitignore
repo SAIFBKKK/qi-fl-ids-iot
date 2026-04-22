@@ -47,6 +47,7 @@ ENV/
 # --- Datasets & données réseau (JAMAIS versionnés) ---
 *.csv
 *.arff
+*.parquet
 *.pcap
 *.pcapng
 *.pcap.csv
@@ -55,11 +56,47 @@ ENV/
 *.gz
 *.7z
 
+# --- Project-local generated assets ---
+mlruns/
+**/mlruns/
+outputs/mlruns/
+experiments/**/outputs/mlruns/
+experiments/**/.ruff_cache/
+experiments/**/.pytest_cache/
+experiments/**/logs/
+experiments/**/data/raw/
+experiments/**/data/processed/
+experiments/**/processed/
+experiments/**/kaggle/*
+experiments/**/kaggle/**/*.zip
+experiments/**/kaggle/**/*.pkl
+!experiments/**/kaggle/README.md
+experiments/**/logs/
+experiments/**/checkpoints/
+data/balancing_v3_fixed300k_outputs/
+data/Federated-Learning-Based-Intrusion-Detection-System-main/data/
+data/UNSW_NB15-dataset.zip
+
 # --- Logs & outputs ---
 outputs/logs/*.log
 outputs/checkpoints/
 outputs/metrics/
-outputs/reports/
+outputs/reports/**
+!outputs/reports/
+!outputs/reports/*.html
+!outputs/reports/*.md
+!outputs/reports/*.csv
+!outputs/reports/*.json
+!outputs/reports/.gitkeep
+experiments/**/outputs/checkpoints/
+experiments/**/outputs/metrics/
+experiments/**/outputs/reports/**
+!experiments/**/outputs/reports/
+!experiments/**/outputs/reports/*.html
+!experiments/**/outputs/reports/*.md
+!experiments/**/outputs/reports/*.csv
+!experiments/**/outputs/reports/*.json
+!experiments/**/outputs/reports/.gitkeep
 
 # --- Tests / coverage ---
 .tox/

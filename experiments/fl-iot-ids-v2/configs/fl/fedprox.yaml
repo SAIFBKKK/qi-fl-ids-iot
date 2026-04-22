@@ -1,6 +1,6 @@
 strategy:
   name: fedprox
-  num_rounds: 10
+  num_rounds: 3
   fraction_train: 1.0
   fraction_evaluate: 1.0
   min_train_nodes: 3
@@ -10,11 +10,12 @@ strategy:
 
 train:
   local_epochs: 1
-  batch_size: 256
-  learning_rate: 0.001
+  batch_size: 512
+  learning_rate: 0.0005
   optimizer: adam
+  weight_decay: 0.0001
   proximal_mu: 0.01
 
 evaluation:
-  centralized_eval: true
+  centralized_eval: false
   federated_eval: true

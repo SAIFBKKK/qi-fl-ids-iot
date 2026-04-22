@@ -1,0 +1,21 @@
+server:
+  host: "0.0.0.0"
+  port: 8080
+  num_rounds: 10
+  min_clients: 3
+
+client:
+  server_address: "fl-server:8080"
+  local_epochs: 1
+  batch_size: 256
+  learning_rate: 0.0005
+
+runtime:
+  seed: 42
+  device: "cpu"
+
+mlflow:
+  enabled: true
+  tracking_uri: "./outputs/mlruns"
+  experiment_name: "fl-iot-ids-v3"
+  run_name: "fedavg-v3-baseline"

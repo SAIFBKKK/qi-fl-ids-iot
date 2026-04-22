@@ -1,0 +1,22 @@
+{
+  "generated_at": "2026-04-16T13:19:54.973026Z",
+  "experiment_name": "exp_flat_fedprox_normal_classweights_smoke",
+  "architecture": "flat_34",
+  "fl_strategy": "fedprox",
+  "data_scenario": "normal_noniid",
+  "imbalance_strategy": "class_weights",
+  "num_rounds": 3,
+  "completed_rounds": 3,
+  "num_clients": 3,
+  "feature_count": 28,
+  "num_classes": 34,
+  "duration_sec": 472.24,
+  "final_distributed_loss": 10.174042944928754,
+  "status": "success",
+  "final_accuracy": 0.4062965358203494,
+  "final_macro_f1": 0.2968101583304819,
+  "final_recall_macro": 0.39359952496271455,
+  "final_benign_recall": 0.15572676209179362,
+  "final_false_positive_rate": 0.8442732379082063,
+  "final_rare_class_recall": 0.15546262440800188
+}

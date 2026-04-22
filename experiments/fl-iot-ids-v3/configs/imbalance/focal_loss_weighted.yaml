@@ -1,0 +1,5 @@
+imbalance:
+  name: focal_loss_weighted
+  focal_gamma: 2.0
+  description: >
+    Focal Loss avec class weights combines pour les classes rares.

@@ -4,12 +4,14 @@ from pathlib import Path
 
 import numpy as np
 import torch
+import torch.nn.functional as F
 from flwr.client import NumPyClient
 from torch import nn
 from torch.utils.data import DataLoader, random_split
 
 from src.common.logger import get_logger
-from src.data.datasets.flat_dataset import IoTLocalDataset, load_npz_arrays
+from src.common.paths import ARTIFACTS_DIR
+from src.data.datasets.flat_dataset import IoTLocalDataset
 from src.fl.metrics.classification import compute_classification_metrics
 from src.fl.metrics.convergence import elapsed_seconds, now_perf, parameters_size_bytes
 from src.fl.metrics.rare_attack import compute_benign_metrics, compute_rare_class_recall
@@ -38,6 +40,44 @@ def set_model_parameters(model: nn.Module, parameters: list[np.ndarray]) -> None
     model.load_state_dict(updated_state, strict=True)
 
 
+def compute_local_class_weights(
+    labels: np.ndarray,
+    num_classes: int,
+) -> torch.Tensor:
+    """
+    Compute inverse-frequency class weights from local client labels.
+    """
+    counts = np.bincount(labels, minlength=num_classes).astype(np.float32)
+
+    nonzero = counts > 0
+    weights = np.zeros_like(counts, dtype=np.float32)
+    weights[nonzero] = counts.sum() / (num_classes * counts[nonzero])
+
+    return torch.tensor(weights, dtype=torch.float32)
+
+
+class FocalLoss(nn.Module):
+    def __init__(self, gamma: float = 2.0, alpha: torch.Tensor | None = None) -> None:
+        super().__init__()
+        self.gamma = gamma
+        self.alpha = alpha
+
+    def forward(self, logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
+        ce = F.cross_entropy(logits, targets, weight=self.alpha, reduction="none")
+        pt = torch.exp(-ce)
+        return ((1.0 - pt) ** self.gamma * ce).mean()
+
+
+def compute_proximal_term(
+    model: nn.Module,
+    global_params: list[torch.Tensor],
+) -> torch.Tensor:
+    proximal_term = torch.tensor(0.0, device=next(model.parameters()).device)
+    for local_param, global_param in zip(model.parameters(), global_params):
+        proximal_term = proximal_term + torch.sum((local_param - global_param) ** 2)
+    return proximal_term
+
+
 class BaseIDSClient(NumPyClient):
     def __init__(
         self,
@@ -52,6 +92,11 @@ class BaseIDSClient(NumPyClient):
         benign_class_id: int = DEFAULT_BENIGN_CLASS_ID,
         rare_class_ids: list[int] | None = None,
         split_seed: int = 42,
+        imbalance_strategy: str = "none",
+        focal_gamma: float = 2.0,
+        weight_decay: float = 0.0,
+        proximal_mu: float = 0.0,
+        fl_strategy: str = "fedavg",
     ) -> None:
         self.client_id = client_id
         self.device = torch.device("cpu")
@@ -60,6 +105,12 @@ class BaseIDSClient(NumPyClient):
         self.learning_rate = learning_rate
         self.benign_class_id = benign_class_id
         self.rare_class_ids = rare_class_ids or DEFAULT_RARE_CLASS_IDS
+        self.imbalance_strategy = imbalance_strategy
+        self.focal_gamma = focal_gamma
+        self.weight_decay = weight_decay
+        self.proximal_mu = proximal_mu
+        self.fl_strategy = fl_strategy.lower()
+        self.num_classes = output_dim
 
         train_dataset = IoTLocalDataset(train_path)
 
@@ -92,17 +143,64 @@ class BaseIDSClient(NumPyClient):
         self.model = FlatMLP(input_dim=input_dim, output_dim=output_dim)
         self.model.to(self.device)
 
-        self.criterion = nn.CrossEntropyLoss()
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=learning_rate)
+        if self.imbalance_strategy == "focal_loss":
+            self.criterion = FocalLoss(gamma=self.focal_gamma)
+            logger.info("Client %s using FocalLoss(gamma=%.1f)", self.client_id, self.focal_gamma)
+        elif self.imbalance_strategy == "focal_loss_weighted":
+            self.criterion = FocalLoss(gamma=self.focal_gamma, alpha=self._get_class_weights())
+            logger.info("Client %s using FocalLoss(gamma=%.1f, alpha=weighted)", self.client_id, self.focal_gamma)
+        elif self.imbalance_strategy == "class_weights":
+            self.criterion = nn.CrossEntropyLoss(weight=self._get_class_weights())
+            logger.info("Client %s using weighted CrossEntropyLoss", self.client_id)
+        else:
+            self.criterion = nn.CrossEntropyLoss()
+
+        self.optimizer = torch.optim.Adam(
+            self.model.parameters(),
+            lr=learning_rate,
+            weight_decay=weight_decay,
+        )
 
         logger.info(
-            "Client %s loaded train=%s val=%s input_dim=%s output_dim=%s",
+            "Client %s loaded train=%s val=%s input_dim=%s output_dim=%s strategy=%s mu=%s",
             self.client_id,
             len(self.train_loader.dataset),
             len(self.val_loader.dataset),
             input_dim,
             output_dim,
+            self.fl_strategy,
+            self.proximal_mu,
         )
+
+    def _get_class_weights(self) -> torch.Tensor:
+        """
+        Priorité 1 : fichier global partagé (calculé sur le dataset complet).
+        Priorité 2 : calcul local depuis les données du client (fallback).
+        Le fichier global garantit des poids cohérents entre tous les clients.
+        """
+        global_weights_path = ARTIFACTS_DIR / "class_weights_34.pkl"
+        if global_weights_path.exists():
+            import pickle
+            with open(global_weights_path, "rb") as f:
+                weights = pickle.load(f)
+            logger.info("Client %s: poids globaux chargés depuis %s", self.client_id, global_weights_path)
+            if isinstance(weights, torch.Tensor):
+                return weights.float().to(self.device)
+            return torch.tensor(weights, dtype=torch.float32).to(self.device)
+
+        # Fallback : calcul local depuis les données du client
+        logger.warning(
+            "Client %s: %s introuvable — calcul local des poids (moins cohérent entre clients)",
+            self.client_id,
+            global_weights_path,
+        )
+        ds = self.train_loader.dataset
+        y_train = (
+            ds.dataset.y[ds.indices].cpu().numpy()
+            if hasattr(ds, "dataset") and hasattr(ds, "indices")
+            else ds.y.cpu().numpy()
+        )
+        return compute_local_class_weights(y_train, num_classes=self.num_classes).to(self.device)
 
     def get_parameters(self, config):
         return get_model_parameters(self.model)
@@ -111,17 +209,39 @@ class BaseIDSClient(NumPyClient):
         set_model_parameters(self.model, parameters)
         self.model.train()
 
+        global_params = [
+            param.detach().clone().to(self.device)
+            for param in self.model.parameters()
+        ]
+
+        use_fedprox = self.fl_strategy == "fedprox" and self.proximal_mu > 0.0
+
         start = now_perf()
         last_loss = 0.0
+        last_ce_loss = 0.0
+        last_prox_term = 0.0
 
         for _ in range(self.local_epochs):
             for xb, yb in self.train_loader:
                 xb, yb = xb.to(self.device), yb.to(self.device)
+
                 self.optimizer.zero_grad()
                 logits = self.model(xb)
-                loss = self.criterion(logits, yb)
+
+                ce_loss = self.criterion(logits, yb)
+
+                if use_fedprox:
+                    prox_term = compute_proximal_term(self.model, global_params)
+                    loss = ce_loss + (self.proximal_mu / 2.0) * prox_term
+                    last_prox_term = float(prox_term.item())
+                else:
+                    loss = ce_loss
+                    last_prox_term = 0.0
+
                 loss.backward()
                 self.optimizer.step()
+
+                last_ce_loss = float(ce_loss.item())
                 last_loss = float(loss.item())
 
         updated_parameters = get_model_parameters(self.model)
@@ -131,6 +251,9 @@ class BaseIDSClient(NumPyClient):
         metrics = {
             "client_id": self.client_id,
             "train_loss_last": float(last_loss),
+            "train_ce_loss_last": float(last_ce_loss),
+            "train_prox_term_last": float(last_prox_term),
+            "proximal_mu": float(self.proximal_mu),
             "train_time_sec": float(train_time_sec),
             "update_size_bytes": int(update_size_bytes),
             "num_examples": int(len(self.train_loader.dataset)),

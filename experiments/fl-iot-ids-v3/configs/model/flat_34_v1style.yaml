@@ -1,0 +1,7 @@
+model:
+  name: flat_34_v1style
+  input_dim: 28
+  hidden_dims: [128, 64]
+  output_dim: 34
+  dropout: 0.2
+  seed: 42

@@ -164,6 +164,20 @@ These are the **improvement targets** for `fl-iot-ids-v1` (FL) and `fl-iot-ids-v
 
 All artifacts are saved to `results_baseline/` and `artifacts/`. These files are **required** by `fl-iot-ids-v1`.
 
+## Extracted Utilities
+
+During repository cleanup, the useful dataset-building utilities from
+`baseline-CIC_IOT_2023_v2/src` were preserved inside the kept baseline:
+
+| Script | Purpose |
+|---|---|
+| `src/training/build_level2_family_dataset.py` | Build the Level-2 family dataset from `post_balancing_preprocessing_FINAL_base_balanced_only/exports/*.csv` |
+| `src/training/build_level3_subtype_datasets.py` | Build per-family Level-3 subtype datasets from the same preprocessing exports |
+
+These scripts were kept because they add reusable hierarchy-building logic.
+The old v2 flat trainer was not reintroduced because the current `balanced_v3`
+training scripts remain the stronger baseline path.
+
 ### Preprocessed data (not versioned — generate locally)
 
 | File | Location | Description |

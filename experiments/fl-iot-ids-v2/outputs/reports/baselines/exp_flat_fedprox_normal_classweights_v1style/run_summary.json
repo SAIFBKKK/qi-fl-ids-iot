@@ -1,0 +1,22 @@
+{
+  "generated_at": "2026-04-17T23:17:37.923987Z",
+  "experiment_name": "exp_flat_fedprox_normal_classweights_v1style",
+  "architecture": "flat_34",
+  "fl_strategy": "fedprox",
+  "data_scenario": "normal_noniid",
+  "imbalance_strategy": "class_weights",
+  "num_rounds": 3,
+  "completed_rounds": 3,
+  "num_clients": 3,
+  "feature_count": 28,
+  "num_classes": 34,
+  "duration_sec": 859.69,
+  "final_distributed_loss": 10.308135597558545,
+  "status": "success",
+  "final_accuracy": 0.4168460733340708,
+  "final_macro_f1": 0.30260312097991626,
+  "final_recall_macro": 0.3932570724357531,
+  "final_benign_recall": 0.007864815554063553,
+  "final_false_positive_rate": 0.9921351844459365,
+  "final_rare_class_recall": 0.1555980845523195
+}

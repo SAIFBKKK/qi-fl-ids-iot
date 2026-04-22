@@ -1,0 +1,7 @@
+imbalance:
+  name: focal_loss_weighted
+  focal_gamma: 2.0
+  description: >
+    Focal Loss + class_weights combinés.
+    Double pression sur les classes rares et benign.
+    À tester si focal_loss seul ne suffit pas.

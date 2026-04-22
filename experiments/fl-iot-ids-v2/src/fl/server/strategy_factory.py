@@ -24,11 +24,13 @@ def build_strategy(
     min_train_nodes = int(config["strategy"]["min_train_nodes"])
     min_evaluate_nodes = int(config["strategy"]["min_evaluate_nodes"])
     min_available_nodes = int(config["strategy"]["min_available_nodes"])
+    monitor_metric = str(config.get("evaluation", {}).get("best_round_monitor", "macro_f1"))
 
     if strategy_name == "fedavg":
         logger.info("Building FedAvg strategy")
         return ReportingFedAvg(
             tracker=tracker,
+            monitor_metric=monitor_metric,
             fraction_fit=fraction_train,
             fraction_evaluate=fraction_evaluate,
             min_fit_clients=min_train_nodes,
@@ -42,6 +44,7 @@ def build_strategy(
         logger.info("FedProx placeholder active: temporary fallback to FedAvg until custom strategy is added")
         return ReportingFedAvg(
             tracker=tracker,
+            monitor_metric=monitor_metric,
             fraction_fit=fraction_train,
             fraction_evaluate=fraction_evaluate,
             min_fit_clients=min_train_nodes,
@@ -55,6 +58,7 @@ def build_strategy(
         logger.info("SCAFFOLD placeholder active: temporary fallback to FedAvg until control variates are implemented")
         return ReportingFedAvg(
             tracker=tracker,
+            monitor_metric=monitor_metric,
             fraction_fit=fraction_train,
             fraction_evaluate=fraction_evaluate,
             min_fit_clients=min_train_nodes,

@@ -33,6 +33,12 @@ def make_client_fn(config: dict):
         )
 
         cls = ExpertClient if is_expert else StandardClient
+        imbalance_strategy = str(config["imbalance"]["name"])
+        imbalance_cfg = config.get("imbalance", {})
+        focal_gamma = float(imbalance_cfg.get("focal_gamma", imbalance_cfg.get("gamma", 2.0)))
+        weight_decay = float(config["train"].get("weight_decay", 0.0))
+        proximal_mu = float(config["train"].get("proximal_mu", 0.0))
+        fl_strategy = str(config["strategy"]["name"])
 
         return cls(
             client_id=node_name,
@@ -43,6 +49,11 @@ def make_client_fn(config: dict):
             batch_size=batch_size,
             local_epochs=local_epochs,
             learning_rate=learning_rate,
+            weight_decay=weight_decay,
+            imbalance_strategy=imbalance_strategy,
+            focal_gamma=focal_gamma,
+            proximal_mu=proximal_mu,
+            fl_strategy=fl_strategy,
         ).to_client()
 
     return client_fn

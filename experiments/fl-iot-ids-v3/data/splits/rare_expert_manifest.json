@@ -1,0 +1,173 @@
+{
+  "scenario": "rare_expert",
+  "dataset_source": "E:\\dataset\\CICIoT2023\\balancing_v3_fixed300k_outputs\\balancing_v3_fixed300k_balanced.parquet",
+  "label_column": "label_id",
+  "num_nodes": 3,
+  "alpha": 0.5,
+  "type": "rare_expert",
+  "benign_handling": "evenly_split",
+  "expert_class_ids": [
+    0,
+    2,
+    3,
+    11,
+    16,
+    17,
+    18,
+    22,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33
+  ],
+  "normal_class_ids": [
+    1,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    12,
+    13,
+    14,
+    15,
+    19,
+    20,
+    21,
+    23,
+    24,
+    25
+  ],
+  "node3_max_samples": 2000000,
+  "expert_classes_present_per_node": {
+    "node1": [],
+    "node2": [],
+    "node3": [
+      0,
+      2,
+      3,
+      11,
+      16,
+      17,
+      18,
+      22,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33
+    ]
+  },
+  "nodes": {
+    "node1": {
+      "raw_csv": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\fl-iot-ids-v3\\data\\raw\\rare_expert\\node1\\train.csv",
+      "rows": 2981847,
+      "class_distribution": {
+        "1": 100000,
+        "4": 299799,
+        "5": 11216,
+        "6": 63582,
+        "7": 58987,
+        "8": 295133,
+        "9": 281409,
+        "10": 83436,
+        "12": 238339,
+        "13": 172849,
+        "14": 77432,
+        "15": 178995,
+        "19": 16672,
+        "20": 221988,
+        "21": 299799,
+        "23": 158089,
+        "24": 188290,
+        "25": 235832
+      },
+      "imbalance_ratio": 26.73,
+      "rare_classes": [],
+      "top5_classes": {
+        "4": 299799,
+        "21": 299799,
+        "8": 295133,
+        "9": 281409,
+        "12": 238339
+      }
+    },
+    "node2": {
+      "raw_csv": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\fl-iot-ids-v3\\data\\raw\\rare_expert\\node2\\train.csv",
+      "rows": 2318153,
+      "class_distribution": {
+        "1": 100000,
+        "4": 201,
+        "5": 288784,
+        "6": 236418,
+        "7": 241013,
+        "8": 4867,
+        "9": 18591,
+        "10": 216564,
+        "12": 61661,
+        "13": 127151,
+        "14": 222568,
+        "15": 121005,
+        "19": 283328,
+        "20": 78012,
+        "21": 201,
+        "23": 141911,
+        "24": 111710,
+        "25": 64168
+      },
+      "imbalance_ratio": 1436.74,
+      "rare_classes": [
+        4,
+        21
+      ],
+      "top5_classes": {
+        "5": 288784,
+        "19": 283328,
+        "7": 241013,
+        "6": 236418,
+        "14": 222568
+      }
+    },
+    "node3": {
+      "raw_csv": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\fl-iot-ids-v3\\data\\raw\\rare_expert\\node3\\train.csv",
+      "rows": 2100000,
+      "class_distribution": {
+        "0": 74659,
+        "1": 100000,
+        "2": 146566,
+        "3": 135566,
+        "11": 149559,
+        "16": 149778,
+        "17": 150123,
+        "18": 150020,
+        "22": 150136,
+        "26": 149927,
+        "27": 149679,
+        "28": 56434,
+        "29": 150021,
+        "30": 131574,
+        "31": 31369,
+        "32": 149824,
+        "33": 74765
+      },
+      "imbalance_ratio": 4.79,
+      "rare_classes": [],
+      "top5_classes": {
+        "22": 150136,
+        "17": 150123,
+        "29": 150021,
+        "18": 150020,
+        "26": 149927
+      }
+    }
+  }
+}

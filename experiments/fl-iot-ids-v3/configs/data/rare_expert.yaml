@@ -1,0 +1,9 @@
+scenario:
+  name: rare_expert
+  description: Expert client enriched with rare classes
+  num_clients: 3
+  dirichlet_alpha: 0.5
+  rare_classes_absent: false
+  expert_client_enabled: true
+  expert_client_id: node3
+  expert_boost_mode: oversample_real_only

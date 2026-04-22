@@ -1,0 +1,2 @@
+Experiment,Strategy,Scenario,Imbalance,Rounds,Macro-F1,Benign Recall,FPR,Rare Recall,Accuracy,Recall Macro
+exp_v3_fedavg_normal_classweights,fedavg,normal_noniid,class_weights,10,0.6521,0.7854,0.2146,0.4055,0.7651,0.6728

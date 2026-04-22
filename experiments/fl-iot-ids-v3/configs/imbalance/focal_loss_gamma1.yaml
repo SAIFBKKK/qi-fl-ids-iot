@@ -1,0 +1,4 @@
+imbalance:
+  name: focal_loss
+  focal_gamma: 1.0
+  description: "Focal Loss gamma=1.0 pour un compromis intermediaire."

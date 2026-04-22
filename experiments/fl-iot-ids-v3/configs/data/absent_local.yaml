@@ -1,0 +1,8 @@
+scenario:
+  name: absent_local
+  description: Selected rare classes absent from some local clients
+  num_clients: 3
+  dirichlet_alpha: 0.3
+  rare_classes_absent: true
+  absent_clients: [node1, node2]
+  expert_client_enabled: false

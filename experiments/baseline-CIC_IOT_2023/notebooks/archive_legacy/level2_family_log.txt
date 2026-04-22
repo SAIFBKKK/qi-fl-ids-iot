@@ -1,0 +1,70 @@
+
+================================================================================
+CONFIGURATION
+================================================================================
+Input dir: E:\dataset\processed_merged_full\hierarchical_prepared\family
+Output dir: E:\dataset\processed_merged_full\hierarchical_models\level2_family
+Device: cuda
+Architecture: 32 -> 64 -> 8
+Max epochs: 60
+Learning rate: 0.0005
+
+================================================================================
+LOAD ARTIFACTS
+================================================================================
+Train: (13871416, 32) (13871416,)
+Val  : (2972446, 32) (2972446,)
+Test : (2972447, 32) (2972447,)
+Label mapping: {'ddos': 1, 'dos': 2, 'mirai': 3, 'recon': 4, 'web': 5, 'spoofing': 6, 'bruteforce': 7, 'malware': 8}
+Summary: {'n_train': 13871416, 'n_val': 2972446, 'n_test': 2972447, 'n_features': 32, 'n_classes': 8, 'target_col': 'attack_family_id'}
+
+================================================================================
+CLASS WEIGHTS
+================================================================================
+
+--- Family class weights ---
+   class_id  raw_weight  clipped_weight
+0         1    0.204086        1.000000
+1         2    0.613826        1.000000
+2         3    1.052046        1.052046
+3         4    3.679163        3.679163
+4         5   19.054143        8.000000
+5         6    5.682752        5.682752
+6         7   82.567952        8.000000
+7         8  123.851929        8.000000
+
+================================================================================
+BUILD TENSORS AND LOADERS
+================================================================================
+Train batches: 6774
+Val batches  : 1452
+Test batches : 1452
+
+================================================================================
+BUILD MODEL
+================================================================================
+
+================================================================================
+TRAINING
+================================================================================
+C:\actions-runner\_work\pytorch\pytorch\pytorch\aten\src\ATen\native\cuda\Loss.cu:250: block: [0,0,0], thread: [17,0,0] Assertion `t >= 0 && t < n_classes` failed.
+Traceback (most recent call last):
+  File "C:\Users\saifb\dev\qi-fl-ids-iot\experiments\baseline-CIC_IOT_2023\notebooks\train_level2_family_mlp.py", line 438, in <module>
+    main()
+  File "C:\Users\saifb\dev\qi-fl-ids-iot\experiments\baseline-CIC_IOT_2023\notebooks\train_level2_family_mlp.py", line 303, in main
+    train_loss = train_one_epoch(model, train_loader, optimizer, criterion, DEVICE)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\saifb\dev\qi-fl-ids-iot\experiments\baseline-CIC_IOT_2023\notebooks\train_level2_family_mlp.py", line 164, in train_one_epoch
+    loss.backward()
+  File "C:\Users\saifb\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\_tensor.py", line 626, in backward
+    torch.autograd.backward(
+  File "C:\Users\saifb\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\autograd\__init__.py", line 347, in backward
+    _engine_run_backward(
+  File "C:\Users\saifb\AppData\Local\Programs\Python\Python311\Lib\site-packages\torch\autograd\graph.py", line 823, in _engine_run_backward
+    return Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: CUDA error: device-side assert triggered
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+

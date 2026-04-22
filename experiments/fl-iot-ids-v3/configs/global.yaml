@@ -1,0 +1,26 @@
+project_name: fl-iot-ids-v3
+seed: 42
+
+project:
+  name: fl-iot-ids-v3
+  seed: 42
+
+paths:
+  artifacts_dir: artifacts
+  data_dir: data
+  outputs_dir: outputs
+
+dataset:
+  feature_count: 28
+  num_classes: 34
+  benign_class_id: 1
+  rare_class_ids: [0, 3, 30, 31, 33]
+
+mlflow:
+  enabled: true
+  tracking_uri: ./outputs/mlruns
+
+baseline:
+  feature_names: artifacts/feature_names.pkl
+  scaler: artifacts/scaler_standard_global.pkl
+  label_mapping: artifacts/label_mapping_34.pkl

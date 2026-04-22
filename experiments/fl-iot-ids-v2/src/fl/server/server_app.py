@@ -120,6 +120,9 @@ def build_server_components(
         tracker=tracker,
     )
 
+    if tracker is not None:
+        tracker.strategy = strategy
+
     logger.info(
         "ServerApp initialized with strategy=%s, rounds=%s",
         strategy_name,

@@ -1,6 +1,7 @@
 imbalance:
   name: focal_loss
-  enabled: true
-  loss: focal_loss
-  gamma: 2.0
-  alpha: balanced
+  focal_gamma: 2.0
+  description: >
+    Focal Loss sans pondération (Lin et al. 2017).
+    Concentre l'apprentissage sur les exemples difficiles.
+    Remplace class_weights — teste d'abord seul.

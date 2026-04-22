@@ -1,0 +1,4 @@
+imbalance:
+  name: class_weights
+  enabled: true
+  loss: weighted_cross_entropy

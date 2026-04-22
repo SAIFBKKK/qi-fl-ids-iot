@@ -1,0 +1,8 @@
+scenario:
+  name: normal_noniid
+  description: Standard Dirichlet non-IID partitioning
+  num_clients: 3
+  dirichlet_alpha: 0.5
+  preserve_global_distribution: true
+  rare_classes_absent: false
+  expert_client_enabled: false

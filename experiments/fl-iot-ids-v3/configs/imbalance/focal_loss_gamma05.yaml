@@ -1,0 +1,4 @@
+imbalance:
+  name: focal_loss
+  focal_gamma: 0.5
+  description: "Focal Loss gamma=0.5 pour un focus plus doux."

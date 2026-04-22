@@ -32,15 +32,17 @@ def parse_args() -> argparse.Namespace:
 
 def load_experiment_config(experiment_name: str) -> tuple[dict, dict]:
     experiment = find_experiment(experiment_name)
+
+    fl_cfg_name = experiment.get("fl_config", experiment["fl_strategy"])
+
     config = load_experiment_bundle(
         global_cfg_path=CONFIGS_DIR / "global.yaml",
-        fl_cfg_path=CONFIGS_DIR / "fl" / f"{experiment['fl_strategy']}.yaml",
+        fl_cfg_path=CONFIGS_DIR / "fl" / f"{fl_cfg_name}.yaml",
         model_cfg_path=CONFIGS_DIR / "model" / f"{experiment['architecture']}.yaml",
         data_cfg_path=CONFIGS_DIR / "data" / f"{experiment['data_scenario']}.yaml",
-        imbalance_cfg_path=(
-            CONFIGS_DIR / "imbalance" / f"{experiment['imbalance_strategy']}.yaml"
-        ),
+        imbalance_cfg_path=CONFIGS_DIR / "imbalance" / f"{experiment['imbalance_strategy']}.yaml",
     )
+
     return experiment, config
 
 
