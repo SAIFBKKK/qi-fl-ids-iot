@@ -36,6 +36,8 @@ jobs:
         run: ruff check src/
 
       - name: Run smoke tests
+        env:
+          PYTHONPATH: ${{ github.workspace }}/experiments/fl-iot-ids-v2:${{ github.workspace }}/experiments/fl-iot-ids-v2/src
         run: pytest tests/ -v --tb=short -m "not slow"
 
   lint-and-test-v3:
