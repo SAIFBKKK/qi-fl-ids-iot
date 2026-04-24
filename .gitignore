@@ -90,6 +90,7 @@ outputs/reports/**
 !outputs/reports/.gitkeep
 experiments/**/outputs/checkpoints/
 experiments/**/outputs/metrics/
+experiments/**/outputs/logs/
 experiments/**/outputs/reports/**
 !experiments/**/outputs/reports/
 !experiments/**/outputs/reports/*.html

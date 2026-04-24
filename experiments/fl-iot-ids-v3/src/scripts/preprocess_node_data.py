@@ -14,6 +14,7 @@ from src.common.paths import ARTIFACTS_DIR, DATA_DIR, INPUT_DIM
 logger = get_logger("preprocess_node_data")
 
 LABEL_COL = "label_id"
+ROW_ID_COL = "__row_id"
 
 # Scaler search order — first match wins.  Per-node fitting is intentionally
 # removed: local scalers break feature-scale consistency across FL clients.
@@ -99,7 +100,7 @@ def main() -> None:
 
     y = df[LABEL_COL].to_numpy(dtype=np.int64)
 
-    feature_cols = [c for c in df.columns if c != LABEL_COL]
+    feature_cols = [c for c in df.columns if c not in {LABEL_COL, ROW_ID_COL}]
     if len(feature_cols) != INPUT_DIM:
         logger.warning(
             "Expected %d feature columns but found %d. Proceeding with %d.",

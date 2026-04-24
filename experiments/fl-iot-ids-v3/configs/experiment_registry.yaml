@@ -39,3 +39,11 @@ experiments:
     imbalance_strategy: focal_loss_weighted
     expert_factor: 2.0
     description: "rare_expert avec ponderation de l'expert et focal weighted."
+
+  - name: exp_v3_scaffold_normal_classweights
+    architecture: flat_34
+    fl_strategy: scaffold
+    fl_config: scaffold
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    description: "SCAFFOLD standard sur partition normal_noniid avec class weights."

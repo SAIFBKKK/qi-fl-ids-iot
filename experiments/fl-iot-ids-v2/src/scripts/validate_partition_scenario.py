@@ -2,14 +2,12 @@ from __future__ import annotations
 
 import argparse
 import json
-from pathlib import Path
 
 import numpy as np
 
 from src.common.paths import DATA_DIR, OUTPUTS_DIR
 from src.data.analysis.client_distribution_report import build_client_distribution_report
 from src.data.analysis.heatmaps import save_presence_heatmap
-from src.data.datasets.flat_dataset import load_npz_xy
 
 
 def parse_args():

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from pathlib import Path
-
-from flwr.common.constant import PARTITION_ID_KEY
+try:
+    from flwr.common.constant import PARTITION_ID_KEY
+except ImportError:  # Flower <= 1.18 does not export the constant.
+    PARTITION_ID_KEY = "partition-id"
 
 from src.common.paths import DATA_DIR
 from src.fl.client.expert_client import ExpertClient

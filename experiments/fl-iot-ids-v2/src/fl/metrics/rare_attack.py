@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import Dict, Iterable
 
 import numpy as np
-from sklearn.metrics import confusion_matrix, recall_score
 
 
 DEFAULT_BENIGN_CLASS_ID = 1

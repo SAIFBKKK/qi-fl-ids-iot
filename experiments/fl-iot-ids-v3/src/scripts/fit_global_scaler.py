@@ -5,11 +5,11 @@ import pickle
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
 
 from src.common.logger import get_logger
 from src.common.paths import (
     ARTIFACTS_DIR,
-    DATA_DIR,
     DATASET_CSV,
     DATASET_PARQUET,
 )
@@ -20,6 +20,8 @@ logger = get_logger("fit_global_scaler")
 LABEL_COL = "label_id"
 SCALER_PATH = ARTIFACTS_DIR / "scaler_standard_global.pkl"
 FEATURE_NAMES_PATH = ARTIFACTS_DIR / "feature_names.pkl"
+ROW_ID_COL = "__row_id"
+TRAIN_RATIO = 0.70
 
 
 def load_dataset() -> pd.DataFrame:
@@ -43,12 +45,28 @@ def main() -> None:
             f"Column '{LABEL_COL}' not found. Available: {list(df.columns)}"
         )
 
-    feature_cols = [c for c in df.columns if c != LABEL_COL]
+    if ROW_ID_COL not in df.columns:
+        df = df.copy()
+        df.insert(0, ROW_ID_COL, np.arange(len(df), dtype=np.int64))
+
+    train_df, _ = train_test_split(
+        df,
+        test_size=1.0 - TRAIN_RATIO,
+        stratify=df[LABEL_COL],
+        random_state=42,
+    )
+    logger.info(
+        "Fitting scaler on train-only raw split: %d/%d rows",
+        len(train_df),
+        len(df),
+    )
+
+    feature_cols = [c for c in train_df.columns if c not in {LABEL_COL, ROW_ID_COL}]
     logger.info("Feature columns: %d", len(feature_cols))
 
-    X = df[feature_cols].to_numpy(dtype=np.float64)
+    X = train_df[feature_cols].to_numpy(dtype=np.float64)
 
-    logger.info("Fitting StandardScaler on %d samples...", X.shape[0])
+    logger.info("Fitting StandardScaler on %d train samples...", X.shape[0])
     scaler = StandardScaler()
     scaler.fit(X)
 

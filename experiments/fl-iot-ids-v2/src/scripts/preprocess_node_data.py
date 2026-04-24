@@ -78,7 +78,7 @@ def main() -> None:
     logger.info("Output NPZ: %s", output_npz)
     logger.info("Artifacts dir: %s", artifacts_dir)
 
-    preprocessor = LocalNodePreprocessor(artifacts_dir=artifacts_dir)
+    preprocessor = LocalNodePreprocessor(artifacts_dir=artifacts_dir, scenario=scenario)
     preprocessor.load_artifacts()
 
     X, y, feature_names = preprocessor.process_csv(input_csv)

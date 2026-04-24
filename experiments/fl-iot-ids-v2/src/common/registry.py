@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 from src.common.config import load_yaml
 from src.common.paths import CONFIGS_DIR
 

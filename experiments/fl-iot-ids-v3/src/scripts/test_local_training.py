@@ -8,11 +8,13 @@ from src.model.evaluate import evaluate_model
 from src.model.losses import build_loss, load_class_weights
 from src.model.network import MLPClassifier
 from src.model.train import train_one_epoch
+from src.model.validation import validate_model_output_dim
 
 
 def main():
+    scenario = "normal_noniid"
     node_id = "node1"
-    node_dir = DATA_DIR / "processed" / node_id
+    node_dir = DATA_DIR / "processed" / scenario / node_id
 
     batch_size = 256
     epochs = 3
@@ -28,8 +30,7 @@ def main():
     X_sample, _ = sample_batch
 
     input_dim = X_sample.shape[1]
-    base_dataset = train_loader.dataset.dataset
-    num_classes = int(base_dataset.y.max().item()) + 1
+    num_classes = 34
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -39,8 +40,9 @@ def main():
         hidden_dims=(128, 64),
         dropout=0.2,
     ).to(device)
+    validate_model_output_dim(model, num_classes)
 
-    class_weights_path = ARTIFACTS_DIR / "class_weights_34.pkl"
+    class_weights_path = ARTIFACTS_DIR / f"class_weights_{scenario}.pkl"
     class_weights = load_class_weights(class_weights_path, device=device)
     criterion = build_loss(class_weights=class_weights)
 
@@ -51,6 +53,7 @@ def main():
     )
 
     print("\n=== Local training summary ===")
+    print(f"Scenario      : {scenario}")
     print(f"Node ID       : {node_id}")
     print(f"Input dim     : {input_dim}")
     print(f"Num classes   : {num_classes}")
@@ -71,6 +74,7 @@ def main():
             loader=eval_loader,
             criterion=criterion,
             device=device,
+            num_classes=num_classes,
         )
         print(
             f"Epoch {epoch:02d} | "

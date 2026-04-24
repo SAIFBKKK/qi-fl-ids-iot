@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import json
 import pickle
 
@@ -11,20 +12,36 @@ from src.common.paths import ARTIFACTS_DIR, DATA_DIR, NUM_CLASSES
 
 logger = get_logger("generate_weights")
 
-MANIFEST_PATH = DATA_DIR / "splits" / "partition_manifest.json"
-OUTPUT_PATH = ARTIFACTS_DIR / "class_weights_34.pkl"
+
+def manifest_path_for_scenario(scenario: str):
+    return DATA_DIR / "splits" / f"{scenario}_manifest.json"
 
 
-def load_global_counts() -> dict[int, int]:
-    """Sum per-class counts across all nodes from the partition manifest."""
-    if not MANIFEST_PATH.exists():
-        raise FileNotFoundError(f"Manifest not found: {MANIFEST_PATH}")
+def output_path_for_scenario(scenario: str):
+    return ARTIFACTS_DIR / f"class_weights_{scenario}.pkl"
 
-    with MANIFEST_PATH.open(encoding="utf-8") as f:
+
+def load_global_counts(scenario: str, split: str = "train") -> dict[int, int]:
+    """Sum per-class counts across all nodes from the scenario train manifest."""
+    manifest_path = manifest_path_for_scenario(scenario)
+    if not manifest_path.exists():
+        raise FileNotFoundError(
+            f"Manifest not found for scenario={scenario!r}: {manifest_path}. "
+            f"Run: python -m src.scripts.generate_scenarios --scenario {scenario}"
+        )
+
+    with manifest_path.open(encoding="utf-8") as f:
         manifest = json.load(f)
 
+    try:
+        nodes = manifest["splits"][split]["nodes"]
+    except KeyError as exc:
+        raise KeyError(
+            f"Manifest {manifest_path} does not contain splits.{split}.nodes"
+        ) from exc
+
     global_counts: dict[int, int] = {}
-    for node_info in manifest["nodes"].values():
+    for node_info in nodes.values():
         for cls_str, count in node_info["class_distribution"].items():
             cls = int(cls_str)
             global_counts[cls] = global_counts.get(cls, 0) + count
@@ -52,8 +69,12 @@ def compute_weights(counts: dict[int, int], num_classes: int) -> np.ndarray:
 
 
 def main() -> None:
-    logger.info("Loading global class counts from manifest...")
-    counts = load_global_counts()
+    parser = argparse.ArgumentParser(description="Generate scenario-specific class weights.")
+    parser.add_argument("--scenario", type=str, required=True)
+    args = parser.parse_args()
+
+    logger.info("Loading class counts from scenario manifest: %s", args.scenario)
+    counts = load_global_counts(args.scenario, split="train")
 
     missing = [c for c in range(NUM_CLASSES) if c not in counts]
     if missing:
@@ -76,11 +97,12 @@ def main() -> None:
         weights.min(), weights.max(), weights.mean(), weights.sum(),
     )
 
-    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with OUTPUT_PATH.open("wb") as f:
+    output_path = output_path_for_scenario(args.scenario)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with output_path.open("wb") as f:
         pickle.dump(weights, f)
 
-    logger.info("Saved -> %s", OUTPUT_PATH)
+    logger.info("Saved -> %s", output_path)
 
 
 if __name__ == "__main__":

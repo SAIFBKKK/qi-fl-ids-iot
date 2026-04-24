@@ -54,11 +54,13 @@ class FlowerClient(fl.client.NumPyClient):
         batch_size: int,
         local_epochs: int,
         learning_rate: float,
+        num_classes: int = 34,
     ):
         self.node_id = node_id
         self.batch_size = batch_size
         self.local_epochs = local_epochs
         self.learning_rate = learning_rate
+        self.num_classes = int(num_classes)
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -74,11 +76,16 @@ class FlowerClient(fl.client.NumPyClient):
         input_dim = X_sample.shape[1]
 
         base_dataset = self.train_loader.dataset.dataset
-        num_classes = int(base_dataset.y.max().item()) + 1
+        max_label = int(base_dataset.y.max().item())
+        if max_label >= self.num_classes:
+            raise ValueError(
+                f"[{self.node_id}] Local labels contain class id {max_label}, "
+                f"but num_classes={self.num_classes}."
+            )
 
         self.model = MLPClassifier(
             input_dim=input_dim,
-            num_classes=num_classes,
+            num_classes=self.num_classes,
             hidden_dims=(128, 64),
             dropout=0.2,
         ).to(self.device)
@@ -166,6 +173,7 @@ def client_fn(context: Context):
     batch_size = int(run_config["batch-size"])
     local_epochs = int(run_config["local-epochs"])
     learning_rate = float(run_config["learning-rate"])
+    num_classes = int(run_config.get("num-classes", 34))
 
     node_id = resolve_node_id(context)
 
@@ -176,6 +184,7 @@ def client_fn(context: Context):
         batch_size=batch_size,
         local_epochs=local_epochs,
         learning_rate=learning_rate,
+        num_classes=num_classes,
     ).to_client()
 
 

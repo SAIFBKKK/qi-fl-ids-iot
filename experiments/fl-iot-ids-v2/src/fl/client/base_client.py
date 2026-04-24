@@ -155,11 +155,7 @@ class BaseIDSClient(NumPyClient):
         else:
             self.criterion = nn.CrossEntropyLoss()
 
-        self.optimizer = torch.optim.Adam(
-            self.model.parameters(),
-            lr=learning_rate,
-            weight_decay=weight_decay,
-        )
+        self._reset_optimizer()
 
         logger.info(
             "Client %s loaded train=%s val=%s input_dim=%s output_dim=%s strategy=%s mu=%s",
@@ -205,8 +201,16 @@ class BaseIDSClient(NumPyClient):
     def get_parameters(self, config):
         return get_model_parameters(self.model)
 
+    def _reset_optimizer(self) -> None:
+        self.optimizer = torch.optim.Adam(
+            self.model.parameters(),
+            lr=self.learning_rate,
+            weight_decay=self.weight_decay,
+        )
+
     def fit(self, parameters, config):
         set_model_parameters(self.model, parameters)
+        self._reset_optimizer()
         self.model.train()
 
         global_params = [

@@ -41,7 +41,7 @@ def build_strategy(
         ), num_rounds
 
     if strategy_name == "fedprox":
-        logger.info("FedProx placeholder active: temporary fallback to FedAvg until custom strategy is added")
+        logger.info("FedProx uses FedAvg server aggregation with client-side proximal loss")
         return ReportingFedAvg(
             tracker=tracker,
             monitor_metric=monitor_metric,
@@ -55,17 +55,9 @@ def build_strategy(
         ), num_rounds
 
     if strategy_name == "scaffold":
-        logger.info("SCAFFOLD placeholder active: temporary fallback to FedAvg until control variates are implemented")
-        return ReportingFedAvg(
-            tracker=tracker,
-            monitor_metric=monitor_metric,
-            fraction_fit=fraction_train,
-            fraction_evaluate=fraction_evaluate,
-            min_fit_clients=min_train_nodes,
-            min_evaluate_clients=min_evaluate_nodes,
-            min_available_clients=min_available_nodes,
-            fit_metrics_aggregation_fn=aggregate_fit_metrics,
-            evaluate_metrics_aggregation_fn=aggregate_evaluate_metrics,
-        ), num_rounds
+        raise NotImplementedError(
+            "SCAFFOLD is not implemented in fl-iot-ids-v2. "
+            "Use fl-iot-ids-v3 for standard SCAFFOLD experiments."
+        )
 
     raise ValueError(f"Unsupported strategy: {strategy_name}")

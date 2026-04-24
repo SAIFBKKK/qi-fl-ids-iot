@@ -70,7 +70,7 @@ def run_validation():
             if not (0.8 <= stats["std"] <= 1.2):
                 print(" ⚠️ WARNING: std outside expected range")
 
-        print(f"\n[GLOBAL CHECK]")
+        print("\n[GLOBAL CHECK]")
         print(f" total unique classes: {len(global_classes)}")
 
         if scenario != "rare_expert":

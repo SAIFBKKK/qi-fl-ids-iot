@@ -9,16 +9,18 @@ from typing import Any, List
 import flwr as fl
 import numpy as np
 import torch
-import torch.nn as nn
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
-from src.common.config import get_project_root, load_yaml_config
+from src.common.config import load_yaml_config
 from src.common.paths import ARTIFACTS_DIR, PROCESSED_DIR, get_processed_path
 from src.data.dataloader import create_dataloaders_for_node
 from src.model.network import MLPClassifier
 from src.model.train import train_one_epoch
+from src.model.losses import build_loss, load_class_weights
+from src.model.validation import validate_model_output_dim
 
 BENIGN_CLASS = 1  # BenignTraffic = label_id 1 in the v3 dataset
+WEIGHTED_IMBALANCE_STRATEGIES = {"class_weights", "focal_loss_weighted"}
 
 logger = logging.getLogger("run_client")
 
@@ -43,6 +45,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--strategy", type=str, default=None,
                         choices=["fedavg", "fedprox", "scaffold"],
                         help="FL training strategy (default: fedavg).")
+    parser.add_argument(
+        "--imbalance-strategy",
+        type=str,
+        default=None,
+        choices=["none", "class_weights", "focal_loss", "focal_loss_weighted"],
+    )
+    parser.add_argument("--focal-gamma", type=float, default=None)
     return parser.parse_args()
 
 
@@ -82,6 +91,8 @@ class IoTFLClient(fl.client.NumPyClient):
         local_epochs: int,
         learning_rate: float,
         class_weights: torch.Tensor | None = None,
+        imbalance_strategy: str = "class_weights",
+        focal_gamma: float = 2.0,
         mu: float = 0.0,
         strategy: str = "fedavg",
     ) -> None:
@@ -92,17 +103,30 @@ class IoTFLClient(fl.client.NumPyClient):
         self.device = device
         self.local_epochs = local_epochs
         self.learning_rate = learning_rate
+        self.weight_decay = 1e-4
+        self.imbalance_strategy = imbalance_strategy
+        self.focal_gamma = focal_gamma
         self.mu = mu
         self.strategy = strategy
 
-        self.criterion = nn.CrossEntropyLoss(
-            weight=class_weights.to(device) if class_weights is not None else None
+        self.criterion = build_loss(
+            class_weights=class_weights.to(device) if class_weights is not None else None,
+            imbalance_strategy=imbalance_strategy,
+            focal_gamma=focal_gamma,
         )
+        self._reset_optimizer_and_scheduler()
+
+    def _reset_optimizer_and_scheduler(self) -> None:
         self.optimizer = torch.optim.Adam(
-            self.model.parameters(), lr=learning_rate, weight_decay=1e-4
+            self.model.parameters(),
+            lr=self.learning_rate,
+            weight_decay=self.weight_decay,
         )
         self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            self.optimizer, mode="min", patience=3, factor=0.5
+            self.optimizer,
+            mode="min",
+            patience=3,
+            factor=0.5,
         )
 
     # ------------------------------------------------------------------
@@ -230,6 +254,7 @@ class IoTFLClient(fl.client.NumPyClient):
 
         bytes_received = sum(p.nbytes for p in parameters)
         set_parameters(self.model, parameters)
+        self._reset_optimizer_and_scheduler()
 
         last_loss = 0.0
         last_acc = 0.0
@@ -387,6 +412,8 @@ def main() -> None:
 
     client_cfg = cfg.get("client", {})
     model_cfg  = cfg.get("model", {})
+    dataset_cfg = cfg.get("dataset", {})
+    imbalance_cfg = cfg.get("imbalance", {})
     runtime_cfg = cfg.get("runtime", {})
 
     node_id = args.node_id
@@ -414,6 +441,14 @@ def main() -> None:
     strategy = (
         args.strategy if args.strategy is not None
         else client_cfg.get("strategy", "fedavg")
+    )
+    imbalance_strategy = (
+        args.imbalance_strategy if args.imbalance_strategy is not None
+        else str(imbalance_cfg.get("name", "class_weights"))
+    )
+    focal_gamma = (
+        args.focal_gamma if args.focal_gamma is not None
+        else float(imbalance_cfg.get("focal_gamma", 2.0))
     )
 
     seed = int(runtime_cfg.get("seed", 42))
@@ -449,24 +484,32 @@ def main() -> None:
     model = MLPClassifier(
         input_dim=int(model_cfg.get("input_dim", 28)),
         hidden_dims=model_cfg.get("hidden_dims", [128, 64]),
-        num_classes=int(model_cfg.get("num_classes", 34)),
+        num_classes=int(dataset_cfg.get("num_classes", model_cfg.get("num_classes", 34))),
     )
+    num_classes = int(dataset_cfg.get("num_classes", model_cfg.get("num_classes", 34)))
+    validate_model_output_dim(model, num_classes)
 
     class_weights: torch.Tensor | None = None
-    cw_path = ARTIFACTS_DIR / "class_weights_34.pkl"
-    if cw_path.exists():
-        with cw_path.open("rb") as f:
-            cw_array = pickle.load(f)
-        class_weights = torch.tensor(cw_array, dtype=torch.float32)
+    if imbalance_strategy in WEIGHTED_IMBALANCE_STRATEGIES:
+        cw_path = ARTIFACTS_DIR / f"class_weights_{scenario}.pkl"
+        class_weights = load_class_weights(cw_path, device=device)
+        if class_weights is None:
+            raise FileNotFoundError(
+                f"Missing scenario-specific class weights: {cw_path}. "
+                f"Run: python -m src.scripts.generate_weights --scenario {scenario}"
+            )
+        if int(class_weights.numel()) != num_classes:
+            raise ValueError(
+                f"Class weights at {cw_path} have {class_weights.numel()} entries "
+                f"but num_classes={num_classes}."
+            )
         logger.info("Loaded class weights from %s", cw_path)
-    else:
-        logger.warning("class_weights_34.pkl not found — training without class weights")
 
     logger.info(
         "Starting client | node=%s | scenario=%s | strategy=%s | mu=%.4f | "
-        "server=%s | epochs=%d | batch=%d | lr=%.5f",
+        "server=%s | epochs=%d | batch=%d | lr=%.5f | imbalance=%s",
         node_id, scenario, strategy, mu,
-        server_address, local_epochs, batch_size, learning_rate,
+        server_address, local_epochs, batch_size, learning_rate, imbalance_strategy,
     )
 
     client = IoTFLClient(
@@ -478,6 +521,8 @@ def main() -> None:
         local_epochs=local_epochs,
         learning_rate=learning_rate,
         class_weights=class_weights,
+        imbalance_strategy=imbalance_strategy,
+        focal_gamma=focal_gamma,
         mu=mu,
         strategy=strategy,
     )

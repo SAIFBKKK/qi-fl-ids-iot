@@ -15,6 +15,7 @@ logger = get_logger("prepare_partitions")
 
 
 DEFAULT_SEED = 42
+ROW_ID_COL = "__row_id"
 DEFAULT_SOURCE_PARQUET = Path(
     r"E:\dataset\CICIoT2023\balancing_v3_fixed300k_outputs\balancing_v3_fixed300k_balanced.parquet"
 )
@@ -52,6 +53,45 @@ def detect_label_column(df: pd.DataFrame) -> str:
     raise ValueError(f"No label column found in dataframe columns={list(df.columns)}")
 
 
+def ensure_row_id(df: pd.DataFrame) -> pd.DataFrame:
+    if ROW_ID_COL in df.columns:
+        if df[ROW_ID_COL].duplicated().any():
+            raise ValueError(f"Column {ROW_ID_COL!r} must be unique.")
+        return df.copy()
+    out = df.copy()
+    out.insert(0, ROW_ID_COL, np.arange(len(out), dtype=np.int64))
+    return out
+
+
+def validate_disjoint_partitions(partitions: Dict[str, pd.DataFrame]) -> Dict:
+    """Raise if any source row is assigned to more than one client."""
+    owners: dict[int, str] = {}
+    intersections: list[dict[str, object]] = []
+    for node_id, part_df in partitions.items():
+        if ROW_ID_COL not in part_df.columns:
+            raise ValueError(f"{node_id} partition is missing {ROW_ID_COL}")
+        for row_id in part_df[ROW_ID_COL].astype(int).tolist():
+            previous = owners.get(row_id)
+            if previous is not None:
+                intersections.append(
+                    {"row_id": row_id, "first_node": previous, "second_node": node_id}
+                )
+            else:
+                owners[row_id] = node_id
+
+    if intersections:
+        raise AssertionError(
+            "Inter-client leakage detected: duplicated row ids across partitions. "
+            f"First duplicates: {intersections[:10]}"
+        )
+
+    return {
+        "row_id_column": ROW_ID_COL,
+        "disjoint": True,
+        "assigned_unique_rows": len(owners),
+    }
+
+
 def save_node_csv(df: pd.DataFrame, scenario: str, node_id: str) -> Path:
     out_dir = DATA_DIR / "raw" / scenario / node_id
     ensure_dir(out_dir)
@@ -80,6 +120,7 @@ def build_manifest(
         "row_count_source": int(len(full_df)),
         "column_count_source": int(full_df.shape[1]),
         "label_column": label_col,
+        "row_id_column": ROW_ID_COL,
         "nodes": {},
     }
 
@@ -90,6 +131,9 @@ def build_manifest(
             "class_distribution": class_counts(part_df, label_col),
             "output_csv": str(DATA_DIR / "raw" / scenario / node_id / "train.csv"),
         }
+
+    disjoint_proof = validate_disjoint_partitions(partitions)
+    manifest["partition_disjointness"] = disjoint_proof
 
     if extra:
         manifest["extra"] = extra
@@ -225,6 +269,7 @@ def build_absent_local(
             ).sample(frac=1.0, random_state=seed).reset_index(drop=True)
 
     # 3) garantir que toutes les classes rares existent chez tous les nœuds
+    # without duplicating source rows: move one row from the richest donor.
     rare_df = df[df[label_col].isin(RARE_CLASSES)].copy()
     for rare_cls in sorted(RARE_CLASSES):
         rare_group = rare_df[rare_df[label_col] == rare_cls]
@@ -234,12 +279,29 @@ def build_absent_local(
         for node_id in NODE_IDS:
             has_rare = (base[node_id][label_col] == rare_cls).any()
             if not has_rare:
-                sampled = rare_group.sample(
-                    n=min(50, len(rare_group)),
-                    replace=len(rare_group) < 50,
-                    random_state=seed,
+                donor_candidates = [
+                    candidate
+                    for candidate in NODE_IDS
+                    if int((base[candidate][label_col] == rare_cls).sum()) > 1
+                ]
+                if not donor_candidates:
+                    logger.warning(
+                        "Cannot move rare class %s to %s without duplicating rows",
+                        rare_cls,
+                        node_id,
+                    )
+                    continue
+                donor = max(
+                    donor_candidates,
+                    key=lambda candidate: int((base[candidate][label_col] == rare_cls).sum()),
                 )
-                base[node_id] = pd.concat([base[node_id], sampled], axis=0).reset_index(drop=True)
+                donor_mask = base[donor][label_col] == rare_cls
+                row_to_move = base[donor].loc[donor_mask].iloc[[0]].copy()
+                base[donor] = base[donor].drop(row_to_move.index).reset_index(drop=True)
+                base[node_id] = pd.concat(
+                    [base[node_id], row_to_move],
+                    axis=0,
+                ).reset_index(drop=True)
 
     for node_id in NODE_IDS:
         base[node_id] = base[node_id].sample(frac=1.0, random_state=seed).reset_index(drop=True)
@@ -268,18 +330,25 @@ def build_rare_expert(
         logger.warning("No rare-class rows found, rare_expert will fallback to normal_noniid.")
         return base
 
-    # enrichissement du client expert avec des exemples rares supplémentaires
-    boost_size = min(20000, len(rare_df))
-    boost_df = rare_df.sample(
-        n=boost_size,
-        replace=len(rare_df) < boost_size,
-        random_state=seed,
-    )
+    # Move rare rows exclusively to the expert node.  This enriches node3
+    # without duplicating samples across clients.
+    rare_chunks: list[pd.DataFrame] = []
+    for node_id in NODE_IDS:
+        rare_mask = base[node_id][label_col].isin(RARE_CLASSES)
+        rare_chunks.append(base[node_id].loc[rare_mask].copy())
+        if node_id != RARE_EXPERT_NODE:
+            base[node_id] = base[node_id].loc[~rare_mask].reset_index(drop=True)
 
+    all_rare = pd.concat(rare_chunks, axis=0).drop_duplicates(ROW_ID_COL)
+    expert_non_rare = base[RARE_EXPERT_NODE].loc[
+        ~base[RARE_EXPERT_NODE][label_col].isin(RARE_CLASSES)
+    ].copy()
     base[RARE_EXPERT_NODE] = pd.concat(
-        [base[RARE_EXPERT_NODE], boost_df],
+        [expert_non_rare, all_rare],
         axis=0,
     ).sample(frac=1.0, random_state=seed).reset_index(drop=True)
+
+    validate_disjoint_partitions(base)
 
     return base
 
@@ -314,7 +383,7 @@ def main() -> None:
         raise FileNotFoundError(f"Source parquet not found: {source_path}")
 
     logger.info("Loading source dataset: %s", source_path)
-    df = pd.read_parquet(source_path)
+    df = ensure_row_id(pd.read_parquet(source_path))
     logger.info("Loaded dataframe shape=%s", df.shape)
 
     label_col = detect_label_column(df)

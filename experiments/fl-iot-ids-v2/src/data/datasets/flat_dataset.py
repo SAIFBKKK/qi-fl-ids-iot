@@ -8,6 +8,22 @@ import torch
 from torch.utils.data import Dataset
 
 
+class FlatTensorDataset(Dataset):
+    """In-memory tensor dataset used by tests and hierarchical wrappers."""
+
+    def __init__(self, X: np.ndarray, y: np.ndarray):
+        if len(X) != len(y):
+            raise ValueError(f"X/y length mismatch: {len(X)} != {len(y)}")
+        self.X = torch.tensor(np.asarray(X), dtype=torch.float32)
+        self.y = torch.tensor(np.asarray(y), dtype=torch.long)
+
+    def __len__(self) -> int:
+        return len(self.X)
+
+    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
+        return self.X[idx], self.y[idx]
+
+
 class IoTLocalDataset(Dataset):
     """
     PyTorch Dataset for local IoT node data.
@@ -67,3 +83,8 @@ def load_npz_arrays(npz_path: str | Path) -> Tuple[np.ndarray, np.ndarray]:
     y = np.asarray(data["y"], dtype=np.int64)
 
     return X, y
+
+
+def load_npz_xy(npz_path: str | Path) -> Tuple[np.ndarray, np.ndarray]:
+    """Compatibility alias for older hierarchical code."""
+    return load_npz_arrays(npz_path)

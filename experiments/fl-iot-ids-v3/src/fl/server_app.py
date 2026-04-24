@@ -8,7 +8,7 @@ from flwr.server import ServerApp, ServerAppComponents, ServerConfig
 
 from src.common.logger import get_logger
 from src.fl.aggregation_hooks import aggregate_evaluate_metrics, aggregate_fit_metrics
-from src.fl.reporting_strategy import ReportingFedAvg
+from src.fl.reporting_strategy import ReportingFedAvg, ReportingScaffold
 from src.tracking.artifact_logger import BaselineArtifactTracker
 
 
@@ -46,15 +46,16 @@ def build_server_components(
             config.get("strategy", {}).get("name", "fedavg"),
         )
     ).lower()
-    if strategy_name not in {"fedavg", "fedprox"}:
+    if strategy_name not in {"fedavg", "fedprox", "scaffold"}:
         raise ValueError(
-            "run_experiment currently supports fedavg and fedprox automation only. "
-            "Use src.scripts.run_server.py for scaffold/manual runs."
+            f"Unsupported FL strategy {strategy_name!r}. "
+            "Supported strategies: fedavg, fedprox, scaffold."
         )
 
     strategy_cfg = dict(config.get("strategy", {}))
     num_rounds = int(strategy_cfg.get("num_rounds", 3))
-    strategy = ReportingFedAvg(
+    strategy_cls = ReportingScaffold if strategy_name == "scaffold" else ReportingFedAvg
+    strategy = strategy_cls(
         tracker=tracker,
         monitor_metric=str(config.get("evaluation", {}).get("best_round_monitor", "macro_f1")),
         expert_node_id=str(strategy_cfg.get("expert_node_id", "node3")),

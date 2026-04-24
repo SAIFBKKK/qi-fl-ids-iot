@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pickle
+import subprocess
 import time
 import logging
 import argparse
@@ -17,6 +18,7 @@ from flwr.server.strategy import FedAvg
 from src.utils.mlflow_logger import MLflowRunLogger
 from src.common.config import load_yaml_config
 from src.common.paths import ARTIFACTS_DIR
+from src.common.paths import OUTPUTS_DIR
 
 logger = logging.getLogger("run_server")
 
@@ -24,6 +26,28 @@ EXPERT_NODE_ID = "node3"
 
 # Metric keys that cannot be cast to float (skip in weighted-average aggregation)
 _NON_NUMERIC_KEYS = {"node_id", "scaffold_delta_c"}
+
+
+def _resolve_tracking_uri(raw_uri: str) -> str:
+    if raw_uri.startswith(("http://", "https://", "file:")):
+        return raw_uri
+    path = Path(raw_uri)
+    if path.is_absolute():
+        return str(path)
+    if raw_uri in {".", "./outputs/mlruns", "outputs/mlruns"}:
+        return str(OUTPUTS_DIR / "mlruns")
+    return str((OUTPUTS_DIR / raw_uri).resolve())
+
+
+def _git_sha() -> str:
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            cwd=Path(__file__).resolve().parents[2],
+            text=True,
+        ).strip()
+    except Exception:
+        return "unknown"
 
 
 # ---------------------------------------------------------------------------
@@ -122,12 +146,17 @@ class CommTrackingFedAvg(FedAvg):
 
         round_latency = time.time() - self._round_start.pop(server_round, time.time())
 
+        original_results = results
+
         # Expert weighting — inflate node3's effective sample count before aggregation
         if self.expert_factor != 1.0:
             results = self._apply_expert_weights(server_round, results)
 
         aggregated_params, aggregated_metrics = super().aggregate_fit(
             server_round, results, failures
+        )
+        aggregated_metrics = _aggregate_fit_metrics(
+            [(fit_res.num_examples, fit_res.metrics or {}) for _, fit_res in original_results]
         )
 
         if not results:
@@ -332,7 +361,7 @@ def main() -> None:
     if mlflow_enabled:
         run_name = mlflow_cfg.get("run_name", f"{strategy_name}-v3")
         mlflow_logger = MLflowRunLogger(
-            tracking_uri=mlflow_cfg.get("tracking_uri", "./outputs/mlruns"),
+            tracking_uri=_resolve_tracking_uri(mlflow_cfg.get("tracking_uri", "./outputs/mlruns")),
             experiment_name=mlflow_cfg.get("experiment_name", "fl-iot-ids-v3"),
             run_name=run_name,
         )
@@ -357,6 +386,8 @@ def main() -> None:
                 "batch_size": client_cfg.get("batch_size", 256),
                 "learning_rate": client_cfg.get("learning_rate", 0.0005),
                 "dataset": "CICIoT2023",
+                "git_sha": _git_sha(),
+                "class_weights_path": str(ARTIFACTS_DIR / f"class_weights_{server_cfg.get('scenario', 'normal_noniid')}.pkl"),
             }
         )
 

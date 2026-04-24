@@ -59,8 +59,8 @@ def test_aggregate_fit_metrics():
     )
 
     assert aggregated["train_loss_last"] == 0.25
-    assert aggregated["train_time_sec"] == 17.5
-    assert aggregated["update_size_bytes"] == 1750.0
+    assert aggregated["train_time_sec"] == 30.0
+    assert aggregated["update_size_bytes"] == 3000.0
 
 
 def test_aggregate_evaluate_metrics():

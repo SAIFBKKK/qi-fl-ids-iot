@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-from pathlib import Path
 
 from src.common.paths import DATA_DIR, OUTPUTS_DIR
 from src.data.analysis.client_distribution_report import save_client_distribution_report

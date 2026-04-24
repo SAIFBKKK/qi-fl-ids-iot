@@ -7,6 +7,7 @@ import torch
 
 DEFAULT_BENIGN_CLASS_ID = 1
 DEFAULT_RARE_CLASS_IDS = (0, 3, 30, 31, 33)
+DEFAULT_NUM_CLASSES = 34
 
 
 def _compute_benign_recall(y_true: np.ndarray, y_pred: np.ndarray, benign_class_id: int) -> float:
@@ -39,6 +40,7 @@ def evaluate_model(
     device,
     benign_class_id: int = DEFAULT_BENIGN_CLASS_ID,
     rare_class_ids: tuple[int, ...] | list[int] = DEFAULT_RARE_CLASS_IDS,
+    num_classes: int = DEFAULT_NUM_CLASSES,
 ):
     model.eval()
 
@@ -77,6 +79,7 @@ def evaluate_model(
         benign_recall = _compute_benign_recall(y_true, y_pred, benign_class_id)
         false_positive_rate = float(1.0 - benign_recall)
         rare_class_recall = _compute_rare_class_recall(y_true, y_pred, rare_class_ids)
+        class_counts = _compute_class_counts(y_true, y_pred, num_classes)
     else:
         accuracy = 0.0
         macro_f1 = 0.0
@@ -85,6 +88,7 @@ def evaluate_model(
         benign_recall = 0.0
         false_positive_rate = 0.0
         rare_class_recall = 0.0
+        class_counts = {}
 
     return {
         "loss": avg_loss,
@@ -97,4 +101,23 @@ def evaluate_model(
         "false_positive_rate": false_positive_rate,
         "rare_class_recall": rare_class_recall,
         "num_samples": total,
+        **class_counts,
     }
+
+
+def _compute_class_counts(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    num_classes: int,
+) -> dict[str, float]:
+    counts: dict[str, float] = {}
+    for class_id in range(num_classes):
+        true_mask = y_true == class_id
+        pred_mask = y_pred == class_id
+        tp = int(np.logical_and(true_mask, pred_mask).sum())
+        fp = int(np.logical_and(~true_mask, pred_mask).sum())
+        fn = int(np.logical_and(true_mask, ~pred_mask).sum())
+        counts[f"tp_class_{class_id}"] = float(tp)
+        counts[f"fp_class_{class_id}"] = float(fp)
+        counts[f"fn_class_{class_id}"] = float(fn)
+    return counts

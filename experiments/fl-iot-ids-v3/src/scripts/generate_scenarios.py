@@ -17,12 +17,13 @@ from __future__ import annotations
 
 import argparse
 import json
-import pickle
-from pathlib import Path
 from typing import Dict, List, Set, Tuple
 
 import numpy as np
 import pandas as pd
+import pickle
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 
 from src.common.logger import get_logger
 from src.common.paths import (
@@ -35,16 +36,20 @@ from src.common.paths import (
 )
 from src.common.utils import set_seed
 from src.scripts.prepare_partitions import compute_node_stats, dirichlet_partition
-from src.scripts.preprocess_node_data import load_global_scaler
 
 
 logger = get_logger("generate_scenarios")
 
 # ── constants ────────────────────────────────────────────────────────────────
 LABEL_COL = "label_id"
+ROW_ID_COL = "__row_id"
 BENIGN_CLASS = 1        # BenignTraffic — must be present in every node, every scenario
 NUM_NODES = 3
 DEFAULT_SEED = 42
+TRAIN_RATIO = 0.70
+VAL_RATIO = 0.15
+TEST_RATIO = 0.15
+SPLITS = ("train", "val", "test")
 
 SUPPORTED_SCENARIOS = ("normal_noniid", "rare_expert", "absent_local")
 
@@ -115,6 +120,103 @@ def _load_dataset() -> pd.DataFrame:
     raise FileNotFoundError(
         f"Dataset not found. Tried:\n  {DATASET_PARQUET}\n  {DATASET_CSV}"
     )
+
+
+def ensure_row_id(df: pd.DataFrame) -> pd.DataFrame:
+    """Attach a stable row id used to prove split/client disjointness."""
+    if ROW_ID_COL in df.columns:
+        if df[ROW_ID_COL].duplicated().any():
+            raise ValueError(f"Column {ROW_ID_COL!r} must be unique.")
+        return df.copy()
+
+    out = df.copy()
+    out.insert(0, ROW_ID_COL, np.arange(len(out), dtype=np.int64))
+    return out
+
+
+def split_raw_dataset(
+    df: pd.DataFrame,
+    seed: int,
+    label_col: str = LABEL_COL,
+) -> Dict[str, pd.DataFrame]:
+    """
+    Split raw rows before any scaling.
+
+    This is the leakage boundary: train statistics are the only statistics
+    allowed to fit preprocessing artifacts.
+    """
+    if label_col not in df.columns:
+        raise ValueError(f"Missing label column {label_col!r}")
+
+    df = ensure_row_id(df)
+    train_df, temp_df = train_test_split(
+        df,
+        test_size=1.0 - TRAIN_RATIO,
+        stratify=df[label_col],
+        random_state=seed,
+    )
+    relative_test_ratio = TEST_RATIO / (VAL_RATIO + TEST_RATIO)
+    val_df, test_df = train_test_split(
+        temp_df,
+        test_size=relative_test_ratio,
+        stratify=temp_df[label_col],
+        random_state=seed,
+    )
+
+    splits = {
+        "train": train_df.reset_index(drop=True),
+        "val": val_df.reset_index(drop=True),
+        "test": test_df.reset_index(drop=True),
+    }
+    _validate_disjoint_row_ids(splits)
+    return splits
+
+
+def fit_train_only_scaler(
+    train_df: pd.DataFrame,
+    label_col: str = LABEL_COL,
+    row_id_col: str = ROW_ID_COL,
+) -> tuple[StandardScaler, list[str]]:
+    """Fit the global scaler on raw train rows only."""
+    feature_cols = [c for c in train_df.columns if c not in {label_col, row_id_col}]
+    if not feature_cols:
+        raise ValueError("No feature columns available for scaler fitting.")
+
+    X_train = train_df[feature_cols].to_numpy(dtype=np.float64)
+    scaler = StandardScaler()
+    scaler.fit(X_train)
+    return scaler, feature_cols
+
+
+def _save_preprocessing_artifacts(
+    scenario: str,
+    scaler: StandardScaler,
+    feature_cols: list[str],
+) -> None:
+    ARTIFACTS_DIR.mkdir(parents=True, exist_ok=True)
+
+    scaler_path = ARTIFACTS_DIR / f"scaler_standard_train_{scenario}.pkl"
+    feature_path = ARTIFACTS_DIR / f"feature_names_{scenario}.pkl"
+    with scaler_path.open("wb") as f:
+        pickle.dump(scaler, f)
+    with feature_path.open("wb") as f:
+        pickle.dump(feature_cols, f)
+
+    logger.info("Train-only scaler saved -> %s", scaler_path)
+    logger.info("Scenario feature list saved -> %s", feature_path)
+
+
+def _validate_disjoint_row_ids(split_map: Dict[str, pd.DataFrame]) -> None:
+    seen: dict[int, str] = {}
+    for split_name, df in split_map.items():
+        if ROW_ID_COL not in df.columns:
+            raise ValueError(f"{split_name} split is missing {ROW_ID_COL}")
+        for row_id in df[ROW_ID_COL].astype(int).tolist():
+            if row_id in seen:
+                raise AssertionError(
+                    f"Row id {row_id} appears in both {seen[row_id]} and {split_name}."
+                )
+            seen[row_id] = split_name
 
 
 # ── scenario partitioners ─────────────────────────────────────────────────────
@@ -374,11 +476,12 @@ def _preprocess_and_save(
     part_df: pd.DataFrame,
     node_id: str,
     scenario: str,
+    split: str,
     scaler,
     scaler_name: str,
+    feature_cols: list[str],
 ) -> None:
     """Scale features with the global scaler and write a compressed NPZ."""
-    feature_cols = [c for c in part_df.columns if c != LABEL_COL]
     y = part_df[LABEL_COL].to_numpy(dtype=np.int64)
     X_raw = part_df[feature_cols].to_numpy(dtype=np.float64)
 
@@ -387,23 +490,23 @@ def _preprocess_and_save(
     node_mean = float(X_scaled.mean())
     node_std = float(X_scaled.std())
     logger.info(
-        "%s/%s | scaler=%s | mean=%.4f  std=%.4f  (expected ≈0, ≈1)",
-        scenario, node_id, scaler_name, node_mean, node_std,
+        "%s/%s/%s | scaler=%s | mean=%.4f  std=%.4f  (expected train approx 0/1)",
+        scenario, split, node_id, scaler_name, node_mean, node_std,
     )
     if abs(node_mean) > 0.1:
-        logger.warning("%s/%s: post-scale mean=%.4f far from 0", scenario, node_id, node_mean)
+        logger.warning("%s/%s/%s: post-scale mean=%.4f far from 0", scenario, split, node_id, node_mean)
     if abs(node_std - 1.0) > 0.5:
         logger.warning(
-            "%s/%s: std=%.4f — strong distribution shift (expected in absent_local)",
-            scenario, node_id, node_std,
+            "%s/%s/%s: std=%.4f — strong distribution shift (expected in absent_local)",
+            scenario, split, node_id, node_std,
         )
     elif abs(node_std - 1.0) > 0.2:
         logger.info(
-            "%s/%s: std=%.4f — mild distribution shift (normal for non-IID)",
-            scenario, node_id, node_std,
+            "%s/%s/%s: std=%.4f — mild distribution shift (normal for non-IID)",
+            scenario, split, node_id, node_std,
         )
 
-    out_path = get_processed_path(scenario, node_id)
+    out_path = get_processed_path(scenario, node_id, split=split)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(
         out_path,
@@ -417,28 +520,55 @@ def _preprocess_and_save(
 # ── manifest ──────────────────────────────────────────────────────────────────
 
 def _save_manifest(scenario: str, parts: Dict[str, pd.DataFrame], meta: dict) -> None:
+    raise RuntimeError("Use _save_split_manifest for split-aware v3 scenarios.")
+
+
+def _save_split_manifest(
+    scenario: str,
+    split_parts: Dict[str, Dict[str, pd.DataFrame]],
+    meta_by_split: Dict[str, dict],
+    feature_cols: list[str],
+) -> None:
     source_path = DATASET_PARQUET if DATASET_PARQUET.exists() else DATASET_CSV
     manifest: dict = {
         "scenario": scenario,
         "dataset_source": str(source_path),
         "label_column": LABEL_COL,
+        "row_id_column": ROW_ID_COL,
         "num_nodes": NUM_NODES,
-        **meta,
-        "nodes": {},
+        "split_ratios": {
+            "train": TRAIN_RATIO,
+            "val": VAL_RATIO,
+            "test": TEST_RATIO,
+        },
+        "preprocessing": {
+            "scaler": "StandardScaler",
+            "fit_split": "train",
+            "feature_count": len(feature_cols),
+            "feature_names_artifact": str(ARTIFACTS_DIR / f"feature_names_{scenario}.pkl"),
+            "scaler_artifact": str(ARTIFACTS_DIR / f"scaler_standard_train_{scenario}.pkl"),
+        },
+        "splits": {},
     }
-    for node_id, part_df in parts.items():
-        raw_path = get_raw_path(scenario, node_id)
-        top5 = (
-            part_df[LABEL_COL]
-            .value_counts()
-            .head(5)
-            .to_dict()
-        )
-        manifest["nodes"][node_id] = {
-            "raw_csv": str(raw_path),
-            **compute_node_stats(part_df),
-            "top5_classes": {int(k): int(v) for k, v in top5.items()},
+
+    for split, parts in split_parts.items():
+        split_manifest = {
+            **meta_by_split[split],
+            "nodes": {},
         }
+        for node_id, part_df in parts.items():
+            raw_path = get_raw_path(scenario, node_id, split=split)
+            processed_path = get_processed_path(scenario, node_id, split=split)
+            top5 = part_df[LABEL_COL].value_counts().head(5).to_dict()
+            split_manifest["nodes"][node_id] = {
+                "raw_csv": str(raw_path),
+                "processed_npz": str(processed_path),
+                "row_id_min": int(part_df[ROW_ID_COL].min()) if len(part_df) else None,
+                "row_id_max": int(part_df[ROW_ID_COL].max()) if len(part_df) else None,
+                **compute_node_stats(part_df),
+                "top5_classes": {int(k): int(v) for k, v in top5.items()},
+            }
+        manifest["splits"][split] = split_manifest
 
     manifest_dir = DATA_DIR / "splits"
     manifest_dir.mkdir(parents=True, exist_ok=True)
@@ -454,46 +584,62 @@ def run_scenario(scenario: str, seed: int = DEFAULT_SEED) -> None:
     set_seed(seed)
     logger.info("=== Generating scenario: %s (seed=%d) ===", scenario, seed)
 
-    # 1. Load global scaler (must exist — do NOT refit)
-    scaler, scaler_name = load_global_scaler(ARTIFACTS_DIR)
-    logger.info("Global scaler loaded: %s", scaler_name)
-
-    # 2. Load full dataset
+    # 1. Load full dataset, then split raw rows before preprocessing.
     df = _load_dataset()
     if LABEL_COL not in df.columns:
         raise ValueError(
             f"Column '{LABEL_COL}' not found. Available: {list(df.columns)}"
         )
     logger.info("Dataset loaded: shape=%s", df.shape)
+    raw_splits = split_raw_dataset(df, seed=seed)
 
-    # 3. Partition
-    if scenario == "normal_noniid":
-        parts, meta = _partition_normal_noniid(df, seed)
-    elif scenario == "rare_expert":
-        parts, meta = _partition_rare_expert(df, seed)
-    elif scenario == "absent_local":
-        parts, meta = _partition_absent_local(df, seed)
-    else:
-        raise ValueError(f"Unknown scenario '{scenario}'. Choose from: {SUPPORTED_SCENARIOS}")
+    # 2. Fit scaler on train only and persist explicit scenario artifacts.
+    scaler, feature_cols = fit_train_only_scaler(raw_splits["train"])
+    scaler_name = f"scaler_standard_train_{scenario}.pkl"
+    _save_preprocessing_artifacts(scenario, scaler, feature_cols)
 
-    # 3b. Hard guarantee: every node must contain BenignTraffic before any data touches disk
-    _validate_benign_presence(parts)
+    # 3. Partition each split independently after the raw split boundary.
+    split_parts: Dict[str, Dict[str, pd.DataFrame]] = {}
+    meta_by_split: Dict[str, dict] = {}
+    for split, split_df in raw_splits.items():
+        if scenario == "normal_noniid":
+            parts, meta = _partition_normal_noniid(split_df, seed)
+        elif scenario == "rare_expert":
+            parts, meta = _partition_rare_expert(split_df, seed)
+        elif scenario == "absent_local":
+            parts, meta = _partition_absent_local(split_df, seed)
+        else:
+            raise ValueError(f"Unknown scenario '{scenario}'. Choose from: {SUPPORTED_SCENARIOS}")
 
-    # 4. Save raw CSVs + preprocess + save NPZs
-    for node_id, part_df in parts.items():
-        raw_path = get_raw_path(scenario, node_id)
-        raw_path.parent.mkdir(parents=True, exist_ok=True)
-        part_df.to_csv(raw_path, index=False)
-        logger.info("Raw CSV -> %s (%d rows)", raw_path, len(part_df))
+        _validate_benign_presence(parts)
+        _validate_disjoint_row_ids(parts)
+        split_parts[split] = parts
+        meta_by_split[split] = meta
 
-        _preprocess_and_save(part_df, node_id, scenario, scaler, scaler_name)
+    # 4. Save raw CSVs + preprocess + save split NPZs
+    for split, parts in split_parts.items():
+        for node_id, part_df in parts.items():
+            raw_path = get_raw_path(scenario, node_id, split=split)
+            raw_path.parent.mkdir(parents=True, exist_ok=True)
+            part_df.to_csv(raw_path, index=False)
+            logger.info("Raw CSV -> %s (%d rows)", raw_path, len(part_df))
+
+            _preprocess_and_save(
+                part_df,
+                node_id,
+                scenario,
+                split,
+                scaler,
+                scaler_name,
+                feature_cols,
+            )
 
     # 5. Manifest
-    _save_manifest(scenario, parts, meta)
+    _save_split_manifest(scenario, split_parts, meta_by_split, feature_cols)
 
     # 6. Summary
     logger.info("=== Summary: %s ===", scenario)
-    for node_id, part_df in parts.items():
+    for node_id, part_df in split_parts["train"].items():
         stats = compute_node_stats(part_df)
         top5 = part_df[LABEL_COL].value_counts().head(5)
         top5_str = "  ".join(f"cls{int(c)}={int(n)}" for c, n in top5.items())

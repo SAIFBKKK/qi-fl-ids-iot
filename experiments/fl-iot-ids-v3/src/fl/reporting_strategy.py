@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import math
+import pickle
 from typing import Any
 
-from flwr.common import EvaluateRes, FitRes, Parameters, Scalar
+import numpy as np
+from flwr.common import EvaluateRes, FitIns, FitRes, Parameters, Scalar, parameters_to_ndarrays
 from flwr.server.client_proxy import ClientProxy
 from flwr.server.strategy import FedAvg
 
@@ -71,6 +73,12 @@ class ReportingFedAvg(FedAvg):
             results=adjusted_results,
             failures=failures,
         )
+        # Report metrics with real sample counts, not expert-inflated weights.
+        aggregation_fn = getattr(self, "fit_metrics_aggregation_fn", None)
+        if aggregation_fn is not None:
+            metrics_aggregated = aggregation_fn(
+                [(fit_res.num_examples, fit_res.metrics or {}) for _, fit_res in results]
+            )
         if self.tracker is not None:
             self.tracker.record_fit_round(server_round, metrics_aggregated)
         self._latest_params = parameters_aggregated
@@ -101,3 +109,60 @@ class ReportingFedAvg(FedAvg):
             self._best_params = self._latest_params
 
         return loss_aggregated, metrics_aggregated
+
+
+class ReportingScaffold(ReportingFedAvg):
+    """Reporting strategy with SCAFFOLD control-variate synchronization."""
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.c_global: list[np.ndarray] | None = None
+
+    def configure_fit(self, server_round, parameters, client_manager):
+        if self.c_global is None:
+            ndarrays = parameters_to_ndarrays(parameters)
+            self.c_global = [np.zeros_like(param, dtype=np.float32) for param in ndarrays]
+
+        configured = super().configure_fit(server_round, parameters, client_manager)
+        payload = pickle.dumps(self.c_global)
+        updated = []
+        for client_proxy, fit_ins in configured:
+            config = dict(fit_ins.config)
+            config["scaffold_c_global"] = payload
+            updated.append(
+                (
+                    client_proxy,
+                    FitIns(parameters=fit_ins.parameters, config=config),
+                )
+            )
+        return updated
+
+    def aggregate_fit(
+        self,
+        server_round: int,
+        results: list[tuple[ClientProxy, FitRes]],
+        failures: list[tuple[ClientProxy, FitRes] | BaseException],
+    ) -> tuple[Parameters | None, dict[str, Scalar]]:
+        delta_c_list: list[list[np.ndarray]] = []
+        for _, fit_res in results:
+            raw_delta = (fit_res.metrics or {}).get("scaffold_delta_c")
+            if raw_delta is None:
+                raise ValueError(
+                    "SCAFFOLD client result missing scaffold_delta_c. "
+                    "All scaffold clients must return control-variate deltas."
+                )
+            delta_c_list.append(pickle.loads(raw_delta))
+
+        parameters_aggregated, metrics_aggregated = super().aggregate_fit(
+            server_round=server_round,
+            results=results,
+            failures=failures,
+        )
+
+        if self.c_global is not None and delta_c_list:
+            for idx in range(len(self.c_global)):
+                self.c_global[idx] = self.c_global[idx] + (
+                    sum(delta[idx] for delta in delta_c_list) / len(delta_c_list)
+                )
+
+        return parameters_aggregated, metrics_aggregated

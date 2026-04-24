@@ -17,14 +17,14 @@ NUM_CLASSES = 34
 BENIGN_CLASS = 1  # BenignTraffic=label_id 1 in v3 dataset (was 0 in v1)
 
 
-def get_raw_path(scenario: str, node_id: str) -> Path:
+def get_raw_path(scenario: str, node_id: str, split: str = "train") -> Path:
     """Return the raw CSV path for a given scenario and node."""
-    return RAW_DIR / scenario / node_id / "train.csv"
+    return RAW_DIR / scenario / node_id / f"{split}.csv"
 
 
-def get_processed_path(scenario: str, node_id: str) -> Path:
+def get_processed_path(scenario: str, node_id: str, split: str = "train") -> Path:
     """Return the preprocessed NPZ path for a given scenario and node."""
-    return PROCESSED_DIR / scenario / node_id / "train_preprocessed.npz"
+    return PROCESSED_DIR / scenario / node_id / f"{split}_preprocessed.npz"
 
 DATASET_CSV = Path(
     "E:/dataset/CICIoT2023/balancing_v3_fixed300k_outputs"

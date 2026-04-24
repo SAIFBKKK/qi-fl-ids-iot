@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
+import subprocess
 from time import perf_counter
 from typing import Any
 
@@ -11,7 +13,7 @@ from flwr.simulation import run_simulation
 
 from src.common.config import load_experiment_bundle
 from src.common.logger import get_logger
-from src.common.paths import CONFIGS_DIR, ensure_runtime_dirs
+from src.common.paths import ARTIFACTS_DIR, CONFIGS_DIR, OUTPUTS_DIR, ensure_runtime_dirs
 from src.common.registry import find_experiment
 from src.common.utils import get_expected_node_ids, set_seed
 from src.fl.client_app import create_client_app
@@ -82,6 +84,33 @@ def flatten_params(prefix: str, payload: dict[str, Any]) -> dict[str, Any]:
     return flattened
 
 
+def resolve_tracking_uri(raw_uri: str) -> str:
+    path = Path(raw_uri)
+    if raw_uri.startswith(("http://", "https://", "file:")):
+        return raw_uri
+    if path.is_absolute():
+        return str(path)
+    if raw_uri in {".", "./outputs/mlruns", "outputs/mlruns"}:
+        return str(OUTPUTS_DIR / "mlruns")
+    return str((OUTPUTS_DIR / raw_uri).resolve())
+
+
+def config_hash(config: dict[str, Any]) -> str:
+    payload = json.dumps(config, sort_keys=True, default=str).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def git_sha() -> str:
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            cwd=Path(__file__).resolve().parents[2],
+            text=True,
+        ).strip()
+    except Exception:
+        return "unknown"
+
+
 def save_resolved_config(report_dir: Path, experiment: dict[str, Any], config: dict[str, Any]) -> Path:
     report_dir.mkdir(parents=True, exist_ok=True)
     resolved_config_path = report_dir / "resolved_config.json"
@@ -102,6 +131,21 @@ def log_experiment_to_mlflow(
     params = {}
     params.update(flatten_params("experiment", experiment))
     params.update(flatten_params("config", config))
+    params.update(
+        {
+            "repro.git_sha": git_sha(),
+            "repro.config_sha256": config_hash(config),
+            "repro.scenario": config.get("scenario", {}).get("name"),
+            "repro.num_classes": config.get("dataset", {}).get("num_classes"),
+            "repro.class_weights_path": str(
+                ARTIFACTS_DIR / f"class_weights_{config.get('scenario', {}).get('name')}.pkl"
+            ),
+            "repro.scaler_path": str(
+                ARTIFACTS_DIR
+                / f"scaler_standard_train_{config.get('scenario', {}).get('name')}.pkl"
+            ),
+        }
+    )
     mlflow_logger.log_params(params)
 
 
@@ -146,7 +190,9 @@ def main() -> None:
     mlflow_logger: MLflowRunLogger | None = None
     if mlflow_enabled:
         mlflow_logger = MLflowRunLogger(
-            tracking_uri=str(mlflow_cfg.get("tracking_uri", "./outputs/mlruns")),
+            tracking_uri=resolve_tracking_uri(
+                str(mlflow_cfg.get("tracking_uri", "./outputs/mlruns"))
+            ),
             experiment_name=generate_experiment_display_name(experiment),
             run_name=generate_run_name(experiment),
         )

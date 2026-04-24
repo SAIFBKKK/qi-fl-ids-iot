@@ -28,8 +28,7 @@ def main():
     X_sample, _ = sample_batch
 
     input_dim = X_sample.shape[1]
-    base_dataset = train_loader.dataset.dataset
-    num_classes = int(base_dataset.y.max().item()) + 1
+    num_classes = 34
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
