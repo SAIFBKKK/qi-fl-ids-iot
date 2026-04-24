@@ -1,3 +1,5 @@
 | Experiment | Strategy | Scenario | Imbalance | Rounds | Macro-F1 | Benign Recall | FPR | Rare Recall | Accuracy | Recall Macro |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| exp_v3_fedavg_normal_classweights | fedavg | normal_noniid | class_weights | 10 | 0.6521 | 0.7854 | 0.2146 | 0.4055 | 0.7651 | 0.6728 |
+| exp_v3_fedavg_normal_classweights | fedavg | normal_noniid | class_weights | 10 | 0.6676 | 0.9000 | 0.1000 | 0.4365 | 0.7165 | 0.7004 |
+| exp_v3_fedavg_normal_focal | fedavg | normal_noniid | focal_loss | 0 | - | - | - | - | - | - |
+| exp_v3_scaffold_normal_classweights | scaffold | normal_noniid | class_weights | 10 | 0.2367 | 0.2937 | 0.7063 | 0.0011 | 0.2892 | 0.2698 |

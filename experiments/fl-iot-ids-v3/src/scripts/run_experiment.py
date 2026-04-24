@@ -23,7 +23,7 @@ from src.tracking.run_naming import (
     generate_experiment_display_name,
     generate_run_name,
 )
-from src.utils.mlflow_logger import MLflowRunLogger
+from src.utils.mlflow_logger import MLflowRunLogger, normalize_tracking_uri
 
 logger = get_logger("run_experiment")
 
@@ -89,10 +89,10 @@ def resolve_tracking_uri(raw_uri: str) -> str:
     if raw_uri.startswith(("http://", "https://", "file:")):
         return raw_uri
     if path.is_absolute():
-        return str(path)
+        return normalize_tracking_uri(str(path))
     if raw_uri in {".", "./outputs/mlruns", "outputs/mlruns"}:
-        return str(OUTPUTS_DIR / "mlruns")
-    return str((OUTPUTS_DIR / raw_uri).resolve())
+        return normalize_tracking_uri(str(OUTPUTS_DIR / "mlruns"))
+    return normalize_tracking_uri(str((OUTPUTS_DIR / raw_uri).resolve()))
 
 
 def config_hash(config: dict[str, Any]) -> str:

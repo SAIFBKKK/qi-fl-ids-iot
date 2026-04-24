@@ -15,7 +15,7 @@ from flwr.common.typing import FitRes
 from flwr.server.client_proxy import ClientProxy
 from flwr.server.strategy import FedAvg
 
-from src.utils.mlflow_logger import MLflowRunLogger
+from src.utils.mlflow_logger import MLflowRunLogger, normalize_tracking_uri
 from src.common.config import load_yaml_config
 from src.common.paths import ARTIFACTS_DIR
 from src.common.paths import OUTPUTS_DIR
@@ -33,10 +33,10 @@ def _resolve_tracking_uri(raw_uri: str) -> str:
         return raw_uri
     path = Path(raw_uri)
     if path.is_absolute():
-        return str(path)
+        return normalize_tracking_uri(str(path))
     if raw_uri in {".", "./outputs/mlruns", "outputs/mlruns"}:
-        return str(OUTPUTS_DIR / "mlruns")
-    return str((OUTPUTS_DIR / raw_uri).resolve())
+        return normalize_tracking_uri(str(OUTPUTS_DIR / "mlruns"))
+    return normalize_tracking_uri(str((OUTPUTS_DIR / raw_uri).resolve()))
 
 
 def _git_sha() -> str:
