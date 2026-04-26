@@ -18,6 +18,8 @@ The production-facing delivery path is:
 experiments/fl-iot-ids-v3
 ```
 
+Multi-tier FL development is isolated on `feat/multitier-fl`, starting from the stable `baseline-fl-v1` snapshot. See `docs/MULTITIER_BRANCH.md` for the branch contract and recovery path.
+
 ---
 
 ## Project Overview

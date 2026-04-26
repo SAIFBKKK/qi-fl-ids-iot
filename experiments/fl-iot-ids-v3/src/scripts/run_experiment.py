@@ -42,6 +42,17 @@ def parse_args() -> argparse.Namespace:
         required=True,
         help="Experiment name from configs/experiment_registry.yaml",
     )
+    parser.add_argument(
+        "--rounds",
+        type=int,
+        default=None,
+        help="Override strategy.num_rounds for smoke tests or short runs.",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Validate config, artifacts, and app construction without launching Ray.",
+    )
     return parser.parse_args()
 
 
@@ -194,10 +205,31 @@ def log_round_curves_to_mlflow(
 def main() -> None:
     args = parse_args()
     experiment, config = load_experiment_config(args.experiment)
+    if args.rounds is not None:
+        if args.rounds < 1:
+            raise ValueError(f"--rounds must be >= 1, got {args.rounds}")
+        config.setdefault("strategy", {})["num_rounds"] = int(args.rounds)
 
     ensure_runtime_dirs()
     set_seed(int(config["project"].get("seed", 42)))
     run_name = configure_runtime_artifacts(experiment, config)
+
+    num_clients = int(config["scenario"]["num_clients"])
+    node_ids = get_expected_node_ids(num_clients)
+    config["scenario"]["node_ids"] = node_ids
+    logger.info("Selected clients: %s", ", ".join(node_ids))
+    validate_required_artifacts(config, node_ids)
+
+    if args.dry_run:
+        create_server_app(config)
+        create_client_app(config)
+        logger.info(
+            "Dry run OK | experiment=%s | rounds=%s | clients=%s",
+            args.experiment,
+            int(config["strategy"]["num_rounds"]),
+            num_clients,
+        )
+        return
 
     tracker = BaselineArtifactTracker(experiment=experiment, config=config)
     report_dir = tracker.report_dir
@@ -229,12 +261,6 @@ def main() -> None:
         round_metric_logger=round_metric_logger,
     )
     client_app = create_client_app(config)
-
-    num_clients = int(config["scenario"]["num_clients"])
-    node_ids = get_expected_node_ids(num_clients)
-    config["scenario"]["node_ids"] = node_ids
-    logger.info("Selected clients: %s", ", ".join(node_ids))
-    validate_required_artifacts(config, node_ids)
 
     backend_config: dict[str, Any] = {
         "init_args": {"include_dashboard": False},

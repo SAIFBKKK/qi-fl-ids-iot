@@ -1,10 +1,20 @@
 from __future__ import annotations
 
+import inspect
 from collections.abc import Mapping
+from dataclasses import dataclass
 from typing import Any, Callable
 
 from flwr.common import Context
-from flwr.server import ServerApp, ServerAppComponents, ServerConfig
+try:
+    from flwr.server import ServerApp, ServerAppComponents, ServerConfig
+except ImportError:
+    from flwr.server import ServerApp, ServerConfig
+
+    @dataclass
+    class ServerAppComponents:
+        strategy: Any
+        config: ServerConfig
 
 from src.common.logger import get_logger
 from src.fl.aggregation_hooks import aggregate_evaluate_metrics, aggregate_fit_metrics
@@ -13,6 +23,10 @@ from src.tracking.artifact_logger import BaselineArtifactTracker
 
 
 logger = get_logger("fl_server")
+
+
+def _server_app_supports_server_fn() -> bool:
+    return "server_fn" in inspect.signature(ServerApp).parameters
 
 
 def _default_config_from_run_config(run_config: Mapping[str, Any]) -> dict[str, Any]:
@@ -103,6 +117,14 @@ def create_server_app(
     tracker: BaselineArtifactTracker | None = None,
     round_metric_logger: Callable[[int, dict[str, float]], None] | None = None,
 ) -> ServerApp:
+    if not _server_app_supports_server_fn():
+        components = build_server_components(
+            config,
+            tracker=tracker,
+            round_metric_logger=round_metric_logger,
+        )
+        return ServerApp(config=components.config, strategy=components.strategy)
+
     def configured_server_fn(_: Context) -> ServerAppComponents:
         return build_server_components(
             config,
@@ -113,4 +135,7 @@ def create_server_app(
     return ServerApp(server_fn=configured_server_fn)
 
 
-app = ServerApp(server_fn=server_fn)
+if _server_app_supports_server_fn():
+    app = ServerApp(server_fn=server_fn)
+else:
+    app = ServerApp()
