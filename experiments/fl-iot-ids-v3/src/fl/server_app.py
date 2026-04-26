@@ -56,6 +56,7 @@ def build_server_components(
     strategy_cfg = dict(config.get("strategy", {}))
     num_rounds = int(strategy_cfg.get("num_rounds", 3))
     strategy_cls = ReportingScaffold if strategy_name == "scaffold" else ReportingFedAvg
+    model_cfg = dict(config.get("model", {}))
     strategy = strategy_cls(
         tracker=tracker,
         monitor_metric=str(config.get("evaluation", {}).get("best_round_monitor", "macro_f1")),
@@ -69,6 +70,17 @@ def build_server_components(
         fit_metrics_aggregation_fn=aggregate_fit_metrics,
         evaluate_metrics_aggregation_fn=aggregate_evaluate_metrics,
         round_metric_logger=round_metric_logger,
+        output_dir=tracker.report_dir if tracker is not None else None,
+        model_config={
+            "input_dim": int(
+                model_cfg.get("input_dim", config.get("dataset", {}).get("feature_count", 28))
+            ),
+            "num_classes": int(
+                model_cfg.get("output_dim", config.get("dataset", {}).get("num_classes", 34))
+            ),
+            "hidden_dims": model_cfg.get("hidden_dims", [256, 128]),
+            "dropout": float(model_cfg.get("dropout", 0.2)),
+        },
     )
     if tracker is not None:
         tracker.strategy = strategy

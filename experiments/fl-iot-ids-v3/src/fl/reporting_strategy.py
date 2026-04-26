@@ -2,13 +2,17 @@ from __future__ import annotations
 
 import math
 import pickle
+from datetime import datetime
+from pathlib import Path
 from typing import Any, Callable
 
 import numpy as np
+import torch
 from flwr.common import EvaluateRes, FitIns, FitRes, Parameters, Scalar, parameters_to_ndarrays
 from flwr.server.client_proxy import ClientProxy
 from flwr.server.strategy import FedAvg
 
+from src.common.logger import get_logger
 from src.tracking.artifact_logger import BaselineArtifactTracker, build_mlflow_round_metrics
 
 
@@ -21,18 +25,65 @@ class ReportingFedAvg(FedAvg):
         expert_node_id: str | None = None,
         expert_factor: float = 1.0,
         round_metric_logger: Callable[[int, dict[str, float]], None] | None = None,
+        output_dir: Path | None = None,
+        model_config: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
+        self.logger = get_logger("reporting_strategy")
         self.tracker = tracker
         self.monitor_metric = monitor_metric
         self.expert_node_id = expert_node_id
         self.expert_factor = expert_factor
         self.round_metric_logger = round_metric_logger
+        self._output_dir = output_dir
+        self._model_config = model_config or {}
         self._best_metric: float = -math.inf
         self._best_round: int = 0
         self._best_params: Parameters | None = None
         self._latest_params: Parameters | None = None
+
+    def _parameters_to_state_dict(self, parameters: Parameters) -> dict[str, torch.Tensor]:
+        """Convertit flwr.Parameters → state_dict via une instance temporaire de MLPClassifier."""
+        from src.model.network import MLPClassifier
+
+        ndarrays = parameters_to_ndarrays(parameters)
+        cfg = self._model_config
+        tmp = MLPClassifier(
+            input_dim=int(cfg.get("input_dim", 28)),
+            num_classes=int(cfg.get("num_classes", 34)),
+            hidden_dims=tuple(cfg.get("hidden_dims", [256, 128])),
+            dropout=float(cfg.get("dropout", 0.2)),
+        )
+        keys = list(tmp.state_dict().keys())
+        if len(keys) != len(ndarrays):
+            raise ValueError(
+                f"state_dict mismatch: {len(keys)} keys vs {len(ndarrays)} ndarrays. "
+                "Vérifier que model_config correspond à l'architecture utilisée à l'entraînement."
+            )
+        return {k: torch.tensor(v) for k, v in zip(keys, ndarrays)}
+
+    def _save_best_checkpoint(self, round_num: int, metrics: dict[str, Any]) -> None:
+        """Sauvegarde le best checkpoint pour deployment."""
+        if self._best_params is None or self._output_dir is None:
+            return
+        output_path = self._output_dir / "best_checkpoint.pth"
+        try:
+            state_dict = self._parameters_to_state_dict(self._best_params)
+            checkpoint = {
+                "state_dict": state_dict,
+                "round": round_num,
+                "macro_f1": metrics.get("macro_f1"),
+                "benign_recall": metrics.get("benign_recall"),
+                "false_positive_rate": metrics.get("false_positive_rate"),
+                "saved_at": datetime.utcnow().isoformat(),
+                "torch_version": torch.__version__,
+            }
+            self._output_dir.mkdir(parents=True, exist_ok=True)
+            torch.save(checkpoint, output_path)
+            self.logger.info("Saved best checkpoint at round %d → %s", round_num, output_path)
+        except Exception as exc:
+            self.logger.error("Failed to save best checkpoint: %s", exc)
 
     @property
     def best_round_info(self) -> dict[str, object]:
@@ -122,6 +173,7 @@ class ReportingFedAvg(FedAvg):
             self._best_metric = float(metric_value)
             self._best_round = server_round
             self._best_params = self._latest_params
+            self._save_best_checkpoint(server_round, dict(metrics_aggregated or {}))
 
         return loss_aggregated, metrics_aggregated
 
