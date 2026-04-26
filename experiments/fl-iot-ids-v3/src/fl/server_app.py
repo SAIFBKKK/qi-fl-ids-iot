@@ -83,6 +83,24 @@ def build_server_components(
     strategy_cls = ReportingScaffold if strategy_name == "scaffold" else ReportingFedAvg
     model_cfg = dict(config.get("model", {}))
     node_profiler = NodeProfiler(_resolve_tier_profiles_path(config))
+    model_config = {
+        "input_dim": int(
+            model_cfg.get("input_dim", config.get("dataset", {}).get("feature_count", 28))
+        ),
+        "num_classes": int(
+            model_cfg.get("output_dim", config.get("dataset", {}).get("num_classes", 34))
+        ),
+        "hidden_dims": model_cfg.get(
+            "hidden_dims",
+            [
+                model_cfg.get("max_hidden_1", 256),
+                model_cfg.get("max_hidden_2", 128),
+            ],
+        ),
+        "max_hidden_1": int(model_cfg.get("max_hidden_1", 256)),
+        "max_hidden_2": int(model_cfg.get("max_hidden_2", 128)),
+        "dropout": float(model_cfg.get("dropout", 0.2)),
+    }
     strategy = strategy_cls(
         tracker=tracker,
         monitor_metric=str(config.get("evaluation", {}).get("best_round_monitor", "macro_f1")),
@@ -98,16 +116,9 @@ def build_server_components(
         round_metric_logger=round_metric_logger,
         output_dir=tracker.report_dir if tracker is not None else None,
         node_profiler=node_profiler,
-        model_config={
-            "input_dim": int(
-                model_cfg.get("input_dim", config.get("dataset", {}).get("feature_count", 28))
-            ),
-            "num_classes": int(
-                model_cfg.get("output_dim", config.get("dataset", {}).get("num_classes", 34))
-            ),
-            "hidden_dims": model_cfg.get("hidden_dims", [256, 128]),
-            "dropout": float(model_cfg.get("dropout", 0.2)),
-        },
+        model_config=model_config,
+        supernet_config=model_config,
+        multitier_enabled=bool(strategy_cfg.get("multitier_enabled", False)),
     )
     if tracker is not None:
         tracker.strategy = strategy
