@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import math
 import pickle
 from datetime import datetime
@@ -13,6 +14,8 @@ from flwr.server.client_proxy import ClientProxy
 from flwr.server.strategy import FedAvg
 
 from src.common.logger import get_logger
+from src.common.schemas import NodeProfile
+from src.fl.node_profiler import NodeProfiler
 from src.tracking.artifact_logger import BaselineArtifactTracker, build_mlflow_round_metrics
 
 
@@ -27,6 +30,7 @@ class ReportingFedAvg(FedAvg):
         round_metric_logger: Callable[[int, dict[str, float]], None] | None = None,
         output_dir: Path | None = None,
         model_config: dict[str, Any] | None = None,
+        node_profiler: NodeProfiler | None = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -38,6 +42,8 @@ class ReportingFedAvg(FedAvg):
         self.round_metric_logger = round_metric_logger
         self._output_dir = output_dir
         self._model_config = model_config or {}
+        self.node_profiler = node_profiler
+        self._client_node_ids: dict[str, str] = {}
         self._best_metric: float = -math.inf
         self._best_round: int = 0
         self._best_params: Parameters | None = None
@@ -114,12 +120,80 @@ class ReportingFedAvg(FedAvg):
             adjusted.append((client_proxy, fit_res))
         return adjusted
 
+    def _record_node_profiles(self, results: list[tuple[ClientProxy, FitRes]]) -> None:
+        if self.node_profiler is None:
+            return
+
+        for client_proxy, fit_res in results:
+            metrics = fit_res.metrics or {}
+            node_id = metrics.get("node_id")
+            if isinstance(node_id, str):
+                self._client_node_ids[client_proxy.cid] = node_id
+
+            raw_profile = metrics.get("node_profile_json")
+            if raw_profile is None:
+                continue
+            if isinstance(raw_profile, bytes):
+                raw_profile = raw_profile.decode("utf-8")
+            if not isinstance(raw_profile, str):
+                self.logger.warning(
+                    "Ignoring non-string node_profile_json from client cid=%s",
+                    client_proxy.cid,
+                )
+                continue
+
+            try:
+                profile = NodeProfile.from_dict(json.loads(raw_profile))
+                assignment = self.node_profiler.assign_tier(profile)
+                self._client_node_ids[client_proxy.cid] = profile.node_id
+                self.logger.info(
+                    "Node profile received | cid=%s | node_id=%s | assigned_tier=%s",
+                    client_proxy.cid,
+                    profile.node_id,
+                    assignment.assigned_tier,
+                )
+            except (TypeError, ValueError, json.JSONDecodeError) as exc:
+                self.logger.warning(
+                    "Failed to parse node profile from client cid=%s: %s",
+                    client_proxy.cid,
+                    exc,
+                )
+
+    def _with_tier_config(
+        self,
+        configured: list[tuple[ClientProxy, FitIns]],
+    ) -> list[tuple[ClientProxy, FitIns]]:
+        if self.node_profiler is None:
+            return configured
+
+        updated: list[tuple[ClientProxy, FitIns]] = []
+        for client_proxy, fit_ins in configured:
+            config = dict(fit_ins.config)
+            node_id = self._client_node_ids.get(client_proxy.cid)
+            assignment = (
+                self.node_profiler.get_assignment(node_id)
+                if node_id is not None
+                else None
+            )
+            if assignment is not None:
+                config["assigned_tier"] = assignment.assigned_tier
+                config["model_width"] = assignment.model_width
+                config["tier_local_epochs"] = assignment.local_epochs
+                config["tier_batch_size"] = assignment.batch_size
+            updated.append((client_proxy, FitIns(parameters=fit_ins.parameters, config=config)))
+        return updated
+
+    def configure_fit(self, server_round, parameters, client_manager):
+        configured = super().configure_fit(server_round, parameters, client_manager)
+        return self._with_tier_config(configured)
+
     def aggregate_fit(
         self,
         server_round: int,
         results: list[tuple[ClientProxy, FitRes]],
         failures: list[tuple[ClientProxy, FitRes] | BaseException],
     ) -> tuple[Parameters | None, dict[str, Scalar]]:
+        self._record_node_profiles(results)
         adjusted_results = self._apply_expert_weighting(results)
         parameters_aggregated, metrics_aggregated = super().aggregate_fit(
             server_round=server_round,

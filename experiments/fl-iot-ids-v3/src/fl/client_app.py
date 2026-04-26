@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import OrderedDict
 from collections.abc import Mapping
+import json
 from pathlib import Path
 import pickle
 from time import perf_counter
@@ -18,6 +19,7 @@ except ImportError:  # Flower <= 1.18 does not export the constant.
 
 from src.common.logger import get_logger
 from src.common.paths import ARTIFACTS_DIR, DATA_DIR, get_processed_path
+from src.common.schemas import NodeProfile
 from src.common.utils import get_expected_node_ids, resolve_node_id_from_partition
 from src.data.dataloader import create_dataloaders_for_node
 from src.model.evaluate import evaluate_model
@@ -334,12 +336,53 @@ class FlowerClient(fl.client.NumPyClient):
             weight_decay=self.weight_decay,
         )
 
+    def get_node_profile(self) -> NodeProfile:
+        profiles = {
+            "node1": {
+                "cpu_cores": 1,
+                "ram_mb": 256,
+                "device_type": "raspberry_pi_zero",
+                "avg_latency_ms": 120.0,
+                "battery_powered": True,
+                "network_quality": "low",
+            },
+            "node2": {
+                "cpu_cores": 4,
+                "ram_mb": 1024,
+                "device_type": "raspberry_pi_4",
+                "avg_latency_ms": 60.0,
+                "battery_powered": False,
+                "network_quality": "medium",
+            },
+            "node3": {
+                "cpu_cores": 8,
+                "ram_mb": 4096,
+                "device_type": "edge_pc",
+                "avg_latency_ms": 15.0,
+                "battery_powered": False,
+                "network_quality": "high",
+            },
+        }
+        default_profile = profiles.get("node2", {})
+        payload = {"node_id": self.node_id, **profiles.get(self.node_id, default_profile)}
+        return NodeProfile.from_dict(payload)
+
     def get_parameters(self, config):
         logger.info("[%s] get_parameters()", self.node_id)
         return get_model_parameters(self.model)
 
     def fit(self, parameters, config):
         logger.info("[%s] fit() started", self.node_id)
+        assigned_tier = config.get("assigned_tier")
+        if assigned_tier is not None:
+            logger.info(
+                "[%s] received tier assignment | tier=%s | model_width=%s | tier_local_epochs=%s | tier_batch_size=%s",
+                self.node_id,
+                assigned_tier,
+                config.get("model_width"),
+                config.get("tier_local_epochs"),
+                config.get("tier_batch_size"),
+            )
         set_model_parameters(self.model, parameters)
         self._reset_optimizer()
 
@@ -404,6 +447,10 @@ class FlowerClient(fl.client.NumPyClient):
 
         metrics = {
             "node_id": self.node_id,
+            "node_profile_json": json.dumps(
+                self.get_node_profile().to_dict(),
+                sort_keys=True,
+            ),
             "train_loss_last": float(last["loss"]),
             "train_accuracy_last": float(last["accuracy"]),
             "train_time_sec": float(train_time_sec),

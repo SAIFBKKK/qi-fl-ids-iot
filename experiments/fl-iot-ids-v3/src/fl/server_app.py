@@ -3,6 +3,7 @@ from __future__ import annotations
 import inspect
 from collections.abc import Mapping
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Callable
 
 from flwr.common import Context
@@ -17,7 +18,9 @@ except ImportError:
         config: ServerConfig
 
 from src.common.logger import get_logger
+from src.common.paths import CONFIGS_DIR
 from src.fl.aggregation_hooks import aggregate_evaluate_metrics, aggregate_fit_metrics
+from src.fl.node_profiler import NodeProfiler
 from src.fl.reporting_strategy import ReportingFedAvg, ReportingScaffold
 from src.tracking.artifact_logger import BaselineArtifactTracker
 
@@ -27,6 +30,14 @@ logger = get_logger("fl_server")
 
 def _server_app_supports_server_fn() -> bool:
     return "server_fn" in inspect.signature(ServerApp).parameters
+
+
+def _resolve_tier_profiles_path(config: Mapping[str, Any]) -> Path:
+    raw_path = dict(config.get("nodes", {})).get("tier_profiles_path")
+    if raw_path is None:
+        return CONFIGS_DIR / "nodes" / "tier_profiles.yaml"
+    path = Path(str(raw_path))
+    return path if path.is_absolute() else CONFIGS_DIR / path
 
 
 def _default_config_from_run_config(run_config: Mapping[str, Any]) -> dict[str, Any]:
@@ -71,6 +82,7 @@ def build_server_components(
     num_rounds = int(strategy_cfg.get("num_rounds", 3))
     strategy_cls = ReportingScaffold if strategy_name == "scaffold" else ReportingFedAvg
     model_cfg = dict(config.get("model", {}))
+    node_profiler = NodeProfiler(_resolve_tier_profiles_path(config))
     strategy = strategy_cls(
         tracker=tracker,
         monitor_metric=str(config.get("evaluation", {}).get("best_round_monitor", "macro_f1")),
@@ -85,6 +97,7 @@ def build_server_components(
         evaluate_metrics_aggregation_fn=aggregate_evaluate_metrics,
         round_metric_logger=round_metric_logger,
         output_dir=tracker.report_dir if tracker is not None else None,
+        node_profiler=node_profiler,
         model_config={
             "input_dim": int(
                 model_cfg.get("input_dim", config.get("dataset", {}).get("feature_count", 28))
