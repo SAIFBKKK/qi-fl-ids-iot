@@ -12,7 +12,6 @@ import json
 import logging
 import pickle
 import sys
-import textwrap
 import traceback
 from pathlib import Path
 
@@ -262,7 +261,7 @@ def test_09_end_to_end_inference() -> TestResult:
             lm = json.load(f)
         label = lm["id_to_label"].get(str(pred_id), "UNKNOWN")
         return r.ok(f"pred_id={pred_id} ({label})")
-    except Exception as e:
+    except Exception:
         return r.fail(traceback.format_exc().splitlines()[-1])
 
 
@@ -324,7 +323,7 @@ def main() -> None:
 
     if passed < total:
         failed = [r.name for r in results if not r.passed]
-        print(f"Tests échoués :\n" + "\n".join(f"  - {n}" for n in failed))
+        print("Tests échoués :\n" + "\n".join(f"  - {n}" for n in failed))
         sys.exit(1)
 
 
