@@ -24,9 +24,14 @@ from src.common.utils import get_expected_node_ids, resolve_node_id_from_partiti
 from src.data.dataloader import create_dataloaders_for_node
 from src.model.evaluate import evaluate_model
 from src.model.network import MLPClassifier
+from src.model.supernet import SuperNet
 from src.model.train import train_one_epoch
 from src.model.losses import build_loss, load_class_weights
-from src.model.validation import resolve_num_classes, validate_model_output_dim
+from src.model.validation import (
+    resolve_num_classes,
+    validate_model_output_dim,
+    validate_width_compatibility,
+)
 
 
 logger = get_logger("fl_client")
@@ -113,6 +118,9 @@ class FlowerClient(fl.client.NumPyClient):
         benign_class_id: int = 1,
         rare_class_ids: tuple[int, ...] = (0, 3, 30, 31, 33),
         scaffold_state_dir: str | Path | None = None,
+        model_architecture: str = "MLPClassifier",
+        enable_submodel_training: bool = False,
+        model_width: float = 1.0,
     ):
         self.node_id = node_id
         self.scenario = scenario
@@ -127,6 +135,9 @@ class FlowerClient(fl.client.NumPyClient):
         self.num_classes = int(num_classes)
         self.benign_class_id = benign_class_id
         self.rare_class_ids = rare_class_ids
+        self.model_architecture = model_architecture
+        self.enable_submodel_training = bool(enable_submodel_training)
+        self.model_width = validate_width_compatibility(model_width)
         self.scaffold_state_dir = (
             Path(scaffold_state_dir) if scaffold_state_dir is not None else None
         )
@@ -152,12 +163,22 @@ class FlowerClient(fl.client.NumPyClient):
                 f"but dataset.num_classes={self.num_classes}."
             )
 
-        self.model = MLPClassifier(
-            input_dim=input_dim,
-            num_classes=self.num_classes,
-            hidden_dims=hidden_dims,
-            dropout=dropout,
-        ).to(self.device)
+        if self.model_architecture.lower() == "supernet":
+            self.model = SuperNet(
+                width=self.model_width,
+                dropout=dropout,
+                input_dim=input_dim,
+                output_dim=self.num_classes,
+                max_hidden_1=int(hidden_dims[0]),
+                max_hidden_2=int(hidden_dims[1]),
+            ).to(self.device)
+        else:
+            self.model = MLPClassifier(
+                input_dim=input_dim,
+                num_classes=self.num_classes,
+                hidden_dims=hidden_dims,
+                dropout=dropout,
+            ).to(self.device)
         validate_model_output_dim(self.model, self.num_classes)
 
         class_weights = None
@@ -196,6 +217,46 @@ class FlowerClient(fl.client.NumPyClient):
                 self.node_id,
                 self._scaffold_state_dir(),
             )
+
+    def _maybe_apply_tier_assignment(self, config: Mapping[str, object]) -> None:
+        assigned_tier = config.get("assigned_tier")
+        model_width = config.get("model_width")
+        if assigned_tier is None or model_width is None:
+            return
+
+        width = validate_width_compatibility(float(model_width))
+        logger.info(
+            "[%s] received tier assignment | tier=%s | model_width=%s | tier_local_epochs=%s | tier_batch_size=%s",
+            self.node_id,
+            assigned_tier,
+            width,
+            config.get("tier_local_epochs"),
+            config.get("tier_batch_size"),
+        )
+
+        if self.model_architecture.lower() != "supernet":
+            return
+        if not self.enable_submodel_training:
+            logger.info(
+                "[%s] SuperNet tier width %.2f validated; submodel training waits for US5 masked aggregation",
+                self.node_id,
+                width,
+            )
+            return
+        if width == self.model_width:
+            return
+
+        self.model_width = width
+        self.model = SuperNet(
+            width=width,
+            dropout=float(getattr(self.model.dropout, "p", 0.2)),
+            input_dim=self.model.input_dim,
+            output_dim=self.model.output_dim,
+            max_hidden_1=self.model.max_hidden_1,
+            max_hidden_2=self.model.max_hidden_2,
+        ).to(self.device)
+        validate_model_output_dim(self.model, self.num_classes)
+        self._reset_optimizer()
 
     def _train_fedprox_epoch(self, global_params):
         self.model.train()
@@ -373,16 +434,7 @@ class FlowerClient(fl.client.NumPyClient):
 
     def fit(self, parameters, config):
         logger.info("[%s] fit() started", self.node_id)
-        assigned_tier = config.get("assigned_tier")
-        if assigned_tier is not None:
-            logger.info(
-                "[%s] received tier assignment | tier=%s | model_width=%s | tier_local_epochs=%s | tier_batch_size=%s",
-                self.node_id,
-                assigned_tier,
-                config.get("model_width"),
-                config.get("tier_local_epochs"),
-                config.get("tier_batch_size"),
-            )
+        self._maybe_apply_tier_assignment(config)
         set_model_parameters(self.model, parameters)
         self._reset_optimizer()
 
@@ -534,7 +586,22 @@ def make_client_fn(config: Mapping[str, object]):
     proximal_mu = float(train_cfg.get("proximal_mu", 0.0))
     imbalance_strategy = str(imbalance_cfg.get("name", "class_weights"))
     focal_gamma = float(imbalance_cfg.get("focal_gamma", 2.0))
-    hidden_dims = tuple(model_cfg.get("hidden_dims", [128, 64]))
+    model_architecture = str(
+        model_cfg.get("architecture", model_cfg.get("name", "MLPClassifier"))
+    )
+    if model_architecture == "supernet_34":
+        model_architecture = "SuperNet"
+    enable_submodel_training = bool(model_cfg.get("enable_submodel_training", False))
+    model_width = validate_width_compatibility(float(model_cfg.get("model_width", 1.0)))
+    hidden_dims = tuple(
+        model_cfg.get(
+            "hidden_dims",
+            [
+                model_cfg.get("max_hidden_1", 128),
+                model_cfg.get("max_hidden_2", 64),
+            ],
+        )
+    )
     dropout = float(model_cfg.get("dropout", 0.2))
     num_classes = resolve_num_classes(dataset_cfg, model_cfg)
     benign_class_id = int(dataset_cfg.get("benign_class_id", 1))
@@ -576,6 +643,9 @@ def make_client_fn(config: Mapping[str, object]):
             benign_class_id=benign_class_id,
             rare_class_ids=rare_class_ids,
             scaffold_state_dir=scaffold_state_dir,
+            model_architecture=model_architecture,
+            enable_submodel_training=enable_submodel_training,
+            model_width=model_width,
         ).to_client()
 
     return configured_client_fn
