@@ -116,3 +116,19 @@ experiments:
     data_scenario: normal_noniid
     imbalance_strategy: class_weights
     description: "SCAFFOLD standard sur partition normal_noniid avec class weights."
+
+  - name: exp_v4_multitier_fedavg_normal_classweights
+    architecture: supernet_34
+    fl_strategy: fedavg
+    fl_config: multitier
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    description: "Multi-tier FedAvg avec SuperNet, NodeProfiler et masked aggregation static."
+
+  - name: exp_v4_homogeneous_control_normal_classweights
+    architecture: flat_34
+    fl_strategy: fedavg
+    fl_config: fedavg_control
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    description: "Controle homogene FedAvg avec MLPClassifier et local_epochs=2."

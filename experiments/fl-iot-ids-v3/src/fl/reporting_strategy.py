@@ -9,13 +9,23 @@ from typing import Any, Callable
 
 import numpy as np
 import torch
-from flwr.common import EvaluateRes, FitIns, FitRes, Parameters, Scalar, parameters_to_ndarrays
+from flwr.common import (
+    EvaluateRes,
+    FitIns,
+    FitRes,
+    Parameters,
+    Scalar,
+    ndarrays_to_parameters,
+    parameters_to_ndarrays,
+)
 from flwr.server.client_proxy import ClientProxy
 from flwr.server.strategy import FedAvg
 
 from src.common.logger import get_logger
 from src.common.schemas import NodeProfile
+from src.fl.masked_aggregation import aggregate_masked
 from src.fl.node_profiler import NodeProfiler
+from src.model.supernet import SuperNet, extract_submodel_state
 from src.tracking.artifact_logger import BaselineArtifactTracker, build_mlflow_round_metrics
 
 
@@ -30,7 +40,9 @@ class ReportingFedAvg(FedAvg):
         round_metric_logger: Callable[[int, dict[str, float]], None] | None = None,
         output_dir: Path | None = None,
         model_config: dict[str, Any] | None = None,
+        supernet_config: dict[str, Any] | None = None,
         node_profiler: NodeProfiler | None = None,
+        multitier_enabled: bool = False,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -42,12 +54,77 @@ class ReportingFedAvg(FedAvg):
         self.round_metric_logger = round_metric_logger
         self._output_dir = output_dir
         self._model_config = model_config or {}
+        self._supernet_config = {**self._model_config, **(supernet_config or {})}
         self.node_profiler = node_profiler
+        self._multitier_enabled = bool(multitier_enabled)
         self._client_node_ids: dict[str, str] = {}
         self._best_metric: float = -math.inf
         self._best_round: int = 0
         self._best_params: Parameters | None = None
         self._latest_params: Parameters | None = None
+
+    # ── Multi-tier helpers ──────────────────────────────────────────────────
+
+    def _build_supernet(self, width: float = 1.0) -> SuperNet:
+        """Build a SuperNet matching the configured full architecture."""
+        cfg = self._supernet_config
+        hidden = cfg.get("hidden_dims") or [
+            cfg.get("max_hidden_1", SuperNet.MAX_HIDDEN_1),
+            cfg.get("max_hidden_2", SuperNet.MAX_HIDDEN_2),
+        ]
+        return SuperNet(
+            width=width,
+            input_dim=int(cfg.get("input_dim", SuperNet.INPUT_DIM)),
+            output_dim=int(cfg.get("num_classes", cfg.get("output_dim", SuperNet.OUTPUT_DIM))),
+            max_hidden_1=int(cfg.get("max_hidden_1", hidden[0])),
+            max_hidden_2=int(cfg.get("max_hidden_2", hidden[1])),
+            dropout=float(cfg.get("dropout", 0.2)),
+        )
+
+    def _parameters_to_supernet_state(self, parameters: Parameters) -> dict[str, torch.Tensor]:
+        """Convert Flower Parameters → full SuperNet(width=1.0) state_dict."""
+        net = self._build_supernet(width=1.0)
+        keys = list(net.state_dict().keys())
+        ndarrays = parameters_to_ndarrays(parameters)
+        if len(keys) != len(ndarrays):
+            raise ValueError(
+                f"[multitier] SuperNet state mismatch: expected {len(keys)} arrays, "
+                f"got {len(ndarrays)}. Ensure model_config matches SuperNet architecture."
+            )
+        return {k: torch.tensor(v) for k, v in zip(keys, ndarrays)}
+
+    def _parameters_to_submodel_state(
+        self, parameters: Parameters, width: float
+    ) -> dict[str, torch.Tensor]:
+        """Convert Flower Parameters → SuperNet(width) sub-state_dict."""
+        net = self._build_supernet(width=width)
+        keys = list(net.state_dict().keys())
+        ndarrays = parameters_to_ndarrays(parameters)
+        if len(keys) != len(ndarrays):
+            expected_shapes = {k: tuple(v.shape) for k, v in net.state_dict().items()}
+            raise ValueError(
+                f"[multitier] Sub-state mismatch for width={width}: "
+                f"expected {len(keys)} arrays with shapes {expected_shapes}, "
+                f"but got {len(ndarrays)} arrays. "
+                "Check that the client returned the correct sub-state shape."
+            )
+        expected_shapes = {k: tuple(v.shape) for k, v in net.state_dict().items()}
+        tensors = {k: torch.tensor(v) for k, v in zip(keys, ndarrays)}
+        actual_shapes = {k: tuple(v.shape) for k, v in tensors.items()}
+        if actual_shapes != expected_shapes:
+            raise ValueError(
+                f"[multitier] Sub-state shape mismatch for width={width}: "
+                f"expected {expected_shapes}, got {actual_shapes}."
+            )
+        return tensors
+
+    def _state_dict_to_parameters(self, state_dict: dict[str, torch.Tensor]) -> Parameters:
+        """Convert state_dict to Flower Parameters (ordered list of numpy arrays)."""
+        return ndarrays_to_parameters(
+            [v.detach().cpu().numpy() for v in state_dict.values()]
+        )
+
+    # ── Baseline helper (unchanged path) ───────────────────────────────────
 
     def _parameters_to_state_dict(self, parameters: Parameters) -> dict[str, torch.Tensor]:
         """Convertit flwr.Parameters → state_dict via une instance temporaire de MLPClassifier."""
@@ -75,13 +152,18 @@ class ReportingFedAvg(FedAvg):
             return
         output_path = self._output_dir / "best_checkpoint.pth"
         try:
-            state_dict = self._parameters_to_state_dict(self._best_params)
+            state_dict = (
+                self._parameters_to_supernet_state(self._best_params)
+                if self._multitier_enabled
+                else self._parameters_to_state_dict(self._best_params)
+            )
             checkpoint = {
                 "state_dict": state_dict,
                 "round": round_num,
                 "macro_f1": metrics.get("macro_f1"),
                 "benign_recall": metrics.get("benign_recall"),
                 "false_positive_rate": metrics.get("false_positive_rate"),
+                "architecture": "SuperNet" if self._multitier_enabled else "MLPClassifier",
                 "saved_at": datetime.utcnow().isoformat(),
                 "torch_version": torch.__version__,
             }
@@ -183,9 +265,72 @@ class ReportingFedAvg(FedAvg):
             updated.append((client_proxy, FitIns(parameters=fit_ins.parameters, config=config)))
         return updated
 
+    def _assignment_for_client(self, client_proxy: ClientProxy):
+        node_id = self._client_node_ids.get(client_proxy.cid)
+        assignment = (
+            self.node_profiler.get_assignment(node_id)
+            if self.node_profiler is not None and node_id is not None
+            else None
+        )
+        return node_id, assignment
+
     def configure_fit(self, server_round, parameters, client_manager):
+        # Baseline path: unchanged FedAvg behaviour
+        if not self._multitier_enabled:
+            return super().configure_fit(server_round, parameters, client_manager)
+
+        # Multi-tier path: super() handles sampling; we then swap per-client parameters
         configured = super().configure_fit(server_round, parameters, client_manager)
-        return self._with_tier_config(configured)
+        configured = self._with_tier_config(configured)
+
+        if server_round == 1:
+            # Warm-up: all clients receive the full SuperNet regardless of tier
+            self.logger.info(
+                "[multitier] round %d : warm-up phase — full SuperNet for all clients",
+                server_round,
+            )
+            updated = []
+            for client_proxy, fit_ins in configured:
+                node_id, assignment = self._assignment_for_client(client_proxy)
+                tier_width = assignment.model_width if assignment is not None else 1.0
+                config = dict(fit_ins.config)
+                config["tier_width"] = tier_width
+                config["received_width"] = 1.0
+                config["server_round"] = server_round
+                self.logger.info(
+                    "[multitier] → %s (tier=%s, received_width=1.0)",
+                    node_id or client_proxy.cid,
+                    assignment.assigned_tier if assignment else "unknown",
+                )
+                updated.append((client_proxy, FitIns(parameters=parameters, config=config)))
+            return updated
+
+        # Round 2+: each client receives its tier-specific sub-state
+        self.logger.info("[multitier] round %d : tier-specific sub-states", server_round)
+        global_state = self._parameters_to_supernet_state(parameters)
+        updated = []
+        for client_proxy, fit_ins in configured:
+            node_id, assignment = self._assignment_for_client(client_proxy)
+            tier_width = assignment.model_width if assignment is not None else 1.0
+            if assignment is None:
+                self.logger.warning(
+                    "[multitier] No tier assignment for cid=%s; falling back to width=1.0",
+                    client_proxy.cid,
+                )
+            sub_state = extract_submodel_state(global_state, tier_width)
+            sub_params = self._state_dict_to_parameters(sub_state)
+            config = dict(fit_ins.config)
+            config["tier_width"] = tier_width
+            config["received_width"] = tier_width
+            config["server_round"] = server_round
+            self.logger.info(
+                "[multitier] → %s (tier=%s, received_width=%.2f)",
+                node_id or client_proxy.cid,
+                assignment.assigned_tier if assignment else "unknown",
+                tier_width,
+            )
+            updated.append((client_proxy, FitIns(parameters=sub_params, config=config)))
+        return updated
 
     def aggregate_fit(
         self,
@@ -193,19 +338,93 @@ class ReportingFedAvg(FedAvg):
         results: list[tuple[ClientProxy, FitRes]],
         failures: list[tuple[ClientProxy, FitRes] | BaseException],
     ) -> tuple[Parameters | None, dict[str, Scalar]]:
+        # Always update node profiles (builds _client_node_ids for next round's configure_fit)
         self._record_node_profiles(results)
+
+        if not self._multitier_enabled:
+            # ── Baseline path: standard FedAvg ────────────────────────────
+            adjusted_results = self._apply_expert_weighting(results)
+            parameters_aggregated, metrics_aggregated = super().aggregate_fit(
+                server_round=server_round,
+                results=adjusted_results,
+                failures=failures,
+            )
+            aggregation_fn = getattr(self, "fit_metrics_aggregation_fn", None)
+            if aggregation_fn is not None:
+                metrics_aggregated = aggregation_fn(
+                    [(fit_res.num_examples, fit_res.metrics or {}) for _, fit_res in results]
+                )
+            if self.tracker is not None:
+                self.tracker.record_fit_round(server_round, metrics_aggregated)
+            if self.round_metric_logger is not None:
+                self.round_metric_logger(
+                    server_round,
+                    build_mlflow_round_metrics(metrics_aggregated),
+                )
+            self._latest_params = parameters_aggregated
+            return parameters_aggregated, metrics_aggregated
+
+        # ── Multi-tier path: masked aggregation ───────────────────────────
+        # aggregate_masked with received_width=1.0 is mathematically identical
+        # to FedAvg, so round 1 (warm-up) needs no special branch.
         adjusted_results = self._apply_expert_weighting(results)
-        parameters_aggregated, metrics_aggregated = super().aggregate_fit(
-            server_round=server_round,
-            results=adjusted_results,
-            failures=failures,
+
+        if not adjusted_results:
+            self.logger.warning(
+                "[multitier] aggregate_fit round %d received no successful results",
+                server_round,
+            )
+            return None, {}
+
+        if self._latest_params is None:
+            # First call before any params stored — use the first result as reference
+            self.logger.warning(
+                "[multitier] _latest_params is None at aggregate_fit round %d; "
+                "using first result parameters as global reference.",
+                server_round,
+            )
+            self._latest_params = results[0][1].parameters
+
+        current_global = self._parameters_to_supernet_state(self._latest_params)
+
+        client_updates = []
+        for _, fit_res in adjusted_results:
+            metrics = fit_res.metrics or {}
+            received_width = float(metrics.get("received_width", 1.0))
+            tier_width = float(metrics.get("tier_width", received_width))
+            sub_state = self._parameters_to_submodel_state(fit_res.parameters, received_width)
+            client_updates.append({
+                "state_dict": sub_state,
+                "num_examples": fit_res.num_examples,
+                "width": received_width,
+                "tier_width": tier_width,
+            })
+
+        self.logger.info(
+            "[multitier] aggregate_masked round %d | %d client updates | widths=%s",
+            server_round,
+            len(client_updates),
+            [u["width"] for u in client_updates],
         )
-        # Report metrics with real sample counts, not expert-inflated weights.
+        if all(float(update["width"]) == 1.0 for update in client_updates):
+            self.logger.info(
+                "[multitier] aggregate_masked: all clients full, equivalent to FedAvg"
+            )
+        else:
+            self.logger.info("[multitier] aggregate_masked: heterogeneous widths")
+
+        new_global = aggregate_masked(client_updates, current_global)
+        parameters_aggregated = self._state_dict_to_parameters(new_global)
+
+        # Metrics: aggregate over real (non-inflated) num_examples
         aggregation_fn = getattr(self, "fit_metrics_aggregation_fn", None)
         if aggregation_fn is not None:
-            metrics_aggregated = aggregation_fn(
+            metrics_aggregated: dict[str, Scalar] = aggregation_fn(
                 [(fit_res.num_examples, fit_res.metrics or {}) for _, fit_res in results]
             )
+        else:
+            metrics_aggregated = {}
+
         if self.tracker is not None:
             self.tracker.record_fit_round(server_round, metrics_aggregated)
         if self.round_metric_logger is not None:
@@ -213,6 +432,7 @@ class ReportingFedAvg(FedAvg):
                 server_round,
                 build_mlflow_round_metrics(metrics_aggregated),
             )
+
         self._latest_params = parameters_aggregated
         return parameters_aggregated, metrics_aggregated
 

@@ -11,7 +11,7 @@ strategy:
   multitier_enabled: false
 
 train:
-  local_epochs: 1
+  local_epochs: 2
   batch_size: 256
   learning_rate: 0.0005
   optimizer: adam

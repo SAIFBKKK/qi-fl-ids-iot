@@ -8,7 +8,7 @@ strategy:
   min_available_nodes: 3
   expert_factor: 1.0
   expert_node_id: node3
-  multitier_enabled: false
+  multitier_enabled: true
 
 train:
   local_epochs: 1
@@ -17,6 +17,12 @@ train:
   optimizer: adam
   weight_decay: 0.0001
   proximal_mu: 0.0
+
+model:
+  enable_submodel_training: true
+
+nodes:
+  tier_profiles_path: nodes/tier_profiles.yaml
 
 evaluation:
   centralized_eval: false
