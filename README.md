@@ -22,6 +22,19 @@ Multi-tier FL development is isolated on `feat/multitier-fl`, starting from the 
 
 ---
 
+## Project Status
+
+| Component | Status |
+|---|---|
+| Federated Learning baseline (FedAvg) | ✅ Validated |
+| Multi-tier Static HeteroFL | ✅ Frozen v1 (US1-US6) |
+| Per-tier model export | 📋 Phase 5 perspective |
+| Microservices architecture | 🔄 In progress (US10+) |
+| Quantum-Inspired modules | 📋 After microservices |
+| Demo + slides | 📋 May 12-15 |
+
+---
+
 ## Project Overview
 
 Modern IoT networks generate sensitive network traffic that is difficult to centralize safely. This project studies how to train an IDS without moving raw traffic data out of local nodes. Each client trains on its own partition, sends model updates to a Flower server, and receives the next global model after aggregation.

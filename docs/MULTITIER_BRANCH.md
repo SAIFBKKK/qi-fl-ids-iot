@@ -91,3 +91,40 @@ git checkout feat/multitier-fl
 - If the baseline needs a fix, apply it on `main`, retag if appropriate, then merge or cherry-pick into this branch.
 - Run baseline smoke tests before and after major Multi-tier changes.
 - Keep US3-US7 commits scoped so regressions are easy to isolate.
+
+## Status (April 26, 2026)
+
+Multi-tier Static HeteroFL implementation **frozen at US6**.
+
+### Completed (US1-US6)
+
+- Baseline FL bundle exported and validated
+- Branch `feat/multitier-fl` with isolated changes
+- Node Profiler with static `tier_profiles.yaml`
+- SuperNet with 3 sub-models (weak/medium/powerful)
+- Masked aggregation (Static HeteroFL)
+- Validation experiment with 3 runs (baseline / control / multitier)
+
+### Frozen (US7+)
+
+The following extensions were designed but not implemented:
+
+- **US7**: Per-tier model export (3 separate bundles)
+- **Tier-aware inference deployment**: would require US7 bundles
+- **FedRolex** (rolling sub-model extraction): perspective only
+
+### Rationale for freezing
+
+The Multi-tier core algorithm is validated. The remaining sprint capacity
+(approximately 13 working days) was reallocated to:
+
+- Microservices architecture (US10-12)
+- Quantum-Inspired modules (QGA, QIARM)
+- Demo + documentation
+
+### Inference path going forward
+
+The microservices infrastructure (US10+) will use the **baseline
+MLPClassifier bundle** (`outputs/deployment/baseline_fedavg_normal_classweights/`)
+produced in US1. Tier-aware deployment with heterogeneous sub-models
+is documented as Phase 5 perspective.
