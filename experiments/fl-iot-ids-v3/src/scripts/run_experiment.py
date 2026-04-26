@@ -13,15 +13,21 @@ from flwr.simulation import run_simulation
 
 from src.common.config import load_experiment_bundle
 from src.common.logger import get_logger
-from src.common.paths import ARTIFACTS_DIR, CONFIGS_DIR, OUTPUTS_DIR, ensure_runtime_dirs
+from src.common.paths import (
+    ARTIFACTS_DIR,
+    CONFIGS_DIR,
+    OUTPUTS_DIR,
+    ensure_runtime_dirs,
+)
+from src.common.preflight import validate_required_artifacts
 from src.common.registry import find_experiment
+from src.common.runtime import configure_runtime_artifacts
 from src.common.utils import get_expected_node_ids, set_seed
 from src.fl.client_app import create_client_app
 from src.fl.server_app import create_server_app
 from src.tracking.artifact_logger import BaselineArtifactTracker
 from src.tracking.run_naming import (
     generate_experiment_display_name,
-    generate_run_name,
 )
 from src.utils.mlflow_logger import MLflowRunLogger, normalize_tracking_uri
 
@@ -144,6 +150,9 @@ def log_experiment_to_mlflow(
                 ARTIFACTS_DIR
                 / f"scaler_standard_train_{config.get('scenario', {}).get('name')}.pkl"
             ),
+            "repro.scaffold_state_dir": str(
+                config.get("runtime", {}).get("scaffold_state_dir", "")
+            ),
         }
     )
     mlflow_logger.log_params(params)
@@ -174,12 +183,21 @@ def log_artifacts_to_mlflow(
             mlflow_logger.log_artifact(artifact_path, artifact_path="reports")
 
 
+def log_round_curves_to_mlflow(
+    mlflow_logger: MLflowRunLogger,
+    tracker: BaselineArtifactTracker,
+) -> None:
+    for server_round, metrics in tracker.build_mlflow_round_series():
+        mlflow_logger.log_metrics(metrics, step=server_round)
+
+
 def main() -> None:
     args = parse_args()
     experiment, config = load_experiment_config(args.experiment)
 
     ensure_runtime_dirs()
     set_seed(int(config["project"].get("seed", 42)))
+    run_name = configure_runtime_artifacts(experiment, config)
 
     tracker = BaselineArtifactTracker(experiment=experiment, config=config)
     report_dir = tracker.report_dir
@@ -194,19 +212,29 @@ def main() -> None:
                 str(mlflow_cfg.get("tracking_uri", "./outputs/mlruns"))
             ),
             experiment_name=generate_experiment_display_name(experiment),
-            run_name=generate_run_name(experiment),
+            run_name=run_name,
         )
         mlflow_logger.start()
         log_experiment_to_mlflow(mlflow_logger, experiment, config)
         mlflow_logger.log_artifact(resolved_config_path, artifact_path="reports")
 
-    server_app = create_server_app(config, tracker=tracker)
+    round_metric_logger = (
+        (lambda server_round, metrics: mlflow_logger.log_metrics(metrics, step=server_round))
+        if mlflow_logger is not None
+        else None
+    )
+    server_app = create_server_app(
+        config,
+        tracker=tracker,
+        round_metric_logger=round_metric_logger,
+    )
     client_app = create_client_app(config)
 
     num_clients = int(config["scenario"]["num_clients"])
     node_ids = get_expected_node_ids(num_clients)
     config["scenario"]["node_ids"] = node_ids
     logger.info("Selected clients: %s", ", ".join(node_ids))
+    validate_required_artifacts(config, node_ids)
 
     backend_config: dict[str, Any] = {
         "init_args": {"include_dashboard": False},

@@ -31,6 +31,57 @@ experiments:
     imbalance_strategy: class_weights
     description: "FedProx sur scenario absent_local pour reduire le drift."
 
+  - name: exp_v3_fedprox_normal_classweights
+    architecture: flat_34
+    fl_strategy: fedprox
+    fl_config: fedprox
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    description: "FedProx sur partition normal_noniid avec class weights."
+
+  - name: exp_v3_fedavg_absentlocal_classweights
+    architecture: flat_34
+    fl_strategy: fedavg
+    fl_config: fedavg
+    data_scenario: absent_local
+    imbalance_strategy: class_weights
+    description: "FedAvg sur scenario absent_local avec class weights."
+
+  - name: exp_v3_scaffold_absentlocal_classweights
+    architecture: flat_34
+    fl_strategy: scaffold
+    fl_config: scaffold
+    data_scenario: absent_local
+    imbalance_strategy: class_weights
+    description: "SCAFFOLD sur scenario absent_local avec class weights."
+
+  - name: exp_v3_fedavg_rareexpert_classweights
+    architecture: flat_34
+    fl_strategy: fedavg
+    fl_config: fedavg
+    data_scenario: rare_expert
+    imbalance_strategy: class_weights
+    expert_factor: 2.0
+    description: "FedAvg sur scenario rare_expert avec class weights et ponderation expert."
+
+  - name: exp_v3_fedprox_rareexpert_classweights
+    architecture: flat_34
+    fl_strategy: fedprox
+    fl_config: fedprox
+    data_scenario: rare_expert
+    imbalance_strategy: class_weights
+    expert_factor: 2.0
+    description: "FedProx sur scenario rare_expert avec class weights et ponderation expert."
+
+  - name: exp_v3_scaffold_rareexpert_classweights
+    architecture: flat_34
+    fl_strategy: scaffold
+    fl_config: scaffold
+    data_scenario: rare_expert
+    imbalance_strategy: class_weights
+    expert_factor: 2.0
+    description: "SCAFFOLD sur scenario rare_expert avec class weights et ponderation expert."
+
   - name: exp_v3_fedavg_rareexpert_focal_weighted
     architecture: flat_34_v1style
     fl_strategy: fedavg
@@ -39,6 +90,24 @@ experiments:
     imbalance_strategy: focal_loss_weighted
     expert_factor: 2.0
     description: "rare_expert avec ponderation de l'expert et focal weighted."
+
+  - name: exp_v3_fedprox_rareexpert_focal
+    architecture: flat_34
+    fl_strategy: fedprox
+    fl_config: fedprox
+    data_scenario: rare_expert
+    imbalance_strategy: focal_loss
+    expert_factor: 2.0
+    description: "FedProx sur scenario rare_expert avec focal loss."
+
+  - name: exp_v3_fedprox_rareexpert_focal_weighted
+    architecture: flat_34
+    fl_strategy: fedprox
+    fl_config: fedprox
+    data_scenario: rare_expert
+    imbalance_strategy: focal_loss_weighted
+    expert_factor: 2.0
+    description: "FedProx sur scenario rare_expert avec focal loss + class weights."
 
   - name: exp_v3_scaffold_normal_classweights
     architecture: flat_34

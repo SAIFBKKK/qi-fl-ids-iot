@@ -16,6 +16,7 @@ def build_ablation_table(outputs_dir: str | Path | None = None) -> None:
 
     metrics_order = [
         ("final_macro_f1", "Macro-F1"),
+        ("final_rare_macro_f1", "Rare Macro-F1"),
         ("final_benign_recall", "Benign Recall"),
         ("final_false_positive_rate", "FPR"),
         ("final_rare_class_recall", "Rare Recall"),

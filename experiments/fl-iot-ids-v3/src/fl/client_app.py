@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import OrderedDict
 from collections.abc import Mapping
+from pathlib import Path
 import pickle
 from time import perf_counter
 
@@ -109,6 +110,7 @@ class FlowerClient(fl.client.NumPyClient):
         dropout: float = 0.2,
         benign_class_id: int = 1,
         rare_class_ids: tuple[int, ...] = (0, 3, 30, 31, 33),
+        scaffold_state_dir: str | Path | None = None,
     ):
         self.node_id = node_id
         self.scenario = scenario
@@ -123,6 +125,9 @@ class FlowerClient(fl.client.NumPyClient):
         self.num_classes = int(num_classes)
         self.benign_class_id = benign_class_id
         self.rare_class_ids = rare_class_ids
+        self.scaffold_state_dir = (
+            Path(scaffold_state_dir) if scaffold_state_dir is not None else None
+        )
 
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -183,6 +188,12 @@ class FlowerClient(fl.client.NumPyClient):
             len(self.train_loader),
             self.num_classes,
         )
+        if self.fl_strategy == "scaffold":
+            logger.info(
+                "[%s] scaffold state dir: %s",
+                self.node_id,
+                self._scaffold_state_dir(),
+            )
 
     def _train_fedprox_epoch(self, global_params):
         self.model.train()
@@ -217,9 +228,65 @@ class FlowerClient(fl.client.NumPyClient):
             "num_samples": total,
         }
 
+    def _scaffold_state_dir(self) -> Path:
+        if self.scaffold_state_dir is not None:
+            return self.scaffold_state_dir
+        return ARTIFACTS_DIR / "scaffold_state" / self.scenario / "default"
+
+    def _c_local_path(self) -> Path:
+        return self._scaffold_state_dir() / f"c_local_{self.node_id}.pkl"
+
+    def _load_c_local(self) -> list[np.ndarray] | None:
+        path = self._c_local_path()
+        if not path.exists():
+            return None
+
+        with path.open("rb") as handle:
+            loaded = pickle.load(handle)
+
+        model_params = get_model_parameters(self.model)
+        if not isinstance(loaded, list) or len(loaded) != len(model_params):
+            logger.warning(
+                "[%s] Invalid scaffold state at %s; resetting c_local.",
+                self.node_id,
+                path,
+            )
+            return None
+
+        c_local = [np.asarray(param, dtype=np.float32) for param in loaded]
+        if any(ci.shape != model.shape for ci, model in zip(c_local, model_params)):
+            logger.warning(
+                "[%s] Scaffold state shape mismatch at %s; resetting c_local.",
+                self.node_id,
+                path,
+            )
+            return None
+
+        logger.info("[%s] Loaded scaffold c_local from %s", self.node_id, path)
+        return c_local
+
+    def _save_c_local(self, c_local: list[np.ndarray]) -> None:
+        path = self._c_local_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("wb") as handle:
+            pickle.dump([np.asarray(param, dtype=np.float32) for param in c_local], handle)
+        logger.info("[%s] Saved scaffold c_local to %s", self.node_id, path)
+
+    @staticmethod
+    def _mean_norm(arrays: list[np.ndarray]) -> float:
+        if not arrays:
+            return 0.0
+        return float(np.mean([np.linalg.norm(np.asarray(array)) for array in arrays]))
+
     def _get_c_local(self) -> list[np.ndarray]:
         if not hasattr(self, "c_local") or self.c_local is None:
-            self.c_local = [np.zeros_like(param) for param in get_model_parameters(self.model)]
+            loaded = self._load_c_local()
+            if loaded is None:
+                loaded = [
+                    np.zeros_like(param, dtype=np.float32)
+                    for param in get_model_parameters(self.model)
+                ]
+            self.c_local = loaded
         return self.c_local
 
     def _train_scaffold_epoch(
@@ -309,7 +376,11 @@ class FlowerClient(fl.client.NumPyClient):
                 (wb - wa) / (self.learning_rate * steps) - cg
                 for wb, wa, cg in zip(w_before, w_after, c_global)
             ]
-            self.c_local = [cl + dc for cl, dc in zip(c_local, delta_c)]
+            self.c_local = [
+                np.asarray(cl + dc, dtype=np.float32)
+                for cl, dc in zip(c_local, delta_c)
+            ]
+            self._save_c_local(self.c_local)
         else:
             for _ in range(self.local_epochs):
                 last = train_one_epoch(
@@ -343,6 +414,8 @@ class FlowerClient(fl.client.NumPyClient):
             metrics["scaffold_delta_c"] = pickle.dumps(
                 [dc.astype(np.float32) for dc in delta_c]
             )
+            metrics["scaffold_delta_c_norm"] = self._mean_norm(delta_c)
+            metrics["scaffold_c_local_norm"] = self._mean_norm(self.c_local)
 
         return (
             updated_parameters,
@@ -402,6 +475,7 @@ def make_client_fn(config: Mapping[str, object]):
     dataset_cfg = dict(config.get("dataset", {}))
     imbalance_cfg = dict(config.get("imbalance", {}))
     experiment_cfg = dict(config.get("experiment", {}))
+    runtime_cfg = dict(config.get("runtime", {}))
 
     scenario = str(scenario_cfg.get("name", "normal_noniid"))
     batch_size = int(train_cfg.get("batch_size", 256))
@@ -420,6 +494,7 @@ def make_client_fn(config: Mapping[str, object]):
     rare_class_ids = tuple(dataset_cfg.get("rare_class_ids", [0, 3, 30, 31, 33]))
     num_clients = int(scenario_cfg.get("num_clients", 3))
     node_ids = list(scenario_cfg.get("node_ids", get_expected_node_ids(num_clients)))
+    scaffold_state_dir = runtime_cfg.get("scaffold_state_dir")
 
     assert len(node_ids) == num_clients, (
         f"node_ids length mismatch: node_ids={node_ids}, num_clients={num_clients}"
@@ -453,6 +528,7 @@ def make_client_fn(config: Mapping[str, object]):
             dropout=dropout,
             benign_class_id=benign_class_id,
             rare_class_ids=rare_class_ids,
+            scaffold_state_dir=scaffold_state_dir,
         ).to_client()
 
     return configured_client_fn
@@ -485,6 +561,14 @@ def client_fn(context: Context):
             "num_classes": int(run_config.get("num-classes", 34)),
             "benign_class_id": 1,
             "rare_class_ids": [0, 3, 30, 31, 33],
+        },
+        "runtime": {
+            "scaffold_state_dir": str(
+                run_config.get(
+                    "scaffold-state-dir",
+                    ARTIFACTS_DIR / "scaffold_state" / str(run_config.get("scenario", "normal_noniid")) / "default",
+                )
+            ),
         },
     }
     return make_client_fn(config)(context)

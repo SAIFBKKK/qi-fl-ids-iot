@@ -53,3 +53,4 @@ def test_rare_recall_is_recomputed_from_global_counts():
     )
 
     assert aggregated["rare_class_recall"] == 0.1
+    assert aggregated["rare_macro_f1"] == (2.0 / 11.0)

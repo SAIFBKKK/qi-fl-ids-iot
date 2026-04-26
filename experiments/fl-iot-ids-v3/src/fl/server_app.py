@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any
+from typing import Any, Callable
 
 from flwr.common import Context
 from flwr.server import ServerApp, ServerAppComponents, ServerConfig
@@ -39,6 +39,7 @@ def _default_config_from_run_config(run_config: Mapping[str, Any]) -> dict[str, 
 def build_server_components(
     config: Mapping[str, Any],
     tracker: BaselineArtifactTracker | None = None,
+    round_metric_logger: Callable[[int, dict[str, float]], None] | None = None,
 ) -> ServerAppComponents:
     strategy_name = str(
         config.get("experiment", {}).get(
@@ -67,6 +68,7 @@ def build_server_components(
         min_available_clients=int(strategy_cfg.get("min_available_nodes", 3)),
         fit_metrics_aggregation_fn=aggregate_fit_metrics,
         evaluate_metrics_aggregation_fn=aggregate_evaluate_metrics,
+        round_metric_logger=round_metric_logger,
     )
     if tracker is not None:
         tracker.strategy = strategy
@@ -87,9 +89,14 @@ def server_fn(context: Context) -> ServerAppComponents:
 def create_server_app(
     config: Mapping[str, Any],
     tracker: BaselineArtifactTracker | None = None,
+    round_metric_logger: Callable[[int, dict[str, float]], None] | None = None,
 ) -> ServerApp:
     def configured_server_fn(_: Context) -> ServerAppComponents:
-        return build_server_components(config, tracker=tracker)
+        return build_server_components(
+            config,
+            tracker=tracker,
+            round_metric_logger=round_metric_logger,
+        )
 
     return ServerApp(server_fn=configured_server_fn)
 

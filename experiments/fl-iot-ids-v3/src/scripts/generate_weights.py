@@ -33,6 +33,13 @@ def load_global_counts(scenario: str, split: str = "train") -> dict[int, int]:
     with manifest_path.open(encoding="utf-8") as f:
         manifest = json.load(f)
 
+    if "splits" not in manifest:
+        raise ValueError(
+            f"Legacy manifest detected for scenario={scenario!r}: {manifest_path}. "
+            "This manifest predates the split-aware v3 pipeline. "
+            f"Regenerate it with: python -m src.scripts.generate_scenarios --scenario {scenario}"
+        )
+
     try:
         nodes = manifest["splits"][split]["nodes"]
     except KeyError as exc:

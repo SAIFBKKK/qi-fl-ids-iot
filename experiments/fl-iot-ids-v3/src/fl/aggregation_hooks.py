@@ -8,6 +8,8 @@ FIT_METRIC_KEYS = (
     "train_loss_last",
     "train_time_sec",
     "update_size_bytes",
+    "scaffold_delta_c_norm",
+    "scaffold_c_local_norm",
 )
 
 FIT_SUM_KEYS = {
@@ -22,6 +24,7 @@ EVALUATE_METRIC_KEYS = (
     "benign_recall",
     "false_positive_rate",
     "rare_class_recall",
+    "rare_macro_f1",
 )
 RARE_CLASS_IDS = (0, 3, 30, 31, 33)
 
@@ -118,11 +121,20 @@ def aggregate_evaluate_metrics(metrics: list[tuple[int, dict]]) -> dict[str, flo
             f1_scores.append(f1)
 
         rare_recalls = []
+        rare_f1_scores = []
         for class_id in RARE_CLASS_IDS:
             tp = float(summed_counts.get(f"tp_class_{class_id}") or 0.0)
+            fp = float(summed_counts.get(f"fp_class_{class_id}") or 0.0)
             fn = float(summed_counts.get(f"fn_class_{class_id}") or 0.0)
             if tp + fn > 0:
-                rare_recalls.append(tp / (tp + fn))
+                recall = tp / (tp + fn)
+                precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+                rare_recalls.append(recall)
+                rare_f1_scores.append(
+                    2.0 * precision * recall / (precision + recall)
+                    if (precision + recall) > 0
+                    else 0.0
+                )
 
         if recalls:
             aggregated["recall_macro"] = float(sum(recalls) / len(recalls))
@@ -130,5 +142,7 @@ def aggregate_evaluate_metrics(metrics: list[tuple[int, dict]]) -> dict[str, flo
             aggregated["macro_f1"] = float(sum(f1_scores) / len(f1_scores))
         if rare_recalls:
             aggregated["rare_class_recall"] = float(sum(rare_recalls) / len(rare_recalls))
+        if rare_f1_scores:
+            aggregated["rare_macro_f1"] = float(sum(rare_f1_scores) / len(rare_f1_scores))
 
     return aggregated

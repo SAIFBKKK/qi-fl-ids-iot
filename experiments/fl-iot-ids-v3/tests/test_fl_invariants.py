@@ -99,3 +99,66 @@ def test_fedavg_fedprox_and_scaffold_produce_distinct_synthetic_updates(tmp_path
     assert "scaffold_delta_c" in scaffold_metrics
     assert not np.allclose(_flatten(avg_params), _flatten(prox_params))
     assert not np.allclose(_flatten(avg_params), _flatten(scaffold_params))
+
+
+def test_scaffold_persists_c_local_across_client_instances(tmp_path, monkeypatch):
+    scenario = "synthetic_scaffold_persistence"
+    labels = np.array([0, 1, 0, 1, 0, 1, 0, 1])
+    _write_client_npz(tmp_path, scenario, "node1", labels)
+
+    monkeypatch.setattr(
+        client_app,
+        "get_processed_path",
+        lambda scenario_name, node_id: tmp_path / scenario_name / node_id / "train_preprocessed.npz",
+    )
+
+    scaffold_state_dir = tmp_path / "scaffold_state" / "run-001"
+    common_kwargs = {
+        "node_id": "node1",
+        "scenario": scenario,
+        "batch_size": 2,
+        "local_epochs": 1,
+        "learning_rate": 1e-2,
+        "num_classes": 34,
+        "hidden_dims": (8, 4),
+        "dropout": 0.0,
+        "imbalance_strategy": "none",
+        "fl_strategy": "scaffold",
+        "scaffold_state_dir": scaffold_state_dir,
+    }
+
+    template = FlowerClient(**common_kwargs)
+    initial = [param.copy() for param in get_model_parameters(template.model)]
+    c_global = [np.full_like(param, 0.01, dtype=np.float32) for param in initial]
+
+    first_client = FlowerClient(**common_kwargs)
+    first_client.fit(
+        [param.copy() for param in initial],
+        {"scaffold_c_global": pickle.dumps(c_global)},
+    )
+
+    state_path = scaffold_state_dir / "c_local_node1.pkl"
+    assert state_path.exists()
+
+    with state_path.open("rb") as handle:
+        first_saved = pickle.load(handle)
+
+    assert any(not np.allclose(param, 0.0) for param in first_saved)
+
+    second_client = FlowerClient(**common_kwargs)
+    loaded_c_local = second_client._get_c_local()
+    for saved, loaded in zip(first_saved, loaded_c_local):
+        assert np.allclose(saved, loaded)
+
+    second_client.fit(
+        [param.copy() for param in initial],
+        {"scaffold_c_global": pickle.dumps(c_global)},
+    )
+
+    with state_path.open("rb") as handle:
+        second_saved = pickle.load(handle)
+
+    assert any(
+        not np.allclose(before, after)
+        for before, after in zip(first_saved, second_saved)
+    )

@@ -15,6 +15,8 @@ FIT_METRIC_KEYS = (
     "train_loss_last",
     "train_time_sec",
     "update_size_bytes",
+    "scaffold_delta_c_norm",
+    "scaffold_c_local_norm",
 )
 
 EVALUATE_METRIC_KEYS = (
@@ -24,6 +26,7 @@ EVALUATE_METRIC_KEYS = (
     "benign_recall",
     "false_positive_rate",
     "rare_class_recall",
+    "rare_macro_f1",
 )
 
 ROUND_REQUIRED_KEYS = (
@@ -31,6 +34,22 @@ ROUND_REQUIRED_KEYS = (
     *FIT_METRIC_KEYS,
     *EVALUATE_METRIC_KEYS,
 )
+
+MLFLOW_ROUND_METRIC_ALIASES = {
+    "distributed_loss": "validation/loss",
+    "train_loss_last": "train/loss",
+    "train_time_sec": "train/time_sec",
+    "update_size_bytes": "communication/update_size_bytes",
+    "scaffold_delta_c_norm": "scaffold/delta_c_norm",
+    "scaffold_c_local_norm": "scaffold/c_local_norm",
+    "accuracy": "validation/accuracy",
+    "macro_f1": "validation/macro_f1",
+    "rare_macro_f1": "validation/rare_macro_f1",
+    "recall_macro": "validation/recall_macro",
+    "benign_recall": "validation/benign_recall",
+    "false_positive_rate": "validation/false_positive_rate",
+    "rare_class_recall": "validation/rare_class_recall",
+}
 
 
 def _utc_now_iso() -> str:
@@ -47,6 +66,23 @@ def _coerce_numeric_metrics(
         if isinstance(value, Number):
             coerced[key] = float(value)
     return coerced
+
+
+def build_mlflow_round_metrics(
+    metrics: Mapping[str, Any],
+    *,
+    distributed_loss: float | None = None,
+) -> dict[str, float]:
+    merged: dict[str, Any] = dict(metrics)
+    if distributed_loss is not None:
+        merged["distributed_loss"] = distributed_loss
+
+    payload: dict[str, float] = {}
+    for key, metric_name in MLFLOW_ROUND_METRIC_ALIASES.items():
+        value = merged.get(key)
+        if isinstance(value, Number):
+            payload[metric_name] = float(value)
+    return payload
 
 
 class BaselineArtifactTracker:
@@ -142,6 +178,15 @@ class BaselineArtifactTracker:
             "experiment_name": self.experiment["name"],
             "rounds": self.build_round_rows(),
         }
+
+    def build_mlflow_round_series(self) -> list[tuple[int, dict[str, float]]]:
+        series: list[tuple[int, dict[str, float]]] = []
+        for row in self.build_round_rows():
+            server_round = int(row["round"])
+            metrics = build_mlflow_round_metrics(row)
+            if metrics:
+                series.append((server_round, metrics))
+        return series
 
     def _is_complete_round(self, row: Mapping[str, Any]) -> bool:
         return all(row.get(key) is not None for key in ROUND_REQUIRED_KEYS)
@@ -259,6 +304,7 @@ class BaselineArtifactTracker:
             "final_distributed_loss",
             "final_accuracy",
             "final_macro_f1",
+            "final_rare_macro_f1",
             "final_recall_macro",
             "final_benign_recall",
             "final_false_positive_rate",

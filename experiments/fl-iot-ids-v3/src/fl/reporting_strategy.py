@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import math
 import pickle
-from typing import Any
+from typing import Any, Callable
 
 import numpy as np
 from flwr.common import EvaluateRes, FitIns, FitRes, Parameters, Scalar, parameters_to_ndarrays
 from flwr.server.client_proxy import ClientProxy
 from flwr.server.strategy import FedAvg
 
-from src.tracking.artifact_logger import BaselineArtifactTracker
+from src.tracking.artifact_logger import BaselineArtifactTracker, build_mlflow_round_metrics
 
 
 class ReportingFedAvg(FedAvg):
@@ -20,6 +20,7 @@ class ReportingFedAvg(FedAvg):
         monitor_metric: str = "macro_f1",
         expert_node_id: str | None = None,
         expert_factor: float = 1.0,
+        round_metric_logger: Callable[[int, dict[str, float]], None] | None = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -27,6 +28,7 @@ class ReportingFedAvg(FedAvg):
         self.monitor_metric = monitor_metric
         self.expert_node_id = expert_node_id
         self.expert_factor = expert_factor
+        self.round_metric_logger = round_metric_logger
         self._best_metric: float = -math.inf
         self._best_round: int = 0
         self._best_params: Parameters | None = None
@@ -81,6 +83,11 @@ class ReportingFedAvg(FedAvg):
             )
         if self.tracker is not None:
             self.tracker.record_fit_round(server_round, metrics_aggregated)
+        if self.round_metric_logger is not None:
+            self.round_metric_logger(
+                server_round,
+                build_mlflow_round_metrics(metrics_aggregated),
+            )
         self._latest_params = parameters_aggregated
         return parameters_aggregated, metrics_aggregated
 
@@ -101,6 +108,14 @@ class ReportingFedAvg(FedAvg):
                 distributed_loss=loss_aggregated,
                 metrics=metrics_aggregated,
             )
+        if self.round_metric_logger is not None:
+            self.round_metric_logger(
+                server_round,
+                build_mlflow_round_metrics(
+                    metrics_aggregated,
+                    distributed_loss=loss_aggregated,
+                ),
+            )
 
         metric_value = metrics_aggregated.get(self.monitor_metric) if metrics_aggregated else None
         if metric_value is not None and float(metric_value) > self._best_metric:
@@ -117,6 +132,12 @@ class ReportingScaffold(ReportingFedAvg):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.c_global: list[np.ndarray] | None = None
+
+    @staticmethod
+    def _mean_norm(arrays: list[np.ndarray]) -> float:
+        if not arrays:
+            return 0.0
+        return float(np.mean([np.linalg.norm(np.asarray(array)) for array in arrays]))
 
     def configure_fit(self, server_round, parameters, client_manager):
         if self.c_global is None:
@@ -163,6 +184,11 @@ class ReportingScaffold(ReportingFedAvg):
             for idx in range(len(self.c_global)):
                 self.c_global[idx] = self.c_global[idx] + (
                     sum(delta[idx] for delta in delta_c_list) / len(delta_c_list)
+                )
+            if self.round_metric_logger is not None:
+                self.round_metric_logger(
+                    server_round,
+                    {"scaffold/c_global_norm": self._mean_norm(self.c_global)},
                 )
 
         return parameters_aggregated, metrics_aggregated
