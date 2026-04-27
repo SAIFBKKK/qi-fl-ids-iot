@@ -156,3 +156,8 @@ desktop.ini
 !docs/**/*.pdf
 !deployments/docker/*.Dockerfile
 !deployments/docker/docker-compose.yml
+
+# Keep official US1 deployment bundle for microservices runtime
+!experiments/fl-iot-ids-v3/outputs/deployment/
+!experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights/
+!experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights/**

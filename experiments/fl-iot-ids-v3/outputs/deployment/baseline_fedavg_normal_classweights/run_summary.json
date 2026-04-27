@@ -1,0 +1,22 @@
+{
+  "generated_at": "2026-04-26T13:30:38.095257Z",
+  "experiment_name": "exp_v3_fedavg_normal_classweights",
+  "status": "partial",
+  "duration_sec": 1337.82,
+  "rounds": 10,
+  "completed_rounds": 0,
+  "requested_rounds": 10,
+  "architecture": "flat_34",
+  "fl_strategy": "fedavg",
+  "data_scenario": "normal_noniid",
+  "imbalance_strategy": "class_weights",
+  "num_clients": 3,
+  "feature_count": 28,
+  "num_classes": 34,
+  "seed": 42,
+  "best_round": {
+    "best_round": 10,
+    "best_metric": 0.679710069598104,
+    "monitor_metric": "macro_f1"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "architecture": "flat_34",
+  "input_dim": 28,
+  "hidden_dims": [
+    256,
+    128
+  ],
+  "num_classes": 34,
+  "dropout": 0.2,
+  "best_round": 10,
+  "macro_f1": 0.679710069598104,
+  "benign_recall": 0.8791977882616899,
+  "false_positive_rate": 0.12080221173830999,
+  "experiment": "exp_v3_fedavg_normal_classweights",
+  "fl_strategy": "fedavg",
+  "data_scenario": "normal_noniid",
+  "imbalance_strategy": "class_weights",
+  "seed": 42,
+  "torch_version": "2.11.0+cpu",
+  "checkpoint_saved_at": "2026-04-26T13:30:35.682807",
+  "bundle_built_at": "2026-04-26T13:43:43.646985",
+  "sha256": {
+    "global_model.pth": "393aa55b47dfecd6e1b95d3799c89f3a3ad40fb0e52eb63fead646cf54184f79",
+    "scaler.pkl": "aa0024644df57bcfaf5c953e46c5e1c35c821958113244685cd0a4df076028eb",
+    "feature_names.pkl": "22bf5e33a7778b923f94ec6663279847567fe85c02b743b6154bba51c20f0179",
+    "label_mapping.pkl": "51e0224f06e8a9c146e3f0d914982b646d71abd959f3aef384c0aac1d1165cc0"
+  }
+}
