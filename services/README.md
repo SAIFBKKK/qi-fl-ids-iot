@@ -214,3 +214,34 @@ P4 a ete valide comme Mode A complet de demo IDS en une commande.
 - MLflow: disponible sur <http://localhost:5000>, passif dans Mode A
 - Hors scope P4: pas de FL training, pas de Node-RED, pas de QGA, pas de node2/node3
 - Tag stable: `p4-mode-a-demo`
+
+## P5 Validation Snapshot
+
+Mode B - FL Training Profile valide.
+
+Validation:
+
+- Commande de lancement: `docker compose --profile training up -d --build`
+- Verification: `bash scripts/training_check.sh`
+- Resultat final: `training_check.sh -> PASS`
+
+Services valides:
+
+- `fl-server`
+- `fl-client-1`
+- `fl-client-2`
+- `fl-client-3`
+- `mlflow`
+
+Observations:
+
+- Flower server a complete 10 rounds
+- 3/3 clients ont participe avec succes
+- 0 failure runtime observee
+- MLflow experiment cree: `p5_mock_fl_training`
+
+Important:
+
+Ce profile valide l'orchestration FL et la separation Docker Compose.
+Il ne represente pas le benchmark scientifique FL.
+Les vraies experiences scientifiques FL restent dans `experiments/fl-iot-ids-v3/`.
