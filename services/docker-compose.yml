@@ -1,7 +1,6 @@
 # QI-FL-IDS-IoT - Microservices stack
 # Architecture validated on 5 axes (services, communication, stack, volumes, demo)
 # Profiles: default | training | preprocessing | orchestration
-version: "3.9"
 
 x-future-service-mounts:
   artifacts_ro:
@@ -43,6 +42,44 @@ services:
           "mosquitto_sub -h localhost -u \"$${MQTT_USERNAME}\" -P \"$${MQTT_PASSWORD}\" -t '$$SYS/broker/version' -C 1 -W 3 >/dev/null 2>&1",
         ]
       interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  iot-node-1:
+    build:
+      context: ./iot-node
+    container_name: iot-node-1
+    environment:
+      NODE_ID: node1
+      MQTT_BROKER: mosquitto
+      MQTT_PORT: ${MQTT_PORT:-1883}
+      MQTT_USERNAME: ${MQTT_USERNAME:-ids_user}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-changeme_in_dotenv}
+      INFERENCE_THRESHOLD: ${INFERENCE_THRESHOLD:-0.5}
+      MODEL_PATH: /artifacts/global_model.pth
+      SCALER_PATH: /artifacts/scaler.pkl
+      LABEL_MAPPING_PATH: /artifacts/label_mapping.json
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    ports:
+      - "8001:8000"
+    volumes:
+      - ../experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights:/artifacts:ro
+    networks:
+      - iot-net
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3).read()",
+        ]
+      interval: 15s
       timeout: 5s
       retries: 5
     restart: unless-stopped
@@ -106,7 +143,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-  # NOTE: iot-node-1, iot-node-2, iot-node-3, traffic-generator,
-  # fl-server and qga-service will be added in prompts P2-P6.
+  # NOTE: iot-node-2, iot-node-3, traffic-generator,
+  # fl-server and qga-service will be added in prompts P3-P6.
   # Future services should reuse the bind mounts documented in
   # x-future-service-mounts above.

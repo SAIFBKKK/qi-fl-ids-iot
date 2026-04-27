@@ -1,2 +1,8 @@
-# services/iot-node/requirements.txt - PLACEHOLDER
-# Sera implemente dans le prompt P2.
+fastapi==0.136.1
+uvicorn[standard]==0.46.0
+paho-mqtt==2.1.0
+loguru==0.7.3
+numpy==2.4.4
+joblib==1.5.3
+scikit-learn==1.8.0
+torch==2.5.1
