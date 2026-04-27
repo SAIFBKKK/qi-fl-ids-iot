@@ -74,11 +74,12 @@ Voir `services/<service>/README.md` pour chaque service individuel.
 - `scripts/generate_mqtt_password.sh` - Cree le password file Mosquitto
 - `scripts/reset.sh` - Reset propre soft ou complet avec `--hard`
 - `scripts/healthcheck_all.sh` - Verifie l'etat des services infra P1
+- `scripts/test_publish.py` - Publie des flows de test MQTT depuis les demo subsets
 
 ## Implementation Status
 
 - [x] P1 - Foundation (squelette + scripts)
-- [ ] P2 - iot-node service
+- [x] P2 - iot-node service
 - [ ] P3 - traffic-generator
 - [ ] P4 - Compose Mode A complet
 - [ ] P5 - fl-server
@@ -86,3 +87,14 @@ Voir `services/<service>/README.md` pour chaque service individuel.
 - [ ] P7 - Node-RED scenarios
 - [ ] P8 - Tests E2E
 - [ ] P9 - Documentation finale
+
+## P2 Validation Snapshot
+
+P2 a ete valide sur `iot-node-1` avec le bundle US1 reel et MQTT authentifie.
+
+- Health: `/health` retourne `status=ok`, `mqtt_connected=true`, `inference_engine=torch_mlp`
+- Pipeline MQTT: 5 flows `ddos_burst` recus, 5 predictions publiees, 5 alerts publiees
+- Schema strict: 0 rejet, aucune imputation silencieuse
+- Labels observes: `DDoS-UDP_Flood`, `DDoS-RSTFINFlood`, `DDoS-SlowLoris`, `DDoS-SYN_Flood`
+- Latence CPU edge: environ 2 ms par flow, soit moins de 5 ms par inference
+- Metrics Prometheus: `ids_flows_received_total`, `ids_flows_rejected_invalid_schema_total`, `ids_predictions_total`, `ids_alerts_total`, `inference_latency_seconds`, `ids_node_status`

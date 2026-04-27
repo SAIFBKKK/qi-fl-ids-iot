@@ -128,3 +128,15 @@ Expected behavior:
 - A prediction is published to `ids/predictions/node1`
 - An alert is published to `ids/alerts/node1` when confidence is above threshold and the label is not benign
 - `ids/status/node1` is retained as `online` while the node is running
+
+## P2 Validation Evidence
+
+Validated with `ddos_burst`, `--count 5`, and the real US1 bundle mounted read-only.
+
+- Health: `status=ok`, `mqtt_connected=true`, `inference_engine=torch_mlp`
+- MQTT pipeline: 5 received flows, 5 predictions, 5 alerts
+- Rejections: 0 invalid schema, confirming exact 28-feature messages
+- Predicted labels: `DDoS-UDP_Flood` x2, `DDoS-RSTFINFlood` x1, `DDoS-SlowLoris` x1, `DDoS-SYN_Flood` x1
+- Severity: critical for high confidence near `0.99`, low for confidence near `0.6`
+- Latency: `0.011s` total for 5 flows, about `2ms` per flow on CPU edge node
+- Prometheus: required P2 metrics exposed with expected names and labels
