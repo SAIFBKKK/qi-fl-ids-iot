@@ -3,26 +3,69 @@
 Architecture microservices pour le framework QI-FL-IDS-IoT.
 9 services always-on + 2 services profiles.
 
-## Quick Start
+## Mode A Demo
 
 ```bash
 cd services
 
-# 1. Configurer
+# 1. Preparer la configuration
 cp .env.example .env
-# Editer .env, au minimum changer MQTT_PASSWORD et GRAFANA_ADMIN_PASSWORD.
+# Editer .env, au minimum changer MQTT_PASSWORD et GRAFANA_ADMIN_PASSWORD
 
 # 2. Generer le password MQTT
-./scripts/generate_mqtt_password.sh
+bash scripts/generate_mqtt_password.sh
 
 # 3. Construire les subsets de demo
 ../.venv/Scripts/python.exe scripts/build_demo_subsets.py
 
-# 4. Demarrer la stack infra P1
-docker-compose --env-file .env up -d
+# 4. Demarrer la demo IDS temps reel
+docker compose up -d --build
 
 # 5. Verifier
-./scripts/healthcheck_all.sh
+bash scripts/demo_check.sh
+```
+
+Sur Windows PowerShell, la verification peut aussi se lancer avec :
+
+```powershell
+.\scripts\demo_check.ps1
+```
+
+Mode A lance la demo IDS temps reel sans FL training :
+`traffic-generator -> MQTT -> iot-node-1 -> predictions/alerts -> Prometheus/Grafana`.
+MLflow est disponible sur le port `5000`, mais reste passif dans Mode A.
+
+Le scenario par defaut est `mixed_chaos` avec `REPLAY_RATE=5`.
+Node-RED reste reserve au profile `orchestration`. Le FL server et QGA sont des
+profiles futurs, non implementes en P4.
+
+Endpoints utiles :
+
+- iot-node health: <http://localhost:8001/health>
+- traffic-generator health: <http://localhost:8010/health>
+- Prometheus: <http://localhost:9090>
+- Grafana: <http://localhost:3000>
+- MLflow: <http://localhost:5000>
+
+Debug MQTT :
+
+```bash
+docker exec -it mosquitto mosquitto_sub \
+  -h localhost -p 1883 \
+  -u ids_user -P "$MQTT_PASSWORD" \
+  -t "ids/#"
+```
+
+Arret :
+
+```bash
+docker compose down
+```
+
+Nettoyage optionnel et destructif pour Docker local :
+
+```bash
+docker system prune -a --volumes -f
 ```
 
 > **Note sur les chemins de donnees :**
@@ -75,13 +118,15 @@ Voir `services/<service>/README.md` pour chaque service individuel.
 - `scripts/reset.sh` - Reset propre soft ou complet avec `--hard`
 - `scripts/healthcheck_all.sh` - Verifie l'etat des services infra P1
 - `scripts/test_publish.py` - Publie des flows de test MQTT depuis les demo subsets
+- `scripts/demo_check.sh` - Verifie la demo Mode A sous Bash
+- `scripts/demo_check.ps1` - Verifie la demo Mode A sous PowerShell
 
 ## Implementation Status
 
 - [x] P1 - Foundation (squelette + scripts)
 - [x] P2 - iot-node service
 - [x] P3 - traffic-generator
-- [ ] P4 - Compose Mode A complet
+- [x] P4 - Compose Mode A complet
 - [ ] P5 - fl-server
 - [ ] P6 - Monitoring dashboards Grafana + qga-service
 - [ ] P7 - Node-RED scenarios
