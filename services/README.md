@@ -80,7 +80,7 @@ Voir `services/<service>/README.md` pour chaque service individuel.
 
 - [x] P1 - Foundation (squelette + scripts)
 - [x] P2 - iot-node service
-- [ ] P3 - traffic-generator
+- [x] P3 - traffic-generator
 - [ ] P4 - Compose Mode A complet
 - [ ] P5 - fl-server
 - [ ] P6 - Monitoring dashboards Grafana + qga-service
@@ -98,3 +98,14 @@ P2 a ete valide sur `iot-node-1` avec le bundle US1 reel et MQTT authentifie.
 - Labels observes: `DDoS-UDP_Flood`, `DDoS-RSTFINFlood`, `DDoS-SlowLoris`, `DDoS-SYN_Flood`
 - Latence CPU edge: environ 2 ms par flow, soit moins de 5 ms par inference
 - Metrics Prometheus: `ids_flows_received_total`, `ids_flows_rejected_invalid_schema_total`, `ids_predictions_total`, `ids_alerts_total`, `inference_latency_seconds`, `ids_node_status`
+
+## P3 Validation Snapshot
+
+P3 a ete valide avec la chaine complete `traffic-generator -> MQTT -> iot-node-1 -> modele PyTorch -> predictions/alerts -> Prometheus`.
+
+- Flux recus par `iot-node-1`: `ids_flows_received_total=16778`
+- Predictions: `ids_predictions_total` augmente sur plusieurs classes CIC-IoT-2023
+- Alerts: `ids_alerts_total` actif avec severites `low`, `medium`, `high`, `critical`
+- Rejets schema/features: `0` sur toutes les raisons exposees
+- Latence inference: `7.626942627s` pour `16778` flows, soit environ `0.45 ms/flow`
+- Node status: `ids_node_status{node_id="node1"} 1`

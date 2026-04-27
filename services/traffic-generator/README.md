@@ -92,3 +92,22 @@ Expected behavior:
 - MQTT flow messages are published to `ids/flows/node1`
 - `iot-node-1` publishes predictions and alerts according to the selected scenario
 - `/metrics` exposes `traffic_generator_*` series
+
+## P3 Validation Evidence
+
+Validated with the full runtime chain:
+
+```text
+traffic-generator -> MQTT -> iot-node-1 -> PyTorch model -> predictions/alerts -> Prometheus metrics
+```
+
+Observed downstream on `iot-node-1`:
+
+- `ids_flows_received_total{node_id="node1",source_topic="ids/flows/node1"} 16778`
+- `ids_flows_rejected_invalid_schema_total` stayed at `0` for schema, feature, preprocessing, and inference rejection reasons
+- `ids_predictions_total` increased across multiple CIC-IoT-2023 classes
+- `ids_alerts_total` emitted alerts across `low`, `medium`, `high`, and `critical`
+- `inference_latency_seconds_sum=7.626942627` for `16778` flows, about `0.45 ms/flow`
+- `ids_node_status{node_id="node1"} 1`
+
+This validates the P3 replay path and preserves the strict 28-feature contract used by `iot-node-1`.
