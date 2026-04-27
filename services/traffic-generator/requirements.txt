@@ -1,0 +1,2 @@
+# services/traffic-generator/requirements.txt - PLACEHOLDER
+# Sera implemente dans le prompt P3.

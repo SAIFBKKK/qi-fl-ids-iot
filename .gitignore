@@ -22,6 +22,8 @@ __pypackages__/
 # --- Environments ---
 .env
 .envrc
+services/.env
+services/mosquitto/passwords
 .venv/
 .venv.zip
 venv/
@@ -76,6 +78,15 @@ experiments/**/checkpoints/
 data/balancing_v3_fixed300k_outputs/
 data/Federated-Learning-Based-Intrusion-Detection-System-main/data/
 data/UNSW_NB15-dataset.zip
+
+# --- Microservices P1 data policy ---
+# Dataset volumineux existant ailleurs.
+data/balancing_v3_fixed300k_outputs/
+
+# Garder les demo subsets versionnes Git.
+!data/cic-iot-2023/
+!data/cic-iot-2023/demo_subsets/
+!data/cic-iot-2023/demo_subsets/*.parquet
 
 # --- Logs & outputs ---
 outputs/logs/*.log

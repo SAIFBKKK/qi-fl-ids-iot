@@ -1,0 +1,2 @@
+# services/iot-node/requirements.txt - PLACEHOLDER
+# Sera implemente dans le prompt P2.

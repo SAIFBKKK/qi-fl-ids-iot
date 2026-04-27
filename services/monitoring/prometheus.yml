@@ -1,0 +1,24 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: "iot-node-1"
+    static_configs:
+      - targets: ["iot-node-1:8001"]
+    metrics_path: "/metrics"
+
+  - job_name: "iot-node-2"
+    static_configs:
+      - targets: ["iot-node-2:8002"]
+    metrics_path: "/metrics"
+
+  - job_name: "iot-node-3"
+    static_configs:
+      - targets: ["iot-node-3:8003"]
+    metrics_path: "/metrics"
+
+  - job_name: "fl-server"
+    static_configs:
+      - targets: ["fl-server:8080"]
+    metrics_path: "/metrics"

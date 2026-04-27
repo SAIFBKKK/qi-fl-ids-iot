@@ -1,0 +1,112 @@
+# QI-FL-IDS-IoT - Microservices stack
+# Architecture validated on 5 axes (services, communication, stack, volumes, demo)
+# Profiles: default | training | preprocessing | orchestration
+version: "3.9"
+
+x-future-service-mounts:
+  artifacts_ro:
+    - ../experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights:/artifacts:ro
+  data_ro:
+    - ../data/balancing_v3_fixed300k_outputs:/data/full:ro
+    - ../data/cic-iot-2023/demo_subsets:/data/demo:ro
+
+networks:
+  iot-net:
+    driver: bridge
+
+volumes:
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  node_red_data:
+    driver: local
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2.0.18
+    container_name: mosquitto
+    ports:
+      - "${MQTT_PORT:-1883}:1883"
+    environment:
+      MQTT_USERNAME: ${MQTT_USERNAME:-ids_user}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-changeme_in_dotenv}
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto/passwords:/mosquitto/config/passwords:ro
+    networks:
+      - iot-net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mosquitto_sub -h localhost -u \"$${MQTT_USERNAME}\" -P \"$${MQTT_PASSWORD}\" -t '$$SYS/broker/version' -C 1 -W 3 >/dev/null 2>&1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v2.51.2
+    container_name: prometheus
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - iot-net
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:10.4.3
+    container_name: grafana
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-changeme_in_dotenv}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    networks:
+      - iot-net
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.18.0
+    container_name: mlflow
+    ports:
+      - "${MLFLOW_PORT:-5000}:5000"
+    volumes:
+      - ../outputs/mlruns:/mlruns
+    command: mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri /mlruns
+    networks:
+      - iot-net
+    restart: unless-stopped
+
+  node-red:
+    image: nodered/node-red:latest
+    container_name: node-red
+    profiles: ["orchestration"]
+    ports:
+      - "1880:1880"
+    volumes:
+      - node_red_data:/data
+      - ./node-red/flows.json:/data/flows.json:ro
+    networks:
+      - iot-net
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # NOTE: iot-node-1, iot-node-2, iot-node-3, traffic-generator,
+  # fl-server and qga-service will be added in prompts P2-P6.
+  # Future services should reuse the bind mounts documented in
+  # x-future-service-mounts above.

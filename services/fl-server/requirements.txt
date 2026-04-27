@@ -1,0 +1,2 @@
+# services/fl-server/requirements.txt - PLACEHOLDER
+# Sera implemente dans le prompt P5.
