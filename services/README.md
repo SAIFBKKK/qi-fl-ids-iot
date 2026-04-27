@@ -38,7 +38,7 @@ docker-compose --env-file .env up -d
 
 | Service | Port | Profile | Role |
 |---|---:|---|---|
-| traffic-generator | - | default | Replay CIC-IoT-2023 |
+| traffic-generator | 8010 | default | Replay CIC-IoT-2023 |
 | iot-node-1/2/3 | 8001/2/3 | default | Inference + FL client |
 | fl-server | 8080 | training | FL orchestrator |
 | mosquitto | 1883 | default | MQTT broker |

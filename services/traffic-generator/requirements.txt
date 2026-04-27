@@ -1,2 +1,8 @@
-# services/traffic-generator/requirements.txt - PLACEHOLDER
-# Sera implemente dans le prompt P3.
+pandas==2.3.3
+pyarrow==19.0.1
+joblib==1.5.3
+paho-mqtt==2.1.0
+fastapi==0.136.1
+uvicorn[standard]==0.46.0
+loguru==0.7.3
+python-dotenv==1.2.1
