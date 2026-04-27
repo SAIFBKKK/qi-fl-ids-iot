@@ -170,6 +170,88 @@ services:
       - iot-net
     restart: unless-stopped
 
+  fl-server:
+    build:
+      context: ./fl-server
+    container_name: fl-server
+    profiles: ["training"]
+    env_file:
+      - .env
+    environment:
+      FL_SERVER_HOST: 0.0.0.0
+      FL_SERVER_PORT: ${FL_SERVER_PORT:-8080}
+      FL_NUM_ROUNDS: ${FL_NUM_ROUNDS:-10}
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      TRAINING_MODE: mock
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    ports:
+      - "${FL_SERVER_PORT:-8080}:8080"
+    volumes:
+      - ../experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights:/artifacts:ro
+    networks:
+      - iot-net
+    depends_on:
+      - mlflow
+    restart: "no"
+
+  fl-client-1:
+    build:
+      context: ./fl-client
+    container_name: fl-client-1
+    profiles: ["training"]
+    env_file:
+      - .env
+    environment:
+      CLIENT_ID: client1
+      FL_SERVER_ADDRESS: fl-server:8080
+      TRAINING_MODE: mock
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    networks:
+      - iot-net
+    depends_on:
+      - fl-server
+    restart: "no"
+
+  fl-client-2:
+    build:
+      context: ./fl-client
+    container_name: fl-client-2
+    profiles: ["training"]
+    env_file:
+      - .env
+    environment:
+      CLIENT_ID: client2
+      FL_SERVER_ADDRESS: fl-server:8080
+      TRAINING_MODE: mock
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    networks:
+      - iot-net
+    depends_on:
+      - fl-server
+    restart: "no"
+
+  fl-client-3:
+    build:
+      context: ./fl-client
+    container_name: fl-client-3
+    profiles: ["training"]
+    env_file:
+      - .env
+    environment:
+      CLIENT_ID: client3
+      FL_SERVER_ADDRESS: fl-server:8080
+      TRAINING_MODE: mock
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    networks:
+      - iot-net
+    depends_on:
+      - fl-server
+    restart: "no"
+
   node-red:
     image: nodered/node-red:latest
     container_name: node-red
@@ -186,7 +268,7 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-  # NOTE: iot-node-2, iot-node-3, fl-server and qga-service
-  # will be added in prompts P4-P6.
+  # NOTE: iot-node-2, iot-node-3 and qga-service
+  # will be added in future prompts.
   # Future services should reuse the bind mounts documented in
   # x-future-service-mounts above.

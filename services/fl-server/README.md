@@ -1,28 +1,42 @@
 # fl-server
 
-> Status: PLACEHOLDER - Sera implemente dans le prompt P5
+> Status: P5 mock Flower training profile.
 
-## Role cible
+## Role
 
-Orchestrer les rounds FL, exposer les metriques serveur et produire les artefacts entraines.
+`fl-server` starts a lightweight Flower FedAvg server for the Docker Compose
+`training` profile.
 
-## Variables d'env cible
+This service validates orchestration only:
 
-- `FL_SERVER_HOST`
-- `FL_SERVER_PORT`
-- `FL_NUM_ROUNDS`
-- `MODEL_PATH`
+- dedicated Docker profile
+- server/client startup order
+- client fit/evaluate loops
+- MLflow tracking availability
+- clean separation from Mode A inference
 
-## Endpoints cible
+It does not import the validated Multi-tier FL implementation from
+`experiments/fl-iot-ids-v3/`.
 
-- `GET /health`
-- `GET /metrics`
-- API FL a definir dans P5
+## Environment
 
-## TODO
+- `FL_SERVER_HOST`: bind host, default `0.0.0.0`
+- `FL_SERVER_PORT`: Flower gRPC port, default `8080`
+- `FL_NUM_ROUNDS`: number of mock rounds, default `10`
+- `TRAINING_MODE`: must be `mock`
+- `MLFLOW_TRACKING_URI`: MLflow endpoint, default from compose `http://mlflow:5000`
+- `KEEP_SERVER_ALIVE`: keep container running after training, default `true`
 
-- [ ] Implementer Dockerfile
-- [ ] Implementer requirements.txt
-- [ ] Implementer logique metier
-- [ ] Tests unitaires
-- [ ] Documenter usage
+## Usage
+
+```bash
+cd services
+docker compose --profile training up -d --build
+docker logs fl-server
+```
+
+## Important Scope Note
+
+P5 mock training validates Docker/profile orchestration, not scientific FL
+metrics. The real validated Multi-tier FL pipeline remains in
+`experiments/fl-iot-ids-v3/`.

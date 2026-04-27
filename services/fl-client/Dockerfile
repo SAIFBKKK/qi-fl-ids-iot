@@ -9,13 +9,11 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY server_entrypoint.py .
+COPY client_entrypoint.py .
 
 RUN useradd --uid 1000 --create-home --shell /bin/bash appuser \
     && chown -R appuser:appuser /app
 
 USER appuser
 
-EXPOSE 8080
-
-CMD ["python", "server_entrypoint.py"]
+CMD ["python", "client_entrypoint.py"]

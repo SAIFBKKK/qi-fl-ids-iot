@@ -1,7 +1,8 @@
 # Microservices stack - QI-FL-IDS-IoT
 
 Architecture microservices pour le framework QI-FL-IDS-IoT.
-9 services always-on + 2 services profiles.
+Mode A fournit la demo IDS temps reel par defaut. Les modes avances restent
+isoles via Docker Compose profiles.
 
 ## Mode A Demo
 
@@ -36,8 +37,8 @@ Mode A lance la demo IDS temps reel sans FL training :
 MLflow est disponible sur le port `5000`, mais reste passif dans Mode A.
 
 Le scenario par defaut est `mixed_chaos` avec `REPLAY_RATE=5`.
-Node-RED reste reserve au profile `orchestration`. Le FL server et QGA sont des
-profiles futurs, non implementes en P4.
+Node-RED reste reserve au profile `orchestration`. Le training FL est separe
+dans le Mode B, et QGA reste un profile futur.
 
 Endpoints utiles :
 
@@ -77,34 +78,78 @@ docker system prune -a --volumes -f
 > `experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights/`
 > (versionne Git, environ 200 KB).
 
+## Mode B FL Training Profile
+
+Mode B lance un profile Docker Compose separe pour valider l'orchestration FL :
+
+```bash
+cd services
+
+# Demarrer MLflow + serveur Flower mock + 3 clients Flower mock
+docker compose --profile training up -d --build
+
+# Verifier le profile training
+bash scripts/training_check.sh
+```
+
+Sur Windows PowerShell :
+
+```powershell
+.\scripts\training_check.ps1
+```
+
+Logs utiles :
+
+```bash
+docker logs fl-server
+docker logs fl-client-1
+docker logs fl-client-2
+docker logs fl-client-3
+```
+
+Arret du Mode B :
+
+```bash
+docker compose --profile training down
+```
+
+Clarification importante :
+
+- Mode A = inference IDS temps reel avec MQTT, modele PyTorch et metrics Prometheus.
+- Mode B = profile d'orchestration FL avec Flower mock leger.
+- P5 valide Docker/profile/training orchestration, pas les metriques scientifiques FL.
+- Le vrai Multi-tier FL valide reste dans `experiments/fl-iot-ids-v3/`.
+- L'integration complete du vrai Multi-tier FL pourra etre traitee dans une phase ulterieure.
+
 ## Services
 
 | Service | Port | Profile | Role |
 |---|---:|---|---|
 | traffic-generator | 8010 | default | Replay CIC-IoT-2023 |
-| iot-node-1/2/3 | 8001/2/3 | default | Inference + FL client |
-| fl-server | 8080 | training | FL orchestrator |
+| iot-node-1 | 8001 | default | Inference IDS MQTT |
+| fl-server | 8080 | training | Mock Flower FL server |
+| fl-client-1/2/3 | - | training | Mock Flower FL clients |
 | mosquitto | 1883 | default | MQTT broker |
 | mlflow | 5000 | default | Experiment tracking |
 | prometheus | 9090 | default | Metrics scraping |
 | grafana | 3000 | default | Dashboards |
 | node-red | 1880 | orchestration | Scenario orchestration |
-| qga-service | - | preprocessing | QGA feature selection |
+| qga-service | - | preprocessing | Future QGA feature selection |
 
 ## Profiles
 
 ```bash
 # Demo de base, Mode A
-docker-compose --env-file .env up -d
+docker compose up -d
 
 # Demo avec scenarios Node-RED, Mode C
-docker-compose --env-file .env --profile orchestration up -d
+docker compose --profile orchestration up -d
 
-# Round FL training
-docker-compose --env-file .env --profile training up fl-server
+# Mode B mock FL training profile
+docker compose --profile training up -d --build
 
-# QGA preprocessing
-docker-compose --env-file .env --profile preprocessing run --rm qga-service
+# QGA preprocessing (future)
+docker compose --profile preprocessing run --rm qga-service
 ```
 
 ## Structure
@@ -120,6 +165,8 @@ Voir `services/<service>/README.md` pour chaque service individuel.
 - `scripts/test_publish.py` - Publie des flows de test MQTT depuis les demo subsets
 - `scripts/demo_check.sh` - Verifie la demo Mode A sous Bash
 - `scripts/demo_check.ps1` - Verifie la demo Mode A sous PowerShell
+- `scripts/training_check.sh` - Verifie le profile training Mode B sous Bash
+- `scripts/training_check.ps1` - Verifie le profile training Mode B sous PowerShell
 
 ## Implementation Status
 
@@ -127,7 +174,7 @@ Voir `services/<service>/README.md` pour chaque service individuel.
 - [x] P2 - iot-node service
 - [x] P3 - traffic-generator
 - [x] P4 - Compose Mode A complet
-- [ ] P5 - fl-server
+- [x] P5 - Mock FL training profile
 - [ ] P6 - Monitoring dashboards Grafana + qga-service
 - [ ] P7 - Node-RED scenarios
 - [ ] P8 - Tests E2E
@@ -154,3 +201,16 @@ P3 a ete valide avec la chaine complete `traffic-generator -> MQTT -> iot-node-1
 - Rejets schema/features: `0` sur toutes les raisons exposees
 - Latence inference: `7.626942627s` pour `16778` flows, soit environ `0.45 ms/flow`
 - Node status: `ids_node_status{node_id="node1"} 1`
+
+## P4 Validation Snapshot
+
+P4 a ete valide comme Mode A complet de demo IDS en une commande.
+
+- Commande de lancement: `docker compose up -d --build`
+- Verification: `bash scripts/demo_check.sh`
+- Resultat final: `Mode A demo check: PASS`
+- Services default valides: `mosquitto`, `iot-node-1`, `traffic-generator`, `prometheus`, `grafana`, `mlflow`
+- Pipeline valide: `traffic-generator -> MQTT -> iot-node-1 -> predictions/alerts -> Prometheus/Grafana`
+- MLflow: disponible sur <http://localhost:5000>, passif dans Mode A
+- Hors scope P4: pas de FL training, pas de Node-RED, pas de QGA, pas de node2/node3
+- Tag stable: `p4-mode-a-demo`
