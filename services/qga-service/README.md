@@ -17,6 +17,7 @@ docker compose --profile preprocessing up -d --build qga-service
 ## Endpoints
 
 - `GET /health`
+- `GET /ready`
 - `POST /optimize`
 - `GET /metrics`
 

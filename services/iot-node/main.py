@@ -117,6 +117,27 @@ def health() -> dict[str, Any]:
     }
 
 
+@app.get("/ready")
+def ready(response: Response) -> dict[str, Any]:
+    mqtt_connected = metrics.snapshot()["mqtt_connected"]
+    model_loaded = inference_service is not None
+    preprocessor_ready = preprocessor is not None
+    is_ready = model_loaded and preprocessor_ready
+
+    if not is_ready:
+        response.status_code = 503
+
+    return {
+        "status": "ready" if is_ready else "not_ready",
+        "service": "iot-node",
+        "node_id": settings.node_id,
+        "ready": is_ready,
+        "model_loaded": model_loaded,
+        "preprocessor_ready": preprocessor_ready,
+        "mqtt_connected": mqtt_connected,
+    }
+
+
 @app.get("/metrics")
 def prometheus_metrics() -> Response:
     return Response(

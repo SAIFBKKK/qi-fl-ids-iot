@@ -193,6 +193,57 @@ curl -X POST http://localhost:8020/optimize \
 curl http://localhost:8020/metrics
 ```
 
+## US8/US9 Validation
+
+US8 and US9 are closed with the current microservices decomposition:
+
+- `iot-node`: node-side IDS service with internal `collector`, `preprocessor`,
+  `inference`, `metrics`, and HTTP health/readiness modules.
+- `traffic-generator`: replay service that publishes CIC-IoT-2023 demo flows to
+  MQTT.
+- `fl-server` and `fl-client`: optional `training` profile for mock Flower
+  orchestration and the real simulation-based scientific runner.
+- `qga-service`: optional `preprocessing` profile exposing a deterministic
+  quantum-inspired optimization API stub.
+
+HTTP service endpoints:
+
+| Service | Profile | Health | Readiness | Metrics |
+|---|---|---|---|---|
+| `iot-node-1` | default | `GET /health` | `GET /ready` | `GET /metrics` |
+| `traffic-generator` | default | `GET /health` | `GET /ready` | `GET /metrics` |
+| `qga-service` | preprocessing | `GET /health` | `GET /ready` | `GET /metrics` |
+
+Validation commands:
+
+```powershell
+cd services
+docker compose up -d --build
+.\scripts\demo_check.ps1
+
+docker compose --profile training up -d --build
+.\scripts\training_check.ps1
+
+docker compose --profile preprocessing up -d --build qga-service
+Invoke-RestMethod http://localhost:8020/health
+Invoke-RestMethod http://localhost:8020/ready
+Invoke-RestMethod http://localhost:8020/metrics
+```
+
+On Bash-compatible shells:
+
+```bash
+cd services
+docker compose up -d --build
+bash scripts/demo_check.sh
+docker compose --profile training up -d --build
+bash scripts/training_check.sh
+docker compose --profile preprocessing up -d --build qga-service
+curl http://localhost:8020/health
+curl http://localhost:8020/ready
+curl http://localhost:8020/metrics
+```
+
 ## Structure
 
 Voir `services/<service>/README.md` pour chaque service individuel.

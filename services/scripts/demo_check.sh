@@ -92,7 +92,9 @@ done
 
 if command -v curl >/dev/null 2>&1; then
     check_http_contains "iot-node health" "http://localhost:8001/health" '"status":"ok"\|"status": "ok"'
+    check_http_contains "iot-node ready" "http://localhost:8001/ready" '"ready":true\|"ready": true'
     check_http_contains "traffic-generator health" "http://localhost:8010/health" '"status":"ok"\|"status": "ok"'
+    check_http_contains "traffic-generator ready" "http://localhost:8010/ready" '"ready":true\|"ready": true'
     check_http_status "prometheus ready" "http://localhost:9090/-/ready"
     check_http_contains "grafana health" "http://localhost:3000/api/health" '"database":"ok"\|"database": "ok"'
     check_http_status "mlflow" "http://localhost:5000"

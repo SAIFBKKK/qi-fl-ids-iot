@@ -102,6 +102,21 @@ def health() -> dict[str, Any]:
     }
 
 
+@app.get("/ready")
+def ready(response: Response) -> dict[str, Any]:
+    optimizer_loaded = optimizer is not None
+    if not optimizer_loaded:
+        response.status_code = 503
+
+    return {
+        "status": "ready" if optimizer_loaded else "not_ready",
+        "service": "qga-service",
+        "ready": optimizer_loaded,
+        "mode": "deterministic_stub",
+        "optimizer_loaded": optimizer_loaded,
+    }
+
+
 @app.post("/optimize", response_model=OptimizeResponse)
 def optimize(payload: OptimizeRequest) -> OptimizeResponse:
     started = time.perf_counter()

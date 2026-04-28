@@ -116,7 +116,9 @@ foreach ($service in $expectedServices) {
 }
 
 Check-HttpContains "iot-node health" "http://localhost:8001/health" '"status"\s*:\s*"ok"'
+Check-HttpContains "iot-node ready" "http://localhost:8001/ready" '"ready"\s*:\s*true'
 Check-HttpContains "traffic-generator health" "http://localhost:8010/health" '"status"\s*:\s*"ok"'
+Check-HttpContains "traffic-generator ready" "http://localhost:8010/ready" '"ready"\s*:\s*true'
 Check-HttpOk "prometheus ready" "http://localhost:9090/-/ready"
 Check-HttpContains "grafana health" "http://localhost:3000/api/health" '"database"\s*:\s*"ok"'
 Check-HttpOk "mlflow" "http://localhost:5000"

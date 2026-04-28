@@ -320,6 +320,28 @@ def health() -> dict[str, Any]:
     return replay_service.snapshot()
 
 
+@app.get("/ready")
+def ready(response: Response) -> dict[str, Any]:
+    snapshot = replay_service.snapshot()
+    worker_alive = (
+        replay_service.worker is not None and replay_service.worker.is_alive()
+    )
+    is_ready = replay_service.rows_loaded > 0 and worker_alive
+
+    if not is_ready:
+        response.status_code = 503
+
+    return {
+        "status": "ready" if is_ready else "not_ready",
+        "service": "traffic-generator",
+        "node_id": settings.node_id,
+        "scenario": settings.replay_scenario,
+        "ready": is_ready,
+        "rows_loaded": replay_service.rows_loaded,
+        "mqtt_connected": snapshot["mqtt_connected"],
+    }
+
+
 @app.get("/metrics")
 def prometheus_metrics() -> Response:
     return Response(
