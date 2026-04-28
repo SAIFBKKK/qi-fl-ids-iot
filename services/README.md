@@ -107,6 +107,14 @@ TRAINING_MODE=real REAL_FL_ROUNDS=1 docker compose --profile training up -d --bu
 bash scripts/training_check.sh
 ```
 
+### P5B - MLflow container path fix
+
+The real FL runner is executed through a thin Docker-side wrapper that patches
+`run_experiment.resolve_tracking_uri` at runtime. This avoids Windows host paths
+such as `C:\...` leaking into the Linux container and being interpreted as
+`/C:`. The scientific source code under `experiments/fl-iot-ids-v3/src` remains
+unchanged.
+
 Sur Windows PowerShell :
 
 ```powershell
@@ -278,3 +286,57 @@ Important:
 Ce profile valide l'orchestration FL et la separation Docker Compose.
 Il ne represente pas le benchmark scientifique FL.
 Les vraies experiences scientifiques FL restent dans `experiments/fl-iot-ids-v3/`.
+
+## P6A Validation Snapshot
+
+Mode B real - runner scientifique Multi-tier execute dans le profile Docker.
+
+Validation:
+
+- Commande de lancement: `TRAINING_MODE=real REAL_FL_ROUNDS=10 docker compose --profile training up -d --build`
+- Resultat final: `Scientific runner completed successfully`
+- Conteneur `fl-server`: `Exited (0)`
+- Duree Flower: `10 rounds in 384.07s`
+- Duree wrapper Docker observee: environ `450.33s`
+
+Observations systeme:
+
+- Le bug MLflow `/C:` est corrige par le wrapper Docker-side.
+- MLflow reste actif via `http://mlflow:5000`.
+- Le runner scientifique reel est execute sans modifier `experiments/fl-iot-ids-v3/src/`.
+- Les logs dupliques Flower/Ray de shutdown ne sont pas bloquants.
+
+Resultats round 1 -> round 10:
+
+| Metrique | Round 1 | Round 10 | Evolution |
+|---|---:|---:|---:|
+| Distributed loss | 1.2345 | 0.8903 | baisse nette |
+| Train loss last | 0.8522 | 0.6902 | baisse nette |
+| Accuracy | 0.5651 | 0.7155 | +0.1504 |
+| Macro-F1 | 0.4862 | 0.6696 | +0.1834 |
+| Recall macro | 0.5407 | 0.6885 | +0.1478 |
+| Benign recall | 0.8254 | 0.8730 | +0.0476 |
+| False positive rate | 0.1746 | 0.1270 | -0.0476 |
+| Rare class recall | 0.1321 | 0.3306 | +0.1985 |
+| Rare macro-F1 | 0.1588 | 0.2765 | +0.1177 |
+
+Communication Multi-tier:
+
+- Round 1 warm-up full-width: `536472` bytes
+- Round 2+ reduced-width: `255768` bytes
+- Reduction apres warm-up: environ `52.32%`
+- Reduction totale estimee sur 10 rounds: environ `47.09%`
+
+Point scientifique important:
+
+Le round 10 ameliore les metriques globales, mais les classes rares culminent au
+round 9 (`rare_class_recall=0.3767`, `rare_macro_f1=0.2976`) avant de redescendre
+legerement au round 10. Ce comportement justifie une future selection du meilleur
+round selon une metrique IDS orientee attaques rares, par exemple Rare Recall.
+
+Interpretation:
+
+P6A valide l'integration MLOps/Docker du runner reel. Les resultats scientifiques
+de reference restent ceux de la meilleure campagne US6; le run P6A sert surtout
+de preuve que le pipeline Multi-tier reel est executable dans l'environnement
+microservices.
