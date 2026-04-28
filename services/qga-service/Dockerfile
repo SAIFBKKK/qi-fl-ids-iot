@@ -1,7 +1,21 @@
-# services/qga-service/Dockerfile - PLACEHOLDER
-# Sera implemente dans le prompt P6.
-# UID 1000 reserve pour l'execution applicative.
 FROM python:3.11-slim
 
-RUN useradd --uid 1000 --create-home appuser
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY *.py .
+
+RUN useradd --uid 1000 --create-home --shell /bin/bash appuser \
+    && chown -R appuser:appuser /app
+
 USER appuser
+
+EXPOSE 8000
+
+CMD ["python", "main.py"]

@@ -272,7 +272,33 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-  # NOTE: iot-node-2, iot-node-3 and qga-service
+  qga-service:
+    build:
+      context: ./qga-service
+    container_name: qga-service
+    profiles: ["preprocessing"]
+    environment:
+      QGA_DEFAULT_ITERATIONS: ${QGA_DEFAULT_ITERATIONS:-20}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    ports:
+      - "${QGA_SERVICE_PORT:-8020}:8000"
+    networks:
+      - iot-net
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3).read()",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # NOTE: iot-node-2 and iot-node-3
   # will be added in future prompts.
   # Future services should reuse the bind mounts documented in
   # x-future-service-mounts above.

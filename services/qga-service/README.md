@@ -1,25 +1,56 @@
 # qga-service
 
-> Status: PLACEHOLDER - Sera implemente dans le prompt P6
+Optional Quantum-Inspired Optimization API for the `preprocessing` Docker
+profile.
 
-## Role cible
+P6C intentionally ships a deterministic QGA stub, not a full quantum genetic
+algorithm. The goal is to validate the microservice contract, observability, and
+extension point without depending on the scientific dataset.
 
-Executer la selection de features QGA sur le dataset complet lorsque le profil preprocessing est active.
+## Run
 
-## Variables d'env cible
+```bash
+cd services
+docker compose --profile preprocessing up -d --build qga-service
+```
 
-- `DATASET_PATH`
-- `LOG_LEVEL`
-- Variables QGA a definir dans P6
+## Endpoints
 
-## Endpoints cible
+- `GET /health`
+- `POST /optimize`
+- `GET /metrics`
 
-Service batch sans endpoint HTTP cible en P1.
+Example request:
 
-## TODO
+```bash
+curl -X POST http://localhost:8020/optimize \
+  -H "Content-Type: application/json" \
+  -d '{"available_features":28,"latency_budget_ms":5.0,"energy_budget":0.75,"risk_tolerance":0.4}'
+```
 
-- [ ] Implementer Dockerfile
-- [ ] Implementer requirements.txt
-- [ ] Implementer logique metier
-- [ ] Tests unitaires
-- [ ] Documenter usage
+Example response:
+
+```json
+{
+  "status": "ok",
+  "selected_features": ["feature_01", "feature_02", "...", "feature_17"],
+  "feature_budget": 17,
+  "threshold_suggestion": 0.6,
+  "optimization_score": 0.8046,
+  "qga_iterations": 20,
+  "mode": "deterministic_stub"
+}
+```
+
+## Metrics
+
+- `qga_requests_total`
+- `qga_optimization_latency_seconds`
+- `qga_last_score`
+- `qga_service_status`
+
+## Environment
+
+- `QGA_DEFAULT_ITERATIONS` default `20`
+- `LOG_LEVEL` default `INFO`
+- `LOG_FORMAT` default `json`

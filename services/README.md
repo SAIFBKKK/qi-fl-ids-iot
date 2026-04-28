@@ -151,7 +151,7 @@ Clarification importante :
 | prometheus | 9090 | default | Metrics scraping |
 | grafana | 3000 | default | Dashboards |
 | node-red | 1880 | orchestration | Scenario orchestration |
-| qga-service | - | preprocessing | Future QGA feature selection |
+| qga-service | 8020 | preprocessing | Quantum-inspired optimization API stub |
 
 ## Profiles
 
@@ -165,8 +165,24 @@ docker compose --profile orchestration up -d
 # Mode B mock FL training profile
 docker compose --profile training up -d --build
 
-# QGA preprocessing (future)
-docker compose --profile preprocessing run --rm qga-service
+# QGA preprocessing API
+docker compose --profile preprocessing up -d --build qga-service
+```
+
+## Mode C Quantum-Inspired Preprocessing Profile
+
+`qga-service` exposes a lightweight deterministic optimization API for demo and
+integration purposes. It does not implement the full scientific QGA algorithm in
+P6C, and it does not depend on the dataset.
+
+```bash
+cd services
+docker compose --profile preprocessing up -d --build qga-service
+curl http://localhost:8020/health
+curl -X POST http://localhost:8020/optimize \
+  -H "Content-Type: application/json" \
+  -d '{"available_features":28,"latency_budget_ms":5.0,"energy_budget":0.75,"risk_tolerance":0.4}'
+curl http://localhost:8020/metrics
 ```
 
 ## Structure
