@@ -125,7 +125,9 @@ def run_real_training() -> None:
     experiment = os.getenv("REAL_FL_EXPERIMENT", DEFAULT_REAL_EXPERIMENT)
     rounds = read_int_env("REAL_FL_ROUNDS", 1)
     workdir = Path(os.getenv("REAL_FL_WORKDIR", DEFAULT_REAL_WORKDIR))
-    tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://mlflow:5000")
+    tracking_uri = "http://mlflow:5000"
+    artifact_root = "/app/experiments/fl-iot-ids-v3/outputs/mlruns"
+    git_python_refresh = "quiet"
 
     if not workdir.exists():
         logger.critical(
@@ -141,8 +143,7 @@ def run_real_training() -> None:
 
     command = [
         sys.executable,
-        "-m",
-        "src.scripts.run_experiment",
+        "/app/real_runner_wrapper.py",
         "--experiment",
         experiment,
         "--rounds",
@@ -151,6 +152,8 @@ def run_real_training() -> None:
 
     env = os.environ.copy()
     env["MLFLOW_TRACKING_URI"] = tracking_uri
+    env["MLFLOW_ARTIFACT_ROOT"] = artifact_root
+    env["GIT_PYTHON_REFRESH"] = git_python_refresh
     existing_pythonpath = env.get("PYTHONPATH")
     env["PYTHONPATH"] = (
         str(workdir)
@@ -168,6 +171,8 @@ def run_real_training() -> None:
         "P6A-lite real mode uses simulation-based run_experiment.py, not multi-container clients"
     )
     logger.info("MLFLOW_TRACKING_URI injected as {}", tracking_uri)
+    logger.info("MLFLOW_ARTIFACT_ROOT injected as {}", artifact_root)
+    logger.info("GIT_PYTHON_REFRESH injected as {}", git_python_refresh)
 
     result = subprocess.run(command, cwd=str(workdir), env=env, check=False)
     if result.returncode != 0:
