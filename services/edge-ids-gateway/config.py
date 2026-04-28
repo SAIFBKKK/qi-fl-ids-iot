@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     scaler_path: str = Field(default="/artifacts/scaler.pkl", alias="SCALER_PATH")
     feature_names_path: str = Field(default="/artifacts/feature_names.pkl", alias="FEATURE_NAMES_PATH")
     label_mapping_path: str = Field(default="/artifacts/label_mapping.json", alias="LABEL_MAPPING_PATH")
+    model_config_path: str = Field(default="", alias="MODEL_CONFIG_PATH")
     inference_threshold: float = Field(default=0.5, alias="INFERENCE_THRESHOLD")
 
     model_config = SettingsConfigDict(

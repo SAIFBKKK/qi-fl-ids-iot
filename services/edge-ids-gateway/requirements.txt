@@ -3,3 +3,6 @@ uvicorn[standard]
 prometheus-client
 pydantic
 pydantic-settings
+numpy
+joblib
+torch
