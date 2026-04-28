@@ -3,19 +3,23 @@ from __future__ import annotations
 from contextlib import asynccontextmanager
 from typing import Any
 
-from fastapi import FastAPI, Response
+from fastapi import Body, FastAPI, Response
+from fastapi.responses import JSONResponse
 
 from collector import MQTTEdgeGatewayCollector
 from config import settings
 from metrics import (
     EDGE_GATEWAY_MODEL_READY,
     EDGE_GATEWAY_MQTT_CONNECTED,
+    EDGE_GATEWAY_REJECTED_TOTAL,
     EDGE_GATEWAY_REQUESTS_TOTAL,
     EDGE_GATEWAY_STATUS,
     prometheus_text,
 )
+from feature_mapper import features_to_ordered_list, get_canonical_feature_names, map_raw_to_features
+from raw_schema import validate_raw_event
 
-VERSION = "p7.2-skeleton"
+VERSION = "p7.4-feature-mapper"
 MODE = "skeleton"
 
 collector = MQTTEdgeGatewayCollector()
@@ -94,3 +98,56 @@ def ready() -> dict[str, Any]:
 @app.get("/metrics")
 def metrics() -> Response:
     return Response(content=prometheus_text(), media_type="text/plain")
+
+
+@app.post("/validate/raw")
+def validate_raw(payload: dict[str, Any] = Body(...)) -> JSONResponse:
+    EDGE_GATEWAY_REQUESTS_TOTAL.inc()
+    try:
+        event = validate_raw_event(payload)
+    except ValueError as exc:
+        EDGE_GATEWAY_REJECTED_TOTAL.labels(reason="raw_schema").inc()
+        return JSONResponse(
+            status_code=400,
+            content={
+                "valid": False,
+                "error": str(exc),
+            },
+        )
+
+    return JSONResponse(
+        status_code=200,
+        content={
+            "valid": True,
+            "event": event,
+        },
+    )
+
+
+@app.post("/map/features")
+def map_features(payload: dict[str, Any] = Body(...)) -> JSONResponse:
+    EDGE_GATEWAY_REQUESTS_TOTAL.inc()
+    try:
+        event = validate_raw_event(payload)
+        features = map_raw_to_features(event)
+        feature_vector = features_to_ordered_list(features)
+    except ValueError as exc:
+        EDGE_GATEWAY_REJECTED_TOTAL.labels(reason="feature_mapping").inc()
+        return JSONResponse(
+            status_code=400,
+            content={
+                "mapped": False,
+                "error": str(exc),
+            },
+        )
+
+    return JSONResponse(
+        status_code=200,
+        content={
+            "mapped": True,
+            "feature_count": len(features),
+            "feature_names": get_canonical_feature_names(),
+            "features": features,
+            "feature_vector": feature_vector,
+        },
+    )
