@@ -1,11 +1,14 @@
-"""Mock Flower FL server for the P5 training Docker profile.
+"""Flower training dispatcher for the Compose training profile.
 
-This service validates Docker Compose orchestration only. It does not import or
-modify the validated Multi-tier FL research pipeline under experiments/.
+TRAINING_MODE=mock keeps the P5 lightweight Flower orchestration.
+TRAINING_MODE=real delegates to the validated scientific runner mounted from
+experiments/fl-iot-ids-v3 without modifying that source tree.
 """
 from __future__ import annotations
 
 import os
+from pathlib import Path
+import subprocess
 import sys
 import time
 from contextlib import nullcontext
@@ -18,6 +21,8 @@ from loguru import logger
 
 
 DEFAULT_NUM_ROUNDS = 10
+DEFAULT_REAL_EXPERIMENT = "exp_v4_multitier_fedavg_normal_classweights"
+DEFAULT_REAL_WORKDIR = "/app/experiments/fl-iot-ids-v3"
 
 
 def configure_logging() -> None:
@@ -83,17 +88,10 @@ def keep_alive_after_training() -> None:
         time.sleep(60)
 
 
-def main() -> None:
-    configure_logging()
-
+def run_mock_training(training_mode: str) -> None:
     host = os.getenv("FL_SERVER_HOST", "0.0.0.0")
     port = read_int_env("FL_SERVER_PORT", 8080)
     num_rounds = read_int_env("FL_NUM_ROUNDS", DEFAULT_NUM_ROUNDS)
-    training_mode = os.getenv("TRAINING_MODE", "mock")
-
-    if training_mode != "mock":
-        logger.critical("P5 only supports TRAINING_MODE=mock, got {}", training_mode)
-        sys.exit(1)
 
     server_address = f"{host}:{port}"
     logger.info(
@@ -121,6 +119,80 @@ def main() -> None:
         log_mlflow_metric("training_finished", 1.0)
 
     keep_alive_after_training()
+
+
+def run_real_training() -> None:
+    experiment = os.getenv("REAL_FL_EXPERIMENT", DEFAULT_REAL_EXPERIMENT)
+    rounds = read_int_env("REAL_FL_ROUNDS", 1)
+    workdir = Path(os.getenv("REAL_FL_WORKDIR", DEFAULT_REAL_WORKDIR))
+    tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://mlflow:5000")
+
+    if not workdir.exists():
+        logger.critical(
+            "Real FL workdir is missing: {}. Mount experiments/fl-iot-ids-v3 first.",
+            workdir,
+        )
+        sys.exit(1)
+
+    runner = workdir / "src" / "scripts" / "run_experiment.py"
+    if not runner.exists():
+        logger.critical("Real FL runner not found: {}", runner)
+        sys.exit(1)
+
+    command = [
+        sys.executable,
+        "-m",
+        "src.scripts.run_experiment",
+        "--experiment",
+        experiment,
+        "--rounds",
+        str(rounds),
+    ]
+
+    env = os.environ.copy()
+    env["MLFLOW_TRACKING_URI"] = tracking_uri
+    existing_pythonpath = env.get("PYTHONPATH")
+    env["PYTHONPATH"] = (
+        str(workdir)
+        if not existing_pythonpath
+        else f"{workdir}{os.pathsep}{existing_pythonpath}"
+    )
+
+    logger.info(
+        "TRAINING_MODE=real: launching scientific runner experiment={} rounds={} workdir={}",
+        experiment,
+        rounds,
+        workdir,
+    )
+    logger.info(
+        "P6A-lite real mode uses simulation-based run_experiment.py, not multi-container clients"
+    )
+    logger.info("MLFLOW_TRACKING_URI injected as {}", tracking_uri)
+
+    result = subprocess.run(command, cwd=str(workdir), env=env, check=False)
+    if result.returncode != 0:
+        logger.critical(
+            "Scientific runner failed with exit code {}", result.returncode
+        )
+        sys.exit(result.returncode)
+
+    logger.info("Scientific runner completed successfully")
+
+
+def main() -> None:
+    configure_logging()
+
+    training_mode = os.getenv("TRAINING_MODE", "mock").lower()
+
+    if training_mode == "mock":
+        run_mock_training(training_mode=training_mode)
+        return
+    if training_mode == "real":
+        run_real_training()
+        return
+
+    logger.critical("Unsupported TRAINING_MODE={!r}; expected mock or real", training_mode)
+    sys.exit(1)
 
 
 if __name__ == "__main__":

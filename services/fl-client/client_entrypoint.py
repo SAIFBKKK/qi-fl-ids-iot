@@ -1,4 +1,4 @@
-"""Mock Flower FL client for the P5 training Docker profile."""
+"""Flower client dispatcher for the Compose training profile."""
 from __future__ import annotations
 
 import os
@@ -142,12 +142,20 @@ def connect_with_retry(server_address: str, client: MockFlowerClient) -> None:
 def main() -> None:
     configure_logging()
 
-    training_mode = os.getenv("TRAINING_MODE", "mock")
+    training_mode = os.getenv("TRAINING_MODE", "mock").lower()
+    client_id = os.getenv("CLIENT_ID", "client1")
+
+    if training_mode == "real":
+        logger.info(
+            "TRAINING_MODE=real: {} exits cleanly because fl-server runs the simulation-based scientific runner",
+            client_id,
+        )
+        return
+
     if training_mode != "mock":
-        logger.critical("P5 only supports TRAINING_MODE=mock, got {}", training_mode)
+        logger.critical("Unsupported TRAINING_MODE={!r}; expected mock or real", training_mode)
         sys.exit(1)
 
-    client_id = os.getenv("CLIENT_ID", "client1")
     server_address = os.getenv("FL_SERVER_ADDRESS", "fl-server:8080")
     logger.info(
         "Starting mock Flower client {} for orchestration-only training",

@@ -42,6 +42,14 @@ container_state() {
     docker inspect -f '{{.State.Status}} {{.State.ExitCode}}' "$1" 2>/dev/null || true
 }
 
+read_env_value() {
+    key="$1"
+    if [ ! -f "$ENV_FILE" ]; then
+        return 0
+    fi
+    sed -n "s/^${key}=//p" "$ENV_FILE" | tail -n 1 | tr -d '\r'
+}
+
 check_running() {
     name="$1"
     state="$(container_state "$name")"
@@ -87,7 +95,15 @@ if [ ! -f "$ENV_FILE" ]; then
     exit 1
 fi
 
-check_running fl-server
+TRAINING_MODE="$(read_env_value TRAINING_MODE)"
+TRAINING_MODE="${TRAINING_MODE:-mock}"
+pass "training mode: $TRAINING_MODE"
+
+if [ "$TRAINING_MODE" = "real" ]; then
+    check_running_or_exited_zero fl-server
+else
+    check_running fl-server
+fi
 check_running_or_exited_zero fl-client-1
 check_running_or_exited_zero fl-client-2
 check_running_or_exited_zero fl-client-3
@@ -101,7 +117,13 @@ if check_command curl; then
     fi
 fi
 
-if docker logs fl-server 2>&1 | grep -Eiq 'training|round|Flower|FedAvg'; then
+if [ "$TRAINING_MODE" = "real" ]; then
+    log_pattern='TRAINING_MODE=real|run_experiment|exp_v4_multitier|scientific runner'
+else
+    log_pattern='training|round|Flower|FedAvg'
+fi
+
+if docker logs fl-server 2>&1 | grep -Eiq "$log_pattern"; then
     pass "fl-server logs contain training markers"
 else
     fail "fl-server logs contain training markers"

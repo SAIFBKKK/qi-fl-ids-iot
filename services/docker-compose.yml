@@ -181,14 +181,18 @@ services:
       FL_SERVER_HOST: 0.0.0.0
       FL_SERVER_PORT: ${FL_SERVER_PORT:-8080}
       FL_NUM_ROUNDS: ${FL_NUM_ROUNDS:-10}
+      REAL_FL_EXPERIMENT: ${REAL_FL_EXPERIMENT:-exp_v4_multitier_fedavg_normal_classweights}
+      REAL_FL_ROUNDS: ${REAL_FL_ROUNDS:-1}
+      REAL_FL_WORKDIR: /app/experiments/fl-iot-ids-v3
       MLFLOW_TRACKING_URI: http://mlflow:5000
-      TRAINING_MODE: mock
+      TRAINING_MODE: ${TRAINING_MODE:-mock}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       LOG_FORMAT: ${LOG_FORMAT:-json}
     ports:
       - "${FL_SERVER_PORT:-8080}:8080"
     volumes:
       - ../experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights:/artifacts:ro
+      - ../experiments/fl-iot-ids-v3:/app/experiments/fl-iot-ids-v3
     networks:
       - iot-net
     depends_on:
@@ -205,7 +209,7 @@ services:
     environment:
       CLIENT_ID: client1
       FL_SERVER_ADDRESS: fl-server:8080
-      TRAINING_MODE: mock
+      TRAINING_MODE: ${TRAINING_MODE:-mock}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       LOG_FORMAT: ${LOG_FORMAT:-json}
     networks:
@@ -224,7 +228,7 @@ services:
     environment:
       CLIENT_ID: client2
       FL_SERVER_ADDRESS: fl-server:8080
-      TRAINING_MODE: mock
+      TRAINING_MODE: ${TRAINING_MODE:-mock}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       LOG_FORMAT: ${LOG_FORMAT:-json}
     networks:
@@ -243,7 +247,7 @@ services:
     environment:
       CLIENT_ID: client3
       FL_SERVER_ADDRESS: fl-server:8080
-      TRAINING_MODE: mock
+      TRAINING_MODE: ${TRAINING_MODE:-mock}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       LOG_FORMAT: ${LOG_FORMAT:-json}
     networks:

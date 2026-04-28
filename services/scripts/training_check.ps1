@@ -46,6 +46,18 @@ function Get-ContainerState {
     }
 }
 
+function Get-EnvValue {
+    param([string]$Name)
+    if (-not (Test-Path $EnvFile)) {
+        return $null
+    }
+    $line = Get-Content $EnvFile | Where-Object { $_ -match "^$Name=" } | Select-Object -Last 1
+    if ([string]::IsNullOrWhiteSpace($line)) {
+        return $null
+    }
+    return (($line -split "=", 2)[1]).Trim()
+}
+
 function Check-Running {
     param([string]$Name)
     $state = Get-ContainerState $Name
@@ -115,14 +127,33 @@ if (-not (Test-Path $EnvFile)) {
     exit 1
 }
 
-Check-Running "fl-server"
+$TrainingMode = Get-EnvValue "TRAINING_MODE"
+if ([string]::IsNullOrWhiteSpace($TrainingMode)) {
+    $TrainingMode = "mock"
+}
+$TrainingMode = $TrainingMode.ToLowerInvariant()
+Pass "training mode: $TrainingMode"
+
+if ($TrainingMode -eq "real") {
+    Check-RunningOrExitedZero "fl-server"
+}
+else {
+    Check-Running "fl-server"
+}
 Check-RunningOrExitedZero "fl-client-1"
 Check-RunningOrExitedZero "fl-client-2"
 Check-RunningOrExitedZero "fl-client-3"
 Check-HttpOk "mlflow reachable" "http://localhost:5000"
 
 $serverLogs = & docker logs fl-server 2>&1 | Out-String
-if ($serverLogs -match "training|round|Flower|FedAvg") {
+$logPattern = if ($TrainingMode -eq "real") {
+    "TRAINING_MODE=real|run_experiment|exp_v4_multitier|scientific runner"
+}
+else {
+    "training|round|Flower|FedAvg"
+}
+
+if ($serverLogs -match $logPattern) {
     Pass "fl-server logs contain training markers"
 }
 else {

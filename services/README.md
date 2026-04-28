@@ -80,13 +80,28 @@ docker system prune -a --volumes -f
 
 ## Mode B FL Training Profile
 
-Mode B lance un profile Docker Compose separe pour valider l'orchestration FL :
+Mode B lance un profile Docker Compose separe avec deux modes :
+
+- `TRAINING_MODE=mock` : orchestration Flower mock P5 avec 1 serveur + 3 clients.
+- `TRAINING_MODE=real` : wrapper P6A-lite autour du vrai runner scientifique `run_experiment.py`.
 
 ```bash
 cd services
 
-# Demarrer MLflow + serveur Flower mock + 3 clients Flower mock
+# Mode mock par defaut : MLflow + serveur Flower mock + 3 clients Flower mock
 docker compose --profile training up -d --build
+
+# Verifier le profile training
+bash scripts/training_check.sh
+```
+
+Mode real P6A-lite :
+
+```bash
+cd services
+
+# Real scientific runner, limite a 1 round par defaut dans .env.example
+TRAINING_MODE=real REAL_FL_ROUNDS=1 docker compose --profile training up -d --build
 
 # Verifier le profile training
 bash scripts/training_check.sh
@@ -116,10 +131,12 @@ docker compose --profile training down
 Clarification importante :
 
 - Mode A = inference IDS temps reel avec MQTT, modele PyTorch et metrics Prometheus.
-- Mode B = profile d'orchestration FL avec Flower mock leger.
+- Mode B mock = profile d'orchestration FL avec Flower mock leger.
+- Mode B real = wrapper scientifique simulation-based via `experiments/fl-iot-ids-v3/src/scripts/run_experiment.py`.
 - P5 valide Docker/profile/training orchestration, pas les metriques scientifiques FL.
+- P6A-lite branche le vrai runner Multi-tier valide mais ne demarre pas de vrais clients multi-containers.
 - Le vrai Multi-tier FL valide reste dans `experiments/fl-iot-ids-v3/`.
-- L'integration complete du vrai Multi-tier FL pourra etre traitee dans une phase ulterieure.
+- L'integration complete du vrai Multi-tier FL distribue pourra etre traitee dans une phase ulterieure.
 
 ## Services
 
