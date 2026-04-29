@@ -7,6 +7,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     gateway_id: str = Field(default="node1", alias="GATEWAY_ID")
     node_group: str = Field(default="room-a", alias="NODE_GROUP")
+    mqtt_enabled: bool = Field(default=False, alias="MQTT_ENABLED")
+    mqtt_client_id: str = Field(default="edge-ids-gateway-node1", alias="MQTT_CLIENT_ID")
+    mqtt_keepalive: int = Field(default=30, alias="MQTT_KEEPALIVE")
+    mqtt_qos: int = Field(default=1, alias="MQTT_QOS")
     mqtt_broker: str = Field(default="mosquitto", alias="MQTT_BROKER")
     mqtt_port: int = Field(default=1883, alias="MQTT_PORT")
     mqtt_username: str = Field(default="ids_user", alias="MQTT_USERNAME")

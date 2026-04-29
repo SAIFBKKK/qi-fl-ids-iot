@@ -278,6 +278,266 @@ python -m uvicorn main:app --host 0.0.0.0 --port 8030
 - pas encore d'integration Compose
 - la qualite scientifique depend du realisme des features simulees
 
+## P7.6 - MQTT allow/block/predictions/alerts
+
+P7.6 ajoute un vrai collector MQTT a la gateway edge.
+
+Quand `MQTT_ENABLED=true`, la gateway:
+
+- se connecte au broker MQTT
+- s'abonne a `RAW_INPUT_TOPIC`
+- execute le meme pipeline que `POST /infer/raw`
+- publie prediction / accepted / blocked / alert
+- publie un statut retained sur `STATUS_TOPIC`
+
+### Variables d'environnement MQTT
+
+| Variable | Defaut |
+|---|---|
+| `MQTT_ENABLED` | `false` |
+| `MQTT_CLIENT_ID` | `edge-ids-gateway-node1` |
+| `MQTT_KEEPALIVE` | `30` |
+| `MQTT_QOS` | `1` |
+| `MQTT_BROKER` | `mosquitto` |
+| `MQTT_PORT` | `1883` |
+| `MQTT_USERNAME` | `ids_user` |
+| `MQTT_PASSWORD` | vide |
+
+### Topics utilises
+
+- input brut: `iot/raw/node1`
+- accepted: `iot/accepted/node1`
+- blocked: `iot/blocked/node1`
+- predictions: `ids/predictions/node1`
+- alerts: `ids/alerts/node1`
+- status gateway: `ids/status/gateway/node1`
+
+Important:
+
+- Mode A n'est pas modifie
+- `ids/status/node1` n'est pas utilise par la gateway
+- pas encore d'integration Docker Compose dans cette phase
+- pas encore de flows Node-RED geres par le repository
+
+### Messages publies
+
+Prediction:
+
+```json
+{
+  "schema_version": "1.0",
+  "event_type": "edge_ids_prediction",
+  "gateway_id": "node1",
+  "node_group": "room-a",
+  "source_node_id": "sensor-a1",
+  "scenario": "normal_traffic",
+  "timestamp": "2026-04-28T12:00:00Z",
+  "prediction": {
+    "predicted_label_id": 18,
+    "predicted_label": "DoS-HTTP_Flood",
+    "confidence": 0.809248,
+    "is_alert": true,
+    "severity": "medium",
+    "threshold": 0.5,
+    "model_version": "baseline_fedavg_normal_classweights"
+  },
+  "decision": "block",
+  "latency_ms": 4.358
+}
+```
+
+Blocked:
+
+```json
+{
+  "schema_version": "1.0",
+  "event_type": "edge_ids_blocked",
+  "gateway_id": "node1",
+  "node_group": "room-a",
+  "decision": "block",
+  "reason": "ids_alert"
+}
+```
+
+Alert:
+
+```json
+{
+  "schema_version": "1.0",
+  "event_type": "edge_ids_alert",
+  "gateway_id": "node1",
+  "node_group": "room-a",
+  "source_node_id": "sensor-a1",
+  "scenario": "normal_traffic",
+  "timestamp": "2026-04-28T12:00:00Z",
+  "alert": {
+    "label": "DoS-HTTP_Flood",
+    "confidence": 0.809248,
+    "severity": "medium",
+    "decision": "block"
+  }
+}
+```
+
+Status retained:
+
+```json
+{
+  "schema_version": "1.0",
+  "event_type": "edge_gateway_status",
+  "service": "edge-ids-gateway",
+  "gateway_id": "node1",
+  "node_group": "room-a",
+  "status": "online",
+  "mqtt_connected": true,
+  "model_ready": true,
+  "timestamp": "2026-04-28T12:00:00Z"
+}
+```
+
+### Tests Mosquitto
+
+```powershell
+cd services
+docker compose up -d mosquitto
+cd ..
+```
+
+Puis lancer la gateway avec `MQTT_ENABLED=true`, s'abonner a `ids/#` et `iot/#`,
+et publier un evenement sur `iot/raw/node1`.
+
+## P7.7 - Health, readiness and metrics hardening
+
+P7.7 durcit l'observabilite de la gateway avant l'integration Docker Compose.
+
+### Difference entre `/health` et `/ready`
+
+- `GET /health`
+  - endpoint de liveness
+  - repond `status=ok` tant que le process FastAPI tourne
+  - ne tombe pas simplement parce que MQTT est deconnecte
+
+- `GET /ready`
+  - endpoint de readiness
+  - exige que le bundle inference soit pret
+  - si `MQTT_ENABLED=false`, MQTT ne bloque pas la readiness
+  - si `MQTT_ENABLED=true`, la connexion MQTT devient requise
+
+### Endpoint de diagnostic
+
+- `GET /diagnostics`
+
+Ce endpoint retourne:
+
+- l'etat runtime agrege
+- les topics configures
+- l'etat MQTT
+- l'etat inference
+- les chemins d'artefacts et leur existence
+
+Secrets masques:
+
+- aucun mot de passe MQTT n'est retourne
+- seulement `mqtt_username_set` et `mqtt_password_set`
+
+### Metriques Prometheus
+
+En plus des compteurs existants, la gateway expose maintenant clairement:
+
+- `edge_gateway_status`
+- `edge_gateway_ready`
+- `edge_gateway_inference_ready`
+- `edge_gateway_mqtt_connected`
+- `edge_gateway_model_ready`
+- `edge_gateway_artifact_missing_total`
+- `edge_gateway_mqtt_messages_total`
+
+### Exemples
+
+`GET /health`
+
+```json
+{
+  "status": "ok",
+  "service": "edge-ids-gateway",
+  "gateway_id": "node1",
+  "node_group": "room-a",
+  "version": "p7.7-observability-hardening",
+  "mode": "local_inference",
+  "mqtt_enabled": true,
+  "mqtt_connected": true,
+  "inference_ready": true
+}
+```
+
+`GET /ready`
+
+```json
+{
+  "service": "edge-ids-gateway",
+  "version": "p7.7-observability-hardening",
+  "gateway_id": "node1",
+  "node_group": "room-a",
+  "mode": "local_inference",
+  "mqtt_enabled": true,
+  "mqtt_configured": true,
+  "mqtt_connected": true,
+  "model_configured": true,
+  "model_ready": true,
+  "scaler_ready": true,
+  "feature_names_ready": true,
+  "inference_ready": true,
+  "ready": true,
+  "reason": null
+}
+```
+
+`GET /diagnostics`
+
+```json
+{
+  "service": "edge-ids-gateway",
+  "version": "p7.7-observability-hardening",
+  "ready": true,
+  "mqtt": {
+    "enabled": true,
+    "configured": true,
+    "connected": true,
+    "mqtt_username_set": true,
+    "mqtt_password_set": true
+  },
+  "artifacts": {
+    "model_path_exists": true,
+    "scaler_path_exists": true,
+    "feature_names_path_exists": true,
+    "label_mapping_path_exists": true
+  }
+}
+```
+
+### Cas MQTT desactive
+
+Si `MQTT_ENABLED=false`:
+
+- `/health` repond `ok`
+- `/ready` peut etre `true` si le bundle inference est pret
+- `mqtt_connected=false` est normal
+
+### Cas MQTT active
+
+Si `MQTT_ENABLED=true`:
+
+- `/ready` exige `mqtt_connected=true`
+- raison d'indisponibilite attendue si broker indisponible:
+  - `mqtt_enabled_but_not_connected`
+
+### Limites restantes
+
+- pas encore d'integration Docker Compose pour la gateway
+- pas encore de flows Node-RED geres dans le repo
+- la qualite scientifique depend toujours du realisme des features simulees
+- prochaine etape logique: profile Compose gateway
+
 ### Endpoint de validation
 
 `POST /validate/raw`
@@ -367,6 +627,10 @@ Reponse KO:
 |---|---|
 | `GATEWAY_ID` | `node1` |
 | `NODE_GROUP` | `room-a` |
+| `MQTT_ENABLED` | `false` |
+| `MQTT_CLIENT_ID` | `edge-ids-gateway-node1` |
+| `MQTT_KEEPALIVE` | `30` |
+| `MQTT_QOS` | `1` |
 | `MQTT_BROKER` | `mosquitto` |
 | `MQTT_PORT` | `1883` |
 | `MQTT_USERNAME` | `ids_user` |
@@ -393,11 +657,13 @@ python -m py_compile (Get-ChildItem services/edge-ids-gateway/*.py | ForEach-Obj
 python -c "from pathlib import Path; import sys; sys.path.insert(0, str(Path('services/edge-ids-gateway').resolve())); from raw_schema import validate_raw_event; print(validate_raw_event({'schema_version':'1.0','event_type':'raw_iot_event','timestamp':'2026-04-28T12:00:00Z','node_id':'sensor-a1','gateway_id':'node1','node_group':'room-a','device_type':'thermostat','src_ip':'10.10.1.21','dst_ip':'10.10.0.10','src_port':51544,'dst_port':443,'protocol':'tcp','packet_size':820,'packet_count':6,'duration_ms':85,'bytes_in':920,'bytes_out':3980,'flags':{'syn':1},'flag_counts':{},'scenario':'normal_traffic'})['protocol_number'])"
 python -c "from pathlib import Path; import sys; sys.path.insert(0, str(Path('services/edge-ids-gateway').resolve())); from preprocessor import EdgeFeaturePreprocessor; bundle=Path('experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights'); p=EdgeFeaturePreprocessor(str(bundle/'feature_names.pkl'), str(bundle/'scaler.pkl')); print(len(p.feature_names))"
 python -c "from pathlib import Path; import sys; sys.path.insert(0, str(Path('services/edge-ids-gateway').resolve())); from inference_api import EdgeInferenceEngine; bundle=Path('experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights'); e=EdgeInferenceEngine(str(bundle/'global_model.pth'), str(bundle/'label_mapping.json'), str(bundle/'model_config.json'), threshold=0.5); print(e.input_dim, e.num_classes, len(e.id_to_label))"
+python -c "from pathlib import Path; import sys; sys.path.insert(0, str(Path('services/edge-ids-gateway').resolve())); from collector import MQTTEdgeGatewayCollector; print(MQTTEdgeGatewayCollector.__name__)"
 cd services/edge-ids-gateway
 python -m uvicorn main:app --host 0.0.0.0 --port 8030
 curl http://localhost:8030/
 curl http://localhost:8030/health
 curl http://localhost:8030/ready
+curl http://localhost:8030/diagnostics
 curl -X POST http://localhost:8030/validate/raw -H "Content-Type: application/json" -d "{\"schema_version\":\"1.0\",\"event_type\":\"raw_iot_event\",\"timestamp\":\"2026-04-28T12:00:00Z\",\"node_id\":\"sensor-a1\",\"gateway_id\":\"node1\",\"node_group\":\"room-a\",\"device_type\":\"thermostat\",\"src_ip\":\"10.10.1.21\",\"dst_ip\":\"10.10.0.10\",\"src_port\":51544,\"dst_port\":443,\"protocol\":\"tcp\",\"packet_size\":820,\"packet_count\":6,\"duration_ms\":85,\"bytes_in\":920,\"bytes_out\":3980,\"flags\":{\"syn\":1},\"flag_counts\":{},\"scenario\":\"normal_traffic\"}"
 curl -X POST http://localhost:8030/map/features -H "Content-Type: application/json" -d "{\"schema_version\":\"1.0\",\"event_type\":\"raw_iot_event\",\"timestamp\":\"2026-04-28T12:00:00Z\",\"node_id\":\"sensor-a1\",\"gateway_id\":\"node1\",\"node_group\":\"room-a\",\"device_type\":\"thermostat\",\"src_ip\":\"10.10.1.21\",\"dst_ip\":\"10.10.0.10\",\"src_port\":51544,\"dst_port\":443,\"protocol\":\"tcp\",\"packet_size\":820,\"packet_count\":6,\"duration_ms\":85,\"bytes_in\":920,\"bytes_out\":3980,\"flags\":{\"syn\":1},\"flag_counts\":{},\"scenario\":\"normal_traffic\"}"
 curl -X POST http://localhost:8030/infer/raw -H "Content-Type: application/json" -d "{\"schema_version\":\"1.0\",\"event_type\":\"raw_iot_event\",\"timestamp\":\"2026-04-28T12:00:00Z\",\"node_id\":\"sensor-a1\",\"gateway_id\":\"node1\",\"node_group\":\"room-a\",\"device_type\":\"thermostat\",\"src_ip\":\"10.10.1.21\",\"dst_ip\":\"10.10.0.10\",\"src_port\":51544,\"dst_port\":443,\"protocol\":\"tcp\",\"packet_size\":820,\"packet_count\":6,\"duration_ms\":85,\"bytes_in\":920,\"bytes_out\":3980,\"flags\":{\"syn\":1},\"flag_counts\":{},\"scenario\":\"normal_traffic\"}"

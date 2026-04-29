@@ -47,6 +47,16 @@ EDGE_GATEWAY_STATUS = Gauge(
     "edge-ids-gateway availability status, 1 for up and 0 for down.",
 )
 
+EDGE_GATEWAY_READY = Gauge(
+    "edge_gateway_ready",
+    "edge-ids-gateway readiness status, 1 for ready and 0 for not ready.",
+)
+
+EDGE_GATEWAY_INFERENCE_READY = Gauge(
+    "edge_gateway_inference_ready",
+    "Inference readiness flag for edge-ids-gateway.",
+)
+
 EDGE_GATEWAY_MQTT_CONNECTED = Gauge(
     "edge_gateway_mqtt_connected",
     "MQTT connectivity flag for edge-ids-gateway.",
@@ -57,7 +67,21 @@ EDGE_GATEWAY_MODEL_READY = Gauge(
     "Model readiness flag for edge-ids-gateway.",
 )
 
+EDGE_GATEWAY_ARTIFACT_MISSING_TOTAL = Counter(
+    "edge_gateway_artifact_missing_total",
+    "Number of missing bundle artifacts detected by edge-ids-gateway.",
+    ["artifact"],
+)
+
+EDGE_GATEWAY_MQTT_MESSAGES_TOTAL = Counter(
+    "edge_gateway_mqtt_messages_total",
+    "Total MQTT messages received by edge-ids-gateway.",
+    ["topic"],
+)
+
 EDGE_GATEWAY_STATUS.set(1)
+EDGE_GATEWAY_READY.set(0)
+EDGE_GATEWAY_INFERENCE_READY.set(0)
 EDGE_GATEWAY_MQTT_CONNECTED.set(0)
 EDGE_GATEWAY_MODEL_READY.set(0)
 
