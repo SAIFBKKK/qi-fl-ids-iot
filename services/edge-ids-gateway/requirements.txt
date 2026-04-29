@@ -1,3 +1,5 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
 fastapi
 uvicorn[standard]
 prometheus-client
@@ -5,5 +7,6 @@ pydantic
 pydantic-settings
 numpy
 joblib
-torch
+scikit-learn
+torch==2.5.1+cpu
 paho-mqtt

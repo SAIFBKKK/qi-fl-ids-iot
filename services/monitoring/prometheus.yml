@@ -12,3 +12,8 @@ scrape_configs:
     static_configs:
       - targets: ["traffic-generator:8000"]
     metrics_path: "/metrics"
+
+  - job_name: "edge-ids-gateway"
+    static_configs:
+      - targets: ["edge-ids-gateway:8000"]
+    metrics_path: "/metrics"

@@ -1,3 +1,5 @@
+
+
 # edge-ids-gateway
 
 Service optionnel prepare pour la future gateway IDS edge du projet QI-FL-IDS-IoT.
@@ -537,6 +539,33 @@ Si `MQTT_ENABLED=true`:
 - pas encore de flows Node-RED geres dans le repo
 - la qualite scientifique depend toujours du realisme des features simulees
 - prochaine etape logique: profile Compose gateway
+
+## P7.8 - Docker Compose profile gateway
+
+P7.8 ajoute l'integration Docker Compose optionnelle via le profile `gateway`.
+
+Depuis `services/`:
+
+```bash
+docker compose --profile gateway up -d --build edge-ids-gateway
+```
+
+Le service Compose:
+
+- expose l'API sur <http://localhost:8030>
+- active `MQTT_ENABLED=true`
+- se connecte a `mosquitto:1883`
+- s'abonne a `iot/raw/node1`
+- publie sur `iot/accepted/node1`, `iot/blocked/node1`,
+  `ids/predictions/node1`, `ids/alerts/node1`,
+  `ids/status/gateway/node1`
+- monte le bundle FL en lecture seule dans `/artifacts`
+
+Mode A reste inchange: `docker compose up -d` ne lance pas
+`edge-ids-gateway`.
+
+Prometheus inclut un job `edge-ids-gateway`; le target peut etre `DOWN` quand le
+profile `gateway` n'est pas actif.
 
 ### Endpoint de validation
 

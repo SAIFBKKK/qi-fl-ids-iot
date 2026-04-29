@@ -3,7 +3,7 @@
 # Profiles: default | training | preprocessing | orchestration
 
 x-future-service-mounts:
-  artifacts_ro:
+  artifacts_ro: &artifacts_ro
     - ../experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights:/artifacts:ro
   data_ro:
     - ../data/balancing_v3_fixed300k_outputs:/data/full:ro
@@ -296,6 +296,55 @@ services:
       interval: 15s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+
+  edge-ids-gateway:
+    build:
+      context: ./edge-ids-gateway
+    container_name: edge-ids-gateway-node1
+    profiles: ["gateway"]
+    environment:
+      GATEWAY_ID: node1
+      NODE_GROUP: room-a
+      MQTT_ENABLED: "true"
+      MQTT_BROKER: mosquitto
+      MQTT_PORT: ${MQTT_PORT:-1883}
+      MQTT_USERNAME: ${MQTT_USERNAME:-ids_user}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-changeme_in_dotenv}
+      MQTT_CLIENT_ID: edge-ids-gateway-node1
+      MQTT_KEEPALIVE: 30
+      MQTT_QOS: 1
+      RAW_INPUT_TOPIC: iot/raw/node1
+      ACCEPTED_TOPIC: iot/accepted/node1
+      BLOCKED_TOPIC: iot/blocked/node1
+      PREDICTIONS_TOPIC: ids/predictions/node1
+      ALERTS_TOPIC: ids/alerts/node1
+      STATUS_TOPIC: ids/status/gateway/node1
+      MODEL_PATH: /artifacts/global_model.pth
+      SCALER_PATH: /artifacts/scaler.pkl
+      FEATURE_NAMES_PATH: /artifacts/feature_names.pkl
+      LABEL_MAPPING_PATH: /artifacts/label_mapping.json
+      INFERENCE_THRESHOLD: ${EDGE_GATEWAY_INFERENCE_THRESHOLD:-0.5}
+    ports:
+      - "8030:8000"
+    volumes: *artifacts_ro
+    networks:
+      - iot-net
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/ready', timeout=3).read()",
+        ]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     restart: unless-stopped
 
   # NOTE: iot-node-2 and iot-node-3

@@ -63,6 +63,81 @@ Arret :
 docker compose down
 ```
 
+## P7.8 - Edge IDS Gateway profile
+
+Le profile `gateway` ajoute une gateway IDS edge optionnelle sans modifier le
+Mode A par defaut. Mode A continue de lancer uniquement la chaine existante:
+
+`traffic-generator -> MQTT -> iot-node-1 -> predictions/alerts`
+
+Le profile gateway lance en plus `edge-ids-gateway`, qui recoit des evenements
+IoT bruts sur MQTT, applique la validation raw, le mapping 28 features,
+`scaler.pkl`, `global_model.pth`, puis publie allow/block/predictions/alerts.
+
+Lancement:
+
+```bash
+cd services
+docker compose --profile gateway up -d --build edge-ids-gateway
+```
+
+Lancement explicite avec le broker:
+
+```bash
+cd services
+docker compose --profile gateway up -d --build mosquitto edge-ids-gateway
+```
+
+Endpoints gateway:
+
+- health: <http://localhost:8030/health>
+- readiness: <http://localhost:8030/ready>
+- diagnostics: <http://localhost:8030/diagnostics>
+- metrics: <http://localhost:8030/metrics>
+
+Topics MQTT utilises:
+
+- input brut: `iot/raw/node1`
+- accepted: `iot/accepted/node1`
+- blocked: `iot/blocked/node1`
+- predictions: `ids/predictions/node1`
+- alerts: `ids/alerts/node1`
+- status gateway: `ids/status/gateway/node1`
+
+Test Mosquitto:
+
+```bash
+docker exec -it mosquitto mosquitto_sub \
+  -h localhost -p 1883 \
+  -u ids_user -P "$MQTT_PASSWORD" \
+  -t "ids/#"
+```
+
+Publier un evenement raw valide:
+
+```bash
+docker exec mosquitto mosquitto_pub \
+  -h localhost -p 1883 \
+  -u ids_user -P "$MQTT_PASSWORD" \
+  -t iot/raw/node1 \
+  -m '{"schema_version":"1.0","event_type":"raw_iot_event","timestamp":"2026-04-28T12:00:00Z","node_id":"sensor-a1","gateway_id":"node1","node_group":"room-a","device_type":"thermostat","src_ip":"10.10.1.21","dst_ip":"10.10.0.10","src_port":51544,"dst_port":443,"protocol":"tcp","packet_size":820,"packet_count":6,"duration_ms":85,"bytes_in":920,"bytes_out":3980,"flags":{"syn":1},"flag_counts":{},"scenario":"normal_traffic"}'
+```
+
+Arret:
+
+```bash
+docker compose --profile gateway down
+```
+
+Prometheus contient un job `edge-ids-gateway`. Il est normal que ce target soit
+`DOWN` quand le profile `gateway` n'est pas lance.
+
+Limites P7.8:
+
+- Node-RED n'est pas encore branche
+- le mapping raw -> 28 features reste une approximation deterministe documentee
+- Mode A reste inchange
+
 Nettoyage optionnel et destructif pour Docker local :
 
 ```bash
@@ -160,6 +235,7 @@ Clarification importante :
 | grafana | 3000 | default | Dashboards |
 | node-red | 1880 | orchestration | Scenario orchestration |
 | qga-service | 8020 | preprocessing | Quantum-inspired optimization API stub |
+| edge-ids-gateway | 8030 | gateway | Edge IDS raw MQTT gateway |
 
 ## Profiles
 
@@ -175,6 +251,9 @@ docker compose --profile training up -d --build
 
 # QGA preprocessing API
 docker compose --profile preprocessing up -d --build qga-service
+
+# Edge IDS Gateway profile
+docker compose --profile gateway up -d --build edge-ids-gateway
 ```
 
 ## Mode C Quantum-Inspired Preprocessing Profile
