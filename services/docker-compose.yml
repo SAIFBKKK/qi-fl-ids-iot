@@ -20,6 +20,8 @@ volumes:
     driver: local
   node_red_data:
     driver: local
+  mlflow_data:
+    driver: local
 
 services:
   mosquitto:
@@ -164,7 +166,7 @@ services:
     ports:
       - "${MLFLOW_PORT:-5000}:5000"
     volumes:
-      - ../outputs/mlruns:/mlruns
+      - mlflow_data:/mlruns
     command: mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri /mlruns
     networks:
       - iot-net

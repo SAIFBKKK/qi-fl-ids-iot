@@ -323,6 +323,27 @@ curl http://localhost:8020/ready
 curl http://localhost:8020/metrics
 ```
 
+## Deployment bundle
+
+Both `iot-node` and `edge-ids-gateway` load inference artefacts from:
+
+```
+experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights/
+```
+
+Required files (6):
+
+| File | Role |
+|---|---|
+| `global_model.pth` | PyTorch MLP state dict (28 → 256 → 128 → 34) |
+| `scaler.pkl` | StandardScaler fitted on 28 CIC-IoT features |
+| `feature_names.pkl` | Ordered list of 28 canonical feature names |
+| `label_mapping.json` | Bidirectional id↔label map for 34 classes |
+| `label_mapping.pkl` | Same mapping in pickle format |
+| `model_config.json` | Architecture config (input_dim, hidden_dims, num_classes) |
+
+See [README_DEPLOYMENT.md](../experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights/README_DEPLOYMENT.md) for the full inference snippet and bundle documentation.
+
 ## Structure
 
 Voir `services/<service>/README.md` pour chaque service individuel.

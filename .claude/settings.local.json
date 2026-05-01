@@ -16,7 +16,17 @@
       "Bash(git commit *)",
       "Bash(git push *)",
       "Bash(python -c ' *)",
-      "Bash(python *)"
+      "Bash(python *)",
+      "Bash(scaler\\\\.pkl)",
+      "Bash(feature_names\\\\.pkl)",
+      "Bash(label_mapping\\\\.json)",
+      "Bash(model_config\\\\.json)",
+      "Bash(run_summary\\\\.json\")",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\saifb\\\\dev\\\\qi-fl-ids-iot\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Sort-Object)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\saifb\\\\dev\\\\qi-fl-ids-iot\\\\services\" -Force | Where-Object {$_.Name -notin @\\('__pycache__'\\)} | Select-Object Name, Mode)",
+      "Bash(pip install *)"
     ]
   }
 }

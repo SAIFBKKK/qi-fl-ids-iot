@@ -6,12 +6,14 @@ Service optionnel prepare pour la future gateway IDS edge du projet QI-FL-IDS-Io
 
 ## Etat actuel
 
-P7.2 fournit uniquement un squelette Python/FastAPI bootable:
+P7.8 fournit une gateway edge IDS completement operationnelle:
 
-- aucune connexion MQTT reelle
-- aucune inference modele
-- aucun mapping brut -> 28 features
-- aucune integration Docker Compose
+- validation du schema brut `raw_iot_event`
+- mapping deterministe vers les 28 features CIC-IoT
+- inference locale via `scaler.pkl` + `global_model.pth` (bundle FL)
+- connexion MQTT reelle (`MQTT_ENABLED=true`) avec allow/block/predictions/alerts
+- health, readiness et diagnostics durcis
+- integration Docker Compose via le profile `gateway`
 
 Le Mode A existant n'est pas modifie.
 

@@ -4,6 +4,10 @@ import json
 from pathlib import Path
 from typing import Any
 
+import joblib
+
+from feature_mapper import CANONICAL_FEATURE_NAMES
+
 MODEL_VERSION = "baseline_fedavg_normal_classweights"
 
 
@@ -58,6 +62,7 @@ class EdgeInferenceEngine:
             raise ValueError("model_config hidden_dims must contain exactly two hidden layers")
         self.dropout = float(self.model_config.get("dropout", 0.2))
         self.model = self._load_model()
+        self._assert_feature_names_consistent()
 
     def predict(self, scaled_features: Any) -> dict[str, Any]:
         tensor = self.torch.as_tensor(scaled_features, dtype=self.torch.float32)
@@ -135,6 +140,20 @@ class EdgeInferenceEngine:
         model.load_state_dict(checkpoint)
         model.eval()
         return model
+
+    def _assert_feature_names_consistent(self) -> None:
+        feature_names_path = self.label_mapping_path.parent / "feature_names.pkl"
+        try:
+            bundle_names = list(joblib.load(feature_names_path))
+        except Exception as exc:  # noqa: BLE001
+            raise RuntimeError(f"cannot load feature_names.pkl from {feature_names_path}: {exc}") from exc
+        if bundle_names != CANONICAL_FEATURE_NAMES:
+            in_bundle = set(bundle_names) - set(CANONICAL_FEATURE_NAMES)
+            in_canonical = set(CANONICAL_FEATURE_NAMES) - set(bundle_names)
+            mismatched = sorted(in_bundle | in_canonical)
+            raise RuntimeError(
+                f"feature_names.pkl does not match CANONICAL_FEATURE_NAMES — mismatched: {mismatched}"
+            )
 
     def _load_checkpoint(self) -> Any:
         try:
