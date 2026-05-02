@@ -1,0 +1,111 @@
+from __future__ import annotations
+
+import os
+import random
+import string
+from contextlib import asynccontextmanager
+
+import httpx
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+
+from api.models import router as models_router
+from api.nodes import router as nodes_router
+
+
+FL_SERVER_URL = os.getenv("FL_SERVER_URL", "http://fl-server:8080")
+PROMETHEUS_URL = os.getenv("PROMETHEUS_URL", "http://prometheus:9090")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    app.state.http = httpx.AsyncClient(timeout=10.0)
+    app.state.fl_server_url = FL_SERVER_URL.rstrip("/")
+    app.state.prometheus_url = PROMETHEUS_URL.rstrip("/")
+    yield
+    await app.state.http.aclose()
+
+
+app = FastAPI(title="QI-FL-IDS-IoT Dashboard", version="1.0", lifespan=lifespan)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+app.include_router(nodes_router, prefix="/api")
+app.include_router(models_router, prefix="/api")
+
+templates = Jinja2Templates(directory="templates")
+
+
+@app.get("/")
+async def root() -> RedirectResponse:
+    return RedirectResponse(url="/tab/iot")
+
+
+@app.get("/tab/{tab_name}")
+async def tab_view(tab_name: str, request: Request):
+    valid_tabs = {"iot": "tab_iot.html", "fl": "tab_fl.html", "qi": "tab_qi.html"}
+    if tab_name not in valid_tabs:
+        raise HTTPException(404, "Unknown tab")
+    return templates.TemplateResponse(
+        request=request,
+        name=valid_tabs[tab_name],
+        context={
+            "request": request,
+            "active_tab": tab_name,
+            "fl_server_url": FL_SERVER_URL,
+            "prometheus_url": PROMETHEUS_URL,
+        },
+    )
+
+
+@app.post("/api/connect")
+async def api_connect(request: Request) -> dict:
+    profiles = [
+        {
+            "cpu_cores": 1,
+            "ram_mb": 512,
+            "device_type": "raspberrypi-zero",
+            "battery_powered": True,
+            "network_quality": "low",
+        },
+        {
+            "cpu_cores": 2,
+            "ram_mb": 1024,
+            "device_type": "raspberrypi-3",
+            "battery_powered": False,
+            "network_quality": "medium",
+        },
+        {
+            "cpu_cores": 4,
+            "ram_mb": 2048,
+            "device_type": "raspberrypi-4",
+            "battery_powered": False,
+            "network_quality": "medium",
+        },
+        {
+            "cpu_cores": 8,
+            "ram_mb": 4096,
+            "device_type": "jetson-nano",
+            "battery_powered": False,
+            "network_quality": "high",
+        },
+    ]
+    suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=4))
+    payload = {"node_id": f"dyn_{suffix}", **random.choice(profiles)}
+
+    try:
+        response = await request.app.state.http.post(
+            f"{request.app.state.fl_server_url}/nodes/register",
+            json=payload,
+        )
+        response.raise_for_status()
+        return response.json()
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(exc.response.status_code, exc.response.text) from exc
+    except httpx.RequestError as exc:
+        raise HTTPException(502, f"fl-server unreachable: {exc}") from exc
+
+
+@app.get("/health")
+async def health() -> dict:
+    return {"status": "ok", "service": "dashboard", "version": "1.0"}

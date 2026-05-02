@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+<section x-data="iotTab()" x-init="loadNodes(); setInterval(loadNodes, 5000)">
+  <div class="section-header">
+    <div>
+      <h2>État du réseau IoT</h2>
+      <p class="section-subtitle">Inventaire live des nœuds enregistrés par fl-server.</p>
+    </div>
+    <div class="actions">
+      <span class="counter">
+        <span x-text="nodes.length"></span> / 5 nœuds connectés
+      </span>
+      <button @click="connectNew()" :disabled="busy" type="button">+ Connecter un nœud</button>
+    </div>
+  </div>
+
+  <div class="error-banner" x-show="error" x-text="error"></div>
+
+  <div class="card">
+    <table class="nodes-table">
+      <thead>
+        <tr>
+          <th>Node</th>
+          <th>État</th>
+          <th>CPU / RAM</th>
+          <th>Tier</th>
+          <th>Modèle (md5)</th>
+          <th>Alertes</th>
+          <th>Latence</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <template x-for="node in nodes" :key="node.node_id">
+          <tr>
+            <td x-text="node.node_id"></td>
+            <td>
+              <span class="badge"
+                    :class="isConnected(node) ? 'badge-success' : 'badge-muted'"
+                    x-text="node.status || '-'"></span>
+            </td>
+            <td x-text="formatCapacity(node)"></td>
+            <td>
+              <span class="tier-badge" :class="'tier-' + (node.assigned_tier || 'unknown')"
+                    x-text="node.assigned_tier || '-'"></span>
+            </td>
+            <td>
+              <span class="md5-badge" x-text="node.assigned_model_md5 || '-'"
+                    :title="'md5 du global_model.pth pour le tier ' + node.assigned_tier"></span>
+            </td>
+            <td x-text="node.attacks_detected ?? '-'"></td>
+            <td x-text="formatLatency(node)"></td>
+            <td><button @click="showDetails(node)" type="button">Détails</button></td>
+          </tr>
+        </template>
+        <tr x-show="nodes.length === 0">
+          <td colspan="8" class="empty-state">Aucun nœud enregistré.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="modal-backdrop" x-show="selected" @click.self="selected = null" x-cloak>
+    <div class="modal" x-show="selected">
+      <h3>Détails du nœud <span x-text="selected?.node_id"></span></h3>
+      <pre x-text="JSON.stringify(selected, null, 2)"></pre>
+      <button @click="selected = null" type="button">Fermer</button>
+    </div>
+  </div>
+</section>
+{% endblock %}

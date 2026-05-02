@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QI-FL-IDS-IoT Dashboard</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.5/cdn.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">QI-FL-IDS-IoT</div>
+    <nav class="tabs">
+      <a href="/tab/iot" class="tab {% if active_tab == 'iot' %}active{% endif %}">1. Réseau IoT</a>
+      <a href="/tab/fl" class="tab {% if active_tab == 'fl' %}active{% endif %}">2. Federated Learning</a>
+      <a href="/tab/qi" class="tab {% if active_tab == 'qi' %}active{% endif %}">3. QI vs Classique</a>
+    </nav>
+    <div class="status-pill" id="conn-status">● Connecté</div>
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+  <script src="/static/app.js"></script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>
