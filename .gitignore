@@ -161,3 +161,4 @@ desktop.ini
 !experiments/fl-iot-ids-v3/outputs/deployment/
 !experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights/
 !experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights/**tmp/
+tmp/
