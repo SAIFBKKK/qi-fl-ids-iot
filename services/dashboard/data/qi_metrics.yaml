@@ -1,0 +1,168 @@
+# Metriques QI - sources et baselines
+# Sprint 3 : tout est "expected" sauf baseline mesuree
+# Source de verite onglet 3 (QI vs Classique)
+
+meta:
+  generated_for: "QI-FL-IDS-IoT PFE defense 2026-05-19"
+  scenario: "A"
+  scenario_description: "Expected vs measured - baseline mesuree, QI depuis litterature"
+
+# Metriques affichees (ordre = ordre des colonnes du tableau et axes radar)
+metrics_order:
+  - id: f1_macro
+    label: "F1-macro"
+    unit: ""
+    higher_is_better: true
+    radar: true
+  - id: accuracy
+    label: "Accuracy"
+    unit: ""
+    higher_is_better: true
+    radar: false
+  - id: benign_recall
+    label: "Benign recall"
+    unit: ""
+    higher_is_better: true
+    radar: true
+  - id: false_positive_rate
+    label: "False positive rate"
+    unit: ""
+    higher_is_better: false
+    radar: true
+  - id: latency_ms
+    label: "Latence inference"
+    unit: "ms"
+    higher_is_better: false
+    radar: true
+  - id: bandwidth_mb_round
+    label: "Bandwidth / round"
+    unit: "MB"
+    higher_is_better: false
+    radar: true
+  - id: memory_mb
+    label: "Memoire modele"
+    unit: "MB"
+    higher_is_better: false
+    radar: false
+  - id: noniid_robustness_score
+    label: "Robustesse non-IID"
+    unit: "0-1"
+    higher_is_better: true
+    radar: true
+
+# Chaque methode decrit son role systeme et ses gains attendus vs baseline
+methods:
+  classical_baseline:
+    label: "Classical baseline"
+    role: "Reference - FedAvg + MLP sur architecture microservices actuelle"
+    phase: "Partout"
+    status: "measured"
+    color: "#888780"
+    sources:
+      - "Phase 2 baseline mesuree - experiments/fl-iot-ids-v3"
+    metrics:
+      f1_macro: 0.5673
+      accuracy: 0.9528
+      benign_recall: 0.3984
+      false_positive_rate: 0.0091
+      latency_ms: 6.2
+      bandwidth_mb_round: 12.4
+      memory_mb: 0.018
+      noniid_robustness_score: 0.50
+
+  qga_qea:
+    label: "QGA / QEA"
+    role: "Selection features, tuning HP, choix clients FL"
+    phase: "Entrainement"
+    status: "expected"
+    color: "#534AB7"
+    sources:
+      - "Barati 2024 - Quantum Genetic Algorithm for Federated Learning"
+    metrics:
+      f1_macro: 0.6210
+      accuracy: 0.9601
+      benign_recall: 0.4750
+      false_positive_rate: 0.0080
+      latency_ms: 6.4
+      bandwidth_mb_round: 10.5
+      memory_mb: 0.018
+      noniid_robustness_score: 0.55
+
+  qiarm:
+    label: "QIARM"
+    role: "Selection noeuds, scheduling, offloading, energie/latence"
+    phase: "Orchestration / deploiement"
+    status: "expected"
+    color: "#1D9E75"
+    sources:
+      - "QI 2025 - Quantum-Inspired Aggregation Robust Module"
+    metrics:
+      f1_macro: 0.5870
+      accuracy: 0.9560
+      benign_recall: 0.4150
+      false_positive_rate: 0.0064
+      latency_ms: 4.9
+      bandwidth_mb_round: 11.8
+      memory_mb: 0.018
+      noniid_robustness_score: 0.65
+
+  fedtn_mps:
+    label: "FedTN / MPS"
+    role: "Compression modele (Tensor Network) - memoire et comm"
+    phase: "Entrainement + deploiement"
+    status: "expected"
+    color: "#BA7517"
+    sources:
+      - "Bhatia 2025 - Tensor Network compression for Federated Learning"
+    metrics:
+      f1_macro: 0.5650
+      accuracy: 0.9510
+      benign_recall: 0.3920
+      false_positive_rate: 0.0093
+      latency_ms: 5.5
+      bandwidth_mb_round: 7.4
+      memory_mb: 0.013
+      noniid_robustness_score: 0.50
+
+  qifa:
+    label: "QIFA"
+    role: "Aggregation Quantum-Inspired (remplace FedAvg)"
+    phase: "Serveur FL / aggregation"
+    status: "expected"
+    color: "#D85A30"
+    sources:
+      - "Quantum-Inspired Federated Aggregation 2024"
+    metrics:
+      f1_macro: 0.6450
+      accuracy: 0.9650
+      benign_recall: 0.5100
+      false_positive_rate: 0.0072
+      latency_ms: 6.3
+      bandwidth_mb_round: 12.4
+      memory_mb: 0.018
+      noniid_robustness_score: 0.78
+
+  combined:
+    label: "QGA + QIARM + FedTN + QIFA"
+    role: "Architecture complete - toutes contributions cumulees"
+    phase: "Systeme entier"
+    status: "expected"
+    color: "#185FA5"
+    sources:
+      - "Composition des gains individuels avec ponderation conservatrice"
+    metrics:
+      f1_macro: 0.6680
+      accuracy: 0.9710
+      benign_recall: 0.5450
+      false_positive_rate: 0.0058
+      latency_ms: 5.2
+      bandwidth_mb_round: 6.8
+      memory_mb: 0.013
+      noniid_robustness_score: 0.82
+
+# Notes de defense pour le rapport et la soutenance
+defense_notes:
+  - "Toutes les valeurs 'expected' sont issues des papiers cites, pas de runs locaux."
+  - "Le baseline est mesure sur Phase 2 (experiments/fl-iot-ids-v3) - F1-macro 0.5673."
+  - "Les gains 'combined' ne sont pas additifs : ponderation conservatrice (somme - 30%)."
+  - "Statuts seront mis a jour en 'measured' progressivement apres PFE selon priorites."

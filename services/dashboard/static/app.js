@@ -229,3 +229,128 @@ function flTab() {
     },
   };
 }
+
+function qiTab() {
+  return {
+    raw: null,
+    methodsList: [],
+    metricsOrder: [],
+    radarChart: null,
+
+    async init() {
+      await this.loadAll();
+      this.renderRadar();
+    },
+
+    async loadAll() {
+      try {
+        const response = await fetch('/api/qi/overview');
+        if (!response.ok) throw new Error(`overview ${response.status}`);
+        this.raw = await response.json();
+
+        const methodsObj = this.raw.methods || {};
+        this.methodsList = Object.keys(methodsObj).map((key) => ({
+          id: key,
+          ...methodsObj[key],
+          sources: methodsObj[key].sources || [],
+        }));
+        this.metricsOrder = this.raw.metrics_order || [];
+      } catch (err) {
+        console.error('qiTab.loadAll failed:', err);
+        alert(`Echec chargement metriques QI : ${err.message}`);
+      }
+    },
+
+    formatValue(methodId, metricId) {
+      const method = (this.raw?.methods || {})[methodId];
+      if (!method?.metrics) return '-';
+      const value = method.metrics[metricId];
+      if (value === null || value === undefined) return '-';
+
+      if (metricId === 'false_positive_rate') return value.toFixed(4);
+      if (metricId === 'latency_ms') return value.toFixed(1);
+      if (metricId === 'bandwidth_mb_round') return value.toFixed(1);
+      if (metricId === 'memory_mb') return value.toFixed(3);
+      if (typeof value === 'number') return value.toFixed(3);
+      return String(value);
+    },
+
+    getCellClass(methodId, metric) {
+      const values = this.methodsList
+        .map((method) => ({
+          id: method.id,
+          value: this.raw.methods[method.id]?.metrics?.[metric.id],
+        }))
+        .filter((item) => item.value !== null && item.value !== undefined);
+
+      if (values.length === 0) return '';
+
+      const sorted = [...values].sort((a, b) => (
+        metric.higher_is_better ? b.value - a.value : a.value - b.value
+      ));
+      const best = sorted[0]?.id;
+      const baselineId = 'classical_baseline';
+
+      if (methodId === best && best !== baselineId) return 'qi-cell-best';
+      if (methodId === baselineId) return 'qi-cell-baseline';
+      return '';
+    },
+
+    renderRadar() {
+      const canvas = document.getElementById('qi-radar-chart');
+      if (!canvas || !this.raw || typeof Chart === 'undefined') return;
+
+      const radarMetrics = (this.metricsOrder || []).filter((metric) => metric.radar);
+      const labels = radarMetrics.map((metric) => metric.label);
+
+      const minMax = {};
+      radarMetrics.forEach((metric) => {
+        const values = this.methodsList
+          .map((method) => this.raw.methods[method.id]?.metrics?.[metric.id])
+          .filter((value) => value !== null && value !== undefined);
+        minMax[metric.id] = { min: Math.min(...values), max: Math.max(...values) };
+      });
+
+      const datasets = this.methodsList.map((method) => {
+        const data = radarMetrics.map((metric) => {
+          const value = this.raw.methods[method.id]?.metrics?.[metric.id];
+          if (value === null || value === undefined) return 0;
+          const { min, max } = minMax[metric.id];
+          if (max === min) return 0.5;
+          let normalized = (value - min) / (max - min);
+          if (!metric.higher_is_better) normalized = 1 - normalized;
+          return Math.max(0, Math.min(1, normalized));
+        });
+        return {
+          label: method.label,
+          data,
+          borderColor: method.color,
+          backgroundColor: `${method.color}20`,
+          borderWidth: 2,
+          pointRadius: 3,
+        };
+      });
+
+      this.radarChart = new Chart(canvas, {
+        type: 'radar',
+        data: { labels, datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            r: {
+              beginAtZero: true,
+              min: 0,
+              max: 1,
+              ticks: { display: false, stepSize: 0.2 },
+              pointLabels: { font: { size: 11 } },
+            },
+          },
+          plugins: {
+            legend: { display: false },
+          },
+        },
+      });
+    },
+  };
+}

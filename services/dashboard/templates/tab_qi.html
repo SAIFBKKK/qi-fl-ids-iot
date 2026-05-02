@@ -1,7 +1,99 @@
 {% extends "base.html" %}
 {% block content %}
-<section>
-  <h2>QI vs Classique</h2>
-  <div class="placeholder">À implémenter au Sprint 3.</div>
+<section x-data="qiTab()" x-init="init()">
+
+  <div class="section-header">
+    <h2>QI vs Classique</h2>
+    <div class="actions">
+      <span class="counter">Scenario A - expected depuis litterature</span>
+    </div>
+  </div>
+
+  <div class="card qi-intro">
+    <p class="qi-intro-text">
+      Comparaison du systeme classique (FedAvg + MLP) avec 4 modules Quantum-Inspired
+      places dans differentes phases du pipeline FL, plus une combinaison finale.
+      Le baseline est mesure ; les modules QI sont des valeurs attendues issues
+      des papiers de reference.
+    </p>
+  </div>
+
+  <div class="card qi-section">
+    <h3>Tableau comparatif</h3>
+    <div class="qi-table-wrapper">
+      <table class="qi-table">
+        <thead>
+          <tr>
+            <th class="qi-th-metric">Metrique</th>
+            <template x-for="method in methodsList" :key="method.id">
+              <th class="qi-th-method">
+                <div class="qi-method-label" x-text="method.label"></div>
+                <div class="qi-method-status">
+                  <span class="qi-status-pill" :class="'status-' + method.status" x-text="method.status"></span>
+                </div>
+              </th>
+            </template>
+          </tr>
+        </thead>
+        <tbody>
+          <template x-for="metric in metricsOrder" :key="metric.id">
+            <tr>
+              <td class="qi-metric-label">
+                <div x-text="metric.label"></div>
+                <div class="qi-metric-unit" x-text="metric.unit ? '(' + metric.unit + ')' : ''"></div>
+              </td>
+              <template x-for="method in methodsList" :key="method.id + '-' + metric.id">
+                <td class="qi-metric-value"
+                    :class="getCellClass(method.id, metric)"
+                    x-text="formatValue(method.id, metric.id)"></td>
+              </template>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card qi-section">
+    <h3>Vue radar - 6 axes</h3>
+    <div class="qi-radar-wrapper">
+      <canvas id="qi-radar-chart"></canvas>
+    </div>
+    <div class="qi-radar-legend">
+      <template x-for="method in methodsList" :key="'leg-' + method.id">
+        <div class="qi-legend-item">
+          <span class="qi-legend-dot" :style="'background:' + method.color"></span>
+          <span x-text="method.label"></span>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  <div class="card qi-section">
+    <h3>Roadmap scientifique</h3>
+    <div class="qi-roadmap">
+      <template x-for="method in methodsList" :key="'rm-' + method.id">
+        <div class="qi-roadmap-item">
+          <div class="qi-roadmap-head">
+            <span class="qi-method-name" x-text="method.label"></span>
+            <span class="qi-status-pill" :class="'status-' + method.status" x-text="method.status"></span>
+          </div>
+          <div class="qi-roadmap-body">
+            <div class="qi-row"><span class="qi-row-label">Phase</span><span x-text="method.phase"></span></div>
+            <div class="qi-row"><span class="qi-row-label">Role</span><span x-text="method.role"></span></div>
+            <div class="qi-row qi-sources">
+              <span class="qi-row-label">Sources</span>
+              <ul>
+                <template x-for="source in (method.sources || [])" :key="source">
+                  <li x-text="source"></li>
+                </template>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+
 </section>
 {% endblock %}

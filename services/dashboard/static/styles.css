@@ -395,3 +395,196 @@ button:disabled {
   width: 100% !important;
   height: auto !important;
 }
+
+/* QI tab */
+.qi-intro {
+  margin-bottom: 16px;
+}
+
+.qi-intro-text {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.qi-section {
+  margin-bottom: 16px;
+}
+
+.qi-section h3 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.qi-table-wrapper {
+  overflow-x: auto;
+}
+
+.qi-table {
+  width: 100%;
+  font-size: 12px;
+  border-collapse: collapse;
+}
+
+.qi-table th,
+.qi-table td {
+  padding: 10px 8px;
+  border-bottom: 0.5px solid var(--border);
+  text-align: left;
+}
+
+.qi-th-metric {
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  position: sticky;
+  left: 0;
+}
+
+.qi-th-method {
+  font-weight: 500;
+  text-align: center;
+  min-width: 110px;
+}
+
+.qi-method-label {
+  font-size: 12px;
+}
+
+.qi-method-status {
+  margin-top: 4px;
+}
+
+.qi-metric-label {
+  font-weight: 500;
+  background: var(--bg-secondary);
+  position: sticky;
+  left: 0;
+}
+
+.qi-metric-unit {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.qi-metric-value {
+  text-align: center;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 12px;
+}
+
+.qi-cell-best {
+  background: #eaf3de;
+  color: #173404;
+  font-weight: 500;
+}
+
+.qi-cell-baseline {
+  background: #f1efe8;
+  color: #444441;
+}
+
+.qi-status-pill {
+  display: inline-block;
+  font-size: 10px;
+  padding: 1px 8px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.status-measured {
+  background: #eaf3de;
+  color: #173404;
+}
+
+.status-expected {
+  background: #faeeda;
+  color: #412402;
+}
+
+.qi-radar-wrapper {
+  height: 360px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qi-radar-wrapper canvas {
+  max-height: 360px;
+}
+
+.qi-radar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  margin-top: 12px;
+  font-size: 12px;
+}
+
+.qi-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.qi-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.qi-roadmap {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.qi-roadmap-item {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.qi-roadmap-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.qi-method-name {
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.qi-roadmap-body {
+  font-size: 12px;
+}
+
+.qi-row {
+  display: flex;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.qi-row-label {
+  color: var(--text-secondary);
+  min-width: 60px;
+  font-weight: 500;
+}
+
+.qi-sources ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.qi-sources li {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-style: italic;
+}
