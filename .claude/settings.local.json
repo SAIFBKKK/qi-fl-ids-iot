@@ -26,7 +26,13 @@
       "Bash(Select-Object -ExpandProperty FullName)",
       "Bash(Sort-Object)",
       "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\saifb\\\\dev\\\\qi-fl-ids-iot\\\\services\" -Force | Where-Object {$_.Name -notin @\\('__pycache__'\\)} | Select-Object Name, Mode)",
-      "Bash(pip install *)"
+      "Bash(pip install *)",
+      "PowerShell(cd C:\\\\Users\\\\saifb\\\\dev\\\\qi-fl-ids-iot\\\\services\\\\feature-extractor; Get-ChildItem -Recurse | Where-Object { !$_.PSIsContainer } | Select-Object FullName)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\saifb\\\\dev\\\\qi-fl-ids-iot\\\\services\" -Recurse -Filter \"*.py\")",
+      "Bash(Get-ChildItem -Recurse -Include *.py, *.yml, *.yaml, Dockerfile)",
+      "Bash(Select-Object FullName)",
+      "PowerShell(ls -Recurse -Path \"C:\\\\Users\\\\saifb\\\\dev\\\\qi-fl-ids-iot\" -Directory | Where-Object { $_.Name -in @\\(\"centralized\", \"federated\", \"qi_modules\", \"docker\", \"data\"\\) } | Select-Object -ExpandProperty FullName)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\saifb\\\\dev\\\\qi-fl-ids-iot\" -Directory -Depth 1 | Where-Object { $_.Name -notmatch \"^\\\\.\" } | Select-Object -ExpandProperty Name | Sort-Object)"
     ]
   }
 }

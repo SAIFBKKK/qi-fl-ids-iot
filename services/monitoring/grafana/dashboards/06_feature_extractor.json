@@ -1,0 +1,183 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "refresh": "5s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["qi-fl-ids", "feature-extractor", "pipeline"],
+  "time": { "from": "now-15m", "to": "now" },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Feature Extractor",
+  "uid": "p6b-feature-extractor",
+  "version": 1,
+  "weekStart": "",
+  "templating": { "list": [] },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "MQTT Connected",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 5 },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "DISCONNECTED" }, "1": { "text": "CONNECTED" } } }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "value": null, "color": "red" }, { "value": 1, "color": "green" }]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [{ "expr": "feature_extractor_mqtt_connected", "refId": "A" }]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Active Windows",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 5 },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "value": null, "color": "blue" }]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [{ "expr": "feature_extractor_windows_active", "refId": "A" }]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Vector Publish Rate",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 5 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "value": null, "color": "blue" }]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [
+        { "expr": "sum(rate(feature_extractor_vectors_published_total[1m]))", "refId": "A" }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Rejection Ratio",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 5 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 3,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "green" },
+              { "value": 0.05, "color": "yellow" },
+              { "value": 0.15, "color": "red" }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [
+        {
+          "expr": "sum(rate(feature_extractor_events_rejected_total[1m])) / sum(rate(feature_extractor_events_received_total[1m]))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Feature Extractor Pipeline — Rates",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 5, "w": 24, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "unit": "ops", "decimals": 2 },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "calcs": ["lastNotNull"],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": { "mode": "multi", "sort": "none" }
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [
+        {
+          "expr": "sum(rate(feature_extractor_events_received_total[1m]))",
+          "legendFormat": "events received/s",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(feature_extractor_events_rejected_total[1m]))",
+          "legendFormat": "events rejected/s",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(rate(feature_extractor_vectors_published_total[1m]))",
+          "legendFormat": "vectors published/s",
+          "refId": "C"
+        }
+      ]
+    }
+  ]
+}

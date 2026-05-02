@@ -6,7 +6,8 @@ Topics MQTT :
   input  : iot/raw_events     (JSON RawEvent)
   output : iot/features       (JSON FeatureVector)
 HTTP :
-  GET /health → 200 {"status": "ok", ...}
+  GET /health  → 200 {"status": "ok", ...}
+  GET /metrics → 200 texte Prometheus
 """
 from __future__ import annotations
 
@@ -242,31 +243,65 @@ def apply_scaler(scaler: Any, vector: list[float]) -> list[float]:
 
 
 # ---------------------------------------------------------------------------
-# Endpoint HTTP /health
+# Endpoints HTTP /health et /metrics
 # ---------------------------------------------------------------------------
+
+def _prometheus_text(state: dict[str, Any]) -> str:
+    node_id = state.get("node_id", "unknown")
+    label = f'node_id="{node_id}"'
+    lines = [
+        "# HELP feature_extractor_status feature-extractor process status.",
+        "# TYPE feature_extractor_status gauge",
+        f"feature_extractor_status{{{label}}} {1 if state.get('mqtt_connected', False) else 0}",
+        "# HELP feature_extractor_mqtt_connected MQTT connection state.",
+        "# TYPE feature_extractor_mqtt_connected gauge",
+        f"feature_extractor_mqtt_connected{{{label}}} {1 if state.get('mqtt_connected', False) else 0}",
+        "# HELP feature_extractor_windows_active Active time-windows in aggregator.",
+        "# TYPE feature_extractor_windows_active gauge",
+        f"feature_extractor_windows_active{{{label}}} {state.get('windows_active', 0)}",
+        "# HELP feature_extractor_events_received_total Raw events received from MQTT.",
+        "# TYPE feature_extractor_events_received_total counter",
+        f"feature_extractor_events_received_total{{{label}}} {state.get('events_received', 0)}",
+        "# HELP feature_extractor_events_rejected_total Raw events rejected (invalid).",
+        "# TYPE feature_extractor_events_rejected_total counter",
+        f"feature_extractor_events_rejected_total{{{label}}} {state.get('events_rejected', 0)}",
+        "# HELP feature_extractor_vectors_published_total Feature vectors published to MQTT.",
+        "# TYPE feature_extractor_vectors_published_total counter",
+        f"feature_extractor_vectors_published_total{{{label}}} {state.get('vectors_published', 0)}",
+        "",
+    ]
+    return "\n".join(lines)
+
 
 class _HealthHandler(BaseHTTPRequestHandler):
     _state: dict[str, Any] = {}
 
     def do_GET(self) -> None:  # noqa: N802
-        if self.path != "/health":
+        if self.path == "/health":
+            body = json.dumps({
+                "status": "ok",
+                "service": "feature-extractor",
+                "node_id": self._state.get("node_id", "unknown"),
+                "mqtt_connected": self._state.get("mqtt_connected", False),
+                "windows_active": self._state.get("windows_active", 0),
+                "vectors_published": self._state.get("vectors_published", 0),
+                "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
+            }).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+        elif self.path == "/metrics":
+            body = _prometheus_text(self._state).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+        else:
             self.send_response(404)
             self.end_headers()
-            return
-        body = json.dumps({
-            "status": "ok",
-            "service": "feature-extractor",
-            "node_id": self._state.get("node_id", "unknown"),
-            "mqtt_connected": self._state.get("mqtt_connected", False),
-            "windows_active": self._state.get("windows_active", 0),
-            "vectors_published": self._state.get("vectors_published", 0),
-            "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
-        }).encode()
-        self.send_response(200)
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
 
     def log_message(self, fmt: str, *args: Any) -> None:  # silence access log
         pass
@@ -316,6 +351,8 @@ class FeatureExtractorService:
             "node_id": node_id,
             "mqtt_connected": False,
             "windows_active": 0,
+            "events_received": 0,
+            "events_rejected": 0,
             "vectors_published": 0,
         }
         self._client = self._build_client(username, password)
@@ -365,16 +402,19 @@ class FeatureExtractorService:
         self.log.warning("mqtt_disconnected")
 
     def _on_message(self, _client: mqtt.Client, _ud: Any, message: mqtt.MQTTMessage) -> None:
+        self._state["events_received"] = self._state.get("events_received", 0) + 1
         try:
             payload = json.loads(message.payload.decode("utf-8"))
         except (json.JSONDecodeError, UnicodeDecodeError) as exc:
             self.log.warning("invalid_json topic=%s err=%s", message.topic, exc)
+            self._state["events_rejected"] = self._state.get("events_rejected", 0) + 1
             return
 
         try:
             event = RawEvent.from_dict(payload)
         except (KeyError, ValueError, TypeError) as exc:
             self.log.warning("invalid_event err=%s", exc)
+            self._state["events_rejected"] = self._state.get("events_rejected", 0) + 1
             return
 
         self._aggregator.add_event(event)

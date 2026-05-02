@@ -1,0 +1,324 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "refresh": "5s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["qi-fl-ids", "federated-learning", "training"],
+  "time": { "from": "now-30m", "to": "now" },
+  "timepicker": {},
+  "timezone": "",
+  "title": "D2 — FL Training Health",
+  "uid": "qi-fl-ids-d2",
+  "version": 1,
+  "weekStart": "",
+  "templating": { "list": [] },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Round FL Actuel",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [{ "value": null, "color": "blue" }] }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [{ "expr": "fl_current_round", "legendFormat": "Round", "refId": "A" }]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Accuracy Globale Modèle",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "red" },
+              { "value": 0.85, "color": "yellow" },
+              { "value": 0.92, "color": "green" }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [{ "expr": "fl_round_accuracy", "legendFormat": "Accuracy", "refId": "A" }]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Benign Recall (KPI Principal)",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "red" },
+              { "value": 0.90, "color": "yellow" },
+              { "value": 0.95, "color": "green" }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [{ "expr": "fl_benign_recall", "legendFormat": "Benign Recall", "refId": "A" }]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "F1-Macro Score",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 12, "y": 0, "w": 4, "h": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 3,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "red" },
+              { "value": 0.85, "color": "green" }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [{ "expr": "fl_f1_macro", "legendFormat": "F1-Macro", "refId": "A" }]
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Clients Actifs",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 16, "y": 0, "w": 4, "h": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "red" },
+              { "value": 3, "color": "green" }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [{ "expr": "fl_active_clients", "legendFormat": "Clients", "refId": "A" }]
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Taux Faux Positifs",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 20, "y": 0, "w": 4, "h": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "green" },
+              { "value": 0.05, "color": "yellow" },
+              { "value": 0.10, "color": "red" }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [{ "expr": "ids_false_positive_rate", "legendFormat": "FP Rate", "refId": "A" }]
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Convergence FL — Accuracy, Benign Recall & F1-Macro par Round",
+      "description": "KPI principal du projet. Benign Recall = % trafic légitime correctement classifié.",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 4, "w": 16, "h": 9 },
+      "fieldConfig": {
+        "defaults": { "unit": "percentunit" },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Accuracy" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "green" } },
+              { "id": "custom.lineWidth", "value": 2 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Benign Recall" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } },
+              { "id": "custom.lineWidth", "value": 2 },
+              { "id": "custom.lineStyle", "value": { "dash": [8, 4], "fill": "dash" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "F1-Macro" },
+            "properties": [
+              { "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } },
+              { "id": "custom.lineWidth", "value": 2 }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "none" },
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [
+        { "expr": "fl_round_accuracy", "legendFormat": "Accuracy",     "refId": "A" },
+        { "expr": "fl_benign_recall",  "legendFormat": "Benign Recall", "refId": "B" },
+        { "expr": "fl_f1_macro",       "legendFormat": "F1-Macro",      "refId": "C" }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Alertes IDS par Type d'Attaque",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 16, "y": 4, "w": 8, "h": 9 },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "decimals": 2 },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "none" },
+        "legend": { "displayMode": "table", "placement": "bottom", "showLegend": true }
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [
+        {
+          "expr": "sum by (attack_type) (rate(ids_alerts_total[1m]))",
+          "legendFormat": "{{attack_type}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Durée des Rounds FL (secondes)",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 13, "w": 12, "h": 6 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": { "mode": "fixed", "fixedColor": "yellow" },
+          "custom": { "fillOpacity": 15 }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "single", "sort": "none" },
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [
+        { "expr": "fl_round_duration_seconds", "legendFormat": "Durée Round", "refId": "A" }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Bande Passante Totale par Round (KB)",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 12, "y": 13, "w": 12, "h": 6 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "kbytes",
+          "color": { "mode": "fixed", "fixedColor": "purple" },
+          "custom": { "fillOpacity": 15 }
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "single", "sort": "none" },
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [
+        {
+          "expr": "fl_bandwidth_bytes / 1024",
+          "legendFormat": "Bande Passante (KB)",
+          "refId": "A"
+        }
+      ]
+    }
+  ]
+}

@@ -154,7 +154,7 @@ class NodeMetrics:
             )
             cumulative = 0
             for bucket in INFERENCE_LATENCY_BUCKETS:
-                cumulative = self.latency_buckets[bucket]
+                cumulative += self.latency_buckets[bucket]
                 lines.append(
                     "inference_latency_seconds_bucket"
                     f'{{node_id="{_escape(node_id)}",le="{bucket}"}} {cumulative}'

@@ -6,23 +6,125 @@ experiments/fl-iot-ids-v3 without modifying that source tree.
 """
 from __future__ import annotations
 
+import http.server
+import json
 import os
 from pathlib import Path
 import subprocess
 import sys
+import threading
 import time
 from contextlib import nullcontext
 from typing import Any
 
 import flwr as fl
 import mlflow
+from flwr.common import FitRes, Parameters, Scalar
+from flwr.server.client_proxy import ClientProxy
 from flwr.server.strategy import FedAvg
 from loguru import logger
+
+from metrics import FLServerMetrics
 
 
 DEFAULT_NUM_ROUNDS = 10
 DEFAULT_REAL_EXPERIMENT = "exp_v4_multitier_fedavg_normal_classweights"
 DEFAULT_REAL_WORKDIR = "/app/experiments/fl-iot-ids-v3"
+METRICS_PORT = 8000
+
+
+_fl_metrics = FLServerMetrics()
+
+
+def _start_metrics_server() -> None:
+    """Démarre un thread HTTP daemon servant /metrics et /health sur METRICS_PORT."""
+    metrics_obj = _fl_metrics
+
+    class _Handler(http.server.BaseHTTPRequestHandler):
+        def do_GET(self) -> None:  # noqa: N802
+            if self.path == "/metrics":
+                body = metrics_obj.prometheus_text().encode()
+                self.send_response(200)
+                self.send_header("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+            elif self.path == "/health":
+                body = json.dumps(
+                    {"status": "ok", "service": "fl-server", **metrics_obj.snapshot()}
+                ).encode()
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+            else:
+                self.send_response(404)
+                self.end_headers()
+
+        def log_message(self, fmt: str, *args: Any) -> None:
+            pass
+
+    server = http.server.HTTPServer(("0.0.0.0", METRICS_PORT), _Handler)
+    t = threading.Thread(target=server.serve_forever, daemon=True)
+    t.start()
+    logger.info("fl_metrics_server_started port={}", METRICS_PORT)
+
+
+class FedAvgWithMetrics(FedAvg):
+    """FedAvg instrumenté — appelle _fl_metrics.update() après chaque aggregate_fit."""
+
+    def __init__(self, num_rounds: int = DEFAULT_NUM_ROUNDS, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self._num_rounds = num_rounds
+        self._round_start: float = time.time()
+
+    def aggregate_fit(
+        self,
+        server_round: int,
+        results: list[tuple[ClientProxy, FitRes]],
+        failures: list[Any],
+    ) -> tuple[Parameters | None, dict[str, Scalar]]:
+        round_duration = time.time() - self._round_start
+
+        # Extraire les métriques agrégées depuis les résultats clients (moyenne pondérée)
+        accuracy = 0.0
+        benign_recall = 0.0
+        f1_macro = 0.0
+        total_bandwidth = 0
+        total_samples = 0
+
+        for _client, fit_res in results:
+            n = fit_res.num_examples
+            total_samples += n
+            m = fit_res.metrics or {}
+            accuracy      += float(m.get("accuracy",      0.0)) * n
+            benign_recall += float(m.get("benign_recall", 0.0)) * n
+            f1_macro      += float(m.get("f1_macro",      0.0)) * n
+            total_bandwidth += sum(
+                len(t) for t in (fit_res.parameters.tensors if fit_res.parameters else [])
+            )
+
+        if total_samples > 0:
+            accuracy      /= total_samples
+            benign_recall /= total_samples
+            f1_macro      /= total_samples
+
+        aggregated = super().aggregate_fit(server_round, results, failures)
+
+        _fl_metrics.update(
+            round_num=server_round,
+            accuracy=accuracy,
+            benign_recall=benign_recall,
+            f1_macro=f1_macro,
+            duration=round_duration,
+            active_clients=len(results),
+            bandwidth_bytes=total_bandwidth,
+            false_positive_rate=0.0,
+        )
+
+        self._round_start = time.time()
+        return aggregated
 
 
 def configure_logging() -> None:
@@ -64,7 +166,7 @@ def start_mlflow_run(training_mode: str, num_rounds: int) -> Any:
         mlflow.log_param("strategy", "FedAvg")
         mlflow.log_metric("server_started", 1.0)
         return run
-    except Exception as exc:  # pragma: no cover - depends on runtime MLflow
+    except Exception as exc:  # pragma: no cover
         logger.warning("MLflow logging disabled after startup failure: {}", exc)
         return nullcontext()
 
@@ -74,7 +176,7 @@ def log_mlflow_metric(name: str, value: float) -> None:
         return
     try:
         mlflow.log_metric(name, value)
-    except Exception as exc:  # pragma: no cover - depends on runtime MLflow
+    except Exception as exc:  # pragma: no cover
         logger.warning("Could not log {} to MLflow: {}", name, exc)
 
 
@@ -103,7 +205,19 @@ def run_mock_training(training_mode: str) -> None:
         "P5 mock training profile validates orchestration, not scientific FL metrics"
     )
 
-    strategy = FedAvg(
+    _start_metrics_server()
+    _fl_metrics.update(
+        round_num=0,
+        accuracy=0.0,
+        benign_recall=0.0,
+        f1_macro=0.0,
+        duration=0.0,
+        active_clients=0,
+        bandwidth_bytes=0,
+    )
+
+    strategy = FedAvgWithMetrics(
+        num_rounds=num_rounds,
         min_fit_clients=3,
         min_evaluate_clients=3,
         min_available_clients=3,

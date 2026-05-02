@@ -73,8 +73,7 @@ class TrafficGeneratorMetrics:
                 [
                     "# HELP traffic_generator_mqtt_connected MQTT connection state.",
                     "# TYPE traffic_generator_mqtt_connected gauge",
-                    f'traffic_generator_mqtt_connected{{node_id="{_escape(node_id)}"}} '
-                    f"{1 if self.mqtt_connected else 0}",
+                    f"traffic_generator_mqtt_connected{{{labels}}} {1 if self.mqtt_connected else 0}",
                     "",
                 ]
             )

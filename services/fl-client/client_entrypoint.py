@@ -77,10 +77,16 @@ class MockFlowerClient(fl.client.NumPyClient):
         server_round = int(config.get("server_round", 0) or 0)
         logger.info("Client {} fit round={}", self.client_id, server_round)
         self.parameters = [array + np.float32(0.001) for array in parameters]
+        # Simulated per-client metrics — improve slightly each round to mimic convergence
+        base_acc = {"client1": 0.84, "client2": 0.86, "client3": 0.85}.get(self.client_id, 0.85)
+        gain = min(server_round * 0.005, 0.08)
         return self.parameters, self.num_examples, {
             "client_id": self.client_id,
             "server_round": server_round,
             "mock_fit": 1,
+            "accuracy": round(base_acc + gain, 4),
+            "benign_recall": round(base_acc + gain + 0.04, 4),
+            "f1_macro": round(base_acc + gain - 0.01, 4),
         }
 
     def evaluate(

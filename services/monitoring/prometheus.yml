@@ -3,17 +3,42 @@ global:
   evaluation_interval: 15s
 
 scrape_configs:
+  # ── IoT nodes (container port interne 8000) ───────────────────────────────
   - job_name: "iot-node-1"
     static_configs:
       - targets: ["iot-node-1:8000"]
     metrics_path: "/metrics"
 
+  - job_name: "iot-node-2"
+    static_configs:
+      - targets: ["iot-node-2:8000"]
+    metrics_path: "/metrics"
+
+  - job_name: "iot-node-3"
+    static_configs:
+      - targets: ["iot-node-3:8000"]
+    metrics_path: "/metrics"
+
+  # ── Traffic generator ─────────────────────────────────────────────────────
   - job_name: "traffic-generator"
     static_configs:
       - targets: ["traffic-generator:8000"]
     metrics_path: "/metrics"
 
+  # ── Edge IDS gateway ──────────────────────────────────────────────────────
   - job_name: "edge-ids-gateway"
     static_configs:
       - targets: ["edge-ids-gateway:8000"]
+    metrics_path: "/metrics"
+
+  # ── Feature extractor ─────────────────────────────────────────────────────
+  - job_name: "feature-extractor"
+    static_configs:
+      - targets: ["feature-extractor:8000"]
+    metrics_path: "/metrics"
+
+  # ── FL server (profil training uniquement — up=0 quand arrêté) ───────────
+  - job_name: "fl-server"
+    static_configs:
+      - targets: ["fl-server:8000"]
     metrics_path: "/metrics"
