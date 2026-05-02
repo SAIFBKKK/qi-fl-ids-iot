@@ -108,16 +108,16 @@ services:
       MQTT_PORT: ${MQTT_PORT:-1883}
       MQTT_USERNAME: ${MQTT_USERNAME:-ids_user}
       MQTT_PASSWORD: ${MQTT_PASSWORD:-changeme_in_dotenv}
-      REPLAY_SCENARIO: ${REPLAY_SCENARIO:-mixed_chaos}
+      REPLAY_SCENARIO: deployment_15
       REPLAY_RATE: ${REPLAY_RATE:-5}
-      DATASET_DIR: /data/demo
+      DATASET_DIR: /data/deployment
       ARTIFACTS_DIR: /artifacts
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       LOG_FORMAT: ${LOG_FORMAT:-json}
     ports:
       - "8010:8000"
     volumes:
-      - ../data/cic-iot-2023/demo_subsets:/data/demo:ro
+      - ../experiments/fl-iot-ids-v3/outputs/model_factory_30rounds/deployment_data:/data/deployment:ro
       - ../experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights:/artifacts:ro
     networks:
       - iot-net
