@@ -67,16 +67,13 @@ class TorchMLPInferenceEngine:
             class MLPClassifier(nn.Module):
                 def __init__(self) -> None:
                     super().__init__()
-                    h1, h2 = hidden_dims
-                    self.net = nn.Sequential(
-                        nn.Linear(input_dim, h1),
-                        nn.ReLU(),
-                        nn.Dropout(dropout),
-                        nn.Linear(h1, h2),
-                        nn.ReLU(),
-                        nn.Dropout(dropout),
-                        nn.Linear(h2, num_classes),
-                    )
+                    layers: list[nn.Module] = []
+                    in_dim = input_dim
+                    for h in hidden_dims:
+                        layers.extend([nn.Linear(in_dim, h), nn.ReLU(), nn.Dropout(dropout)])
+                        in_dim = h
+                    layers.append(nn.Linear(in_dim, num_classes))
+                    self.net = nn.Sequential(*layers)
 
                 def forward(self, x: Any) -> Any:
                     return self.net(x)
