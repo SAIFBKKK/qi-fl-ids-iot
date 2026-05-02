@@ -1,58 +1,164 @@
 """Flower training dispatcher for the Compose training profile.
 
-TRAINING_MODE=registry exposes the dynamic Mode A node/model registry.
-TRAINING_MODE=mock keeps the P5 lightweight Flower orchestration.
-TRAINING_MODE=real delegates to the validated scientific runner mounted from
-experiments/fl-iot-ids-v3 without modifying that source tree.
+TRAINING_MODE=registry  FastAPI registry only — no Flower server.
+TRAINING_MODE=mock      Registry + background mock Flower training thread.
+TRAINING_MODE=real      Registry + background real scientific runner thread.
+
+FastAPI on port 8080 is ALWAYS the main server regardless of TRAINING_MODE.
+Mock/real modes add a daemon thread on top; they never replace the HTTP server.
 """
 from __future__ import annotations
 
+import hashlib
 import http.server
 import json
 import os
-from pathlib import Path
 import subprocess
 import sys
 import threading
 import time
-from contextlib import nullcontext
+from contextlib import asynccontextmanager, nullcontext
+from pathlib import Path
 from typing import Any
 
 import flwr as fl
 import mlflow
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from flwr.common import FitRes, Parameters, Scalar
 from flwr.server.client_proxy import ClientProxy
 from flwr.server.strategy import FedAvg
 from loguru import logger
+from pydantic import BaseModel
 
 from metrics import FLServerMetrics
 from model_registry import ModelRegistry
 from node_registry import NodeRegistry
 
 
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
+
 DEFAULT_NUM_ROUNDS = 10
 DEFAULT_REAL_EXPERIMENT = "exp_v4_multitier_fedavg_normal_classweights"
 DEFAULT_REAL_WORKDIR = "/app/experiments/fl-iot-ids-v3"
 METRICS_PORT = 8000
+TIERS = ["weak", "medium", "powerful"]
 
+MODEL_FACTORY_PATH = Path(os.getenv("MODEL_FACTORY_PATH", "/artifacts/model_factory_30rounds"))
+
+# ---------------------------------------------------------------------------
+# Module-level singletons (initialised once, shared across all requests)
+# ---------------------------------------------------------------------------
 
 _fl_metrics = FLServerMetrics()
 _node_registry = NodeRegistry()
 _model_registry = ModelRegistry()
 
 
-def _json_response(handler: http.server.BaseHTTPRequestHandler, status: int, payload: dict[str, Any]) -> None:
-    body = json.dumps(payload, sort_keys=True).encode()
-    handler.send_response(status)
-    handler.send_header("Content-Type", "application/json")
-    handler.send_header("Content-Length", str(len(body)))
-    handler.end_headers()
-    handler.wfile.write(body)
+# ---------------------------------------------------------------------------
+# Logging
+# ---------------------------------------------------------------------------
+
+def configure_logging() -> None:
+    logger.remove()
+    logger.add(
+        sys.stdout,
+        level=os.getenv("LOG_LEVEL", "INFO"),
+        serialize=os.getenv("LOG_FORMAT", "json").lower() == "json",
+        backtrace=False,
+        diagnose=False,
+    )
 
 
-def _not_found(handler: http.server.BaseHTTPRequestHandler) -> None:
-    _json_response(handler, 404, {"status": "error", "error": "not_found"})
+configure_logging()
 
+
+# ---------------------------------------------------------------------------
+# Pydantic schemas
+# ---------------------------------------------------------------------------
+
+class TierInfo(BaseModel):
+    tier: str
+    available: bool
+    model_path: str
+    scaler_path: str
+    feature_names_path: str
+    label_mapping_path: str
+    config: dict
+    size_bytes: int
+    md5: str | None
+
+
+class ModelsList(BaseModel):
+    tiers: list[TierInfo]
+    factory_path: str
+    factory_available: bool
+
+
+class TierMetadata(TierInfo):
+    label_mapping_summary: dict
+
+
+class NodeRegistrationRequest(BaseModel):
+    node_id: str
+    cpu_cores: int = 1
+    ram_mb: int = 1024
+    device_type: str = "docker_node"
+    network_quality: str = "medium"
+    battery_powered: bool = False
+    tier_override: str | None = None
+
+
+class NodeRegistrationResponse(BaseModel):
+    node_id: str
+    assigned_tier: str
+    model_version: str
+    model_source: str
+    status: str
+
+
+# ---------------------------------------------------------------------------
+# Model Factory helpers
+# ---------------------------------------------------------------------------
+
+def _read_tier(tier_name: str) -> TierInfo | None:
+    tier_dir = MODEL_FACTORY_PATH / tier_name
+    config_path = tier_dir / "model_config.json"
+    model_path = tier_dir / "global_model.pth"
+    if not config_path.exists():
+        return None
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    size = model_path.stat().st_size if model_path.exists() else 0
+    md5 = hashlib.md5(model_path.read_bytes()).hexdigest()[:8] if model_path.exists() else None
+    return TierInfo(
+        tier=tier_name,
+        available=True,
+        model_path=str(model_path),
+        scaler_path=str(tier_dir / "scaler.pkl"),
+        feature_names_path=str(tier_dir / "feature_names.json"),
+        label_mapping_path=str(tier_dir / "label_mapping.json"),
+        config=config,
+        size_bytes=size,
+        md5=md5,
+    )
+
+
+def _list_factory_tiers() -> list[TierInfo]:
+    if not MODEL_FACTORY_PATH.exists():
+        return []
+    result = []
+    for name in TIERS:
+        info = _read_tier(name)
+        if info is not None:
+            result.append(info)
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Prometheus metrics server (port 8000, thread daemon — R8: never merged into FastAPI)
+# ---------------------------------------------------------------------------
 
 def _update_registry_metrics() -> None:
     _fl_metrics.update_registered_nodes(
@@ -62,7 +168,6 @@ def _update_registry_metrics() -> None:
 
 
 def _start_metrics_server() -> None:
-    """Démarre un thread HTTP daemon servant /metrics et /health sur METRICS_PORT."""
     metrics_obj = _fl_metrics
 
     class _Handler(http.server.BaseHTTPRequestHandler):
@@ -96,77 +201,11 @@ def _start_metrics_server() -> None:
     logger.info("fl_metrics_server_started port={}", METRICS_PORT)
 
 
-def run_registry_server() -> None:
-    host = os.getenv("FL_SERVER_HOST", "0.0.0.0")
-    port = read_int_env("FL_SERVER_PORT", 8080)
-    _update_registry_metrics()
-    _start_metrics_server()
-
-    class _RegistryHandler(http.server.BaseHTTPRequestHandler):
-        def do_GET(self) -> None:  # noqa: N802
-            if self.path == "/health":
-                _json_response(
-                    self,
-                    200,
-                    {
-                        "status": "ok",
-                        "service": "fl-server",
-                        "mode": "registry",
-                        **_fl_metrics.snapshot(),
-                    },
-                )
-                return
-            if self.path == "/nodes":
-                _json_response(self, 200, {"nodes": _node_registry.list_nodes()})
-                return
-            if self.path == "/models":
-                _json_response(self, 200, {"models": _model_registry.list_models()})
-                return
-            if self.path.startswith("/models/") and self.path.endswith("/metadata"):
-                tier = self.path.split("/")[2]
-                try:
-                    _json_response(self, 200, _model_registry.get_metadata(tier))
-                except KeyError:
-                    _json_response(self, 404, {"status": "error", "error": "unknown_tier", "tier": tier})
-                return
-            _not_found(self)
-
-        def do_POST(self) -> None:  # noqa: N802
-            if self.path != "/nodes/register":
-                _not_found(self)
-                return
-
-            try:
-                length = int(self.headers.get("Content-Length", "0"))
-                raw_body = self.rfile.read(length).decode("utf-8")
-                payload = json.loads(raw_body) if raw_body else {}
-                node = _node_registry.register(payload)
-                _update_registry_metrics()
-                _json_response(
-                    self,
-                    200,
-                    {
-                        "node_id": node.node_id,
-                        "assigned_tier": node.assigned_tier,
-                        "model_version": node.model_version,
-                        "model_source": node.model_source,
-                        "status": node.status,
-                    },
-                )
-            except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
-                _json_response(self, 400, {"status": "error", "error": str(exc)})
-
-        def log_message(self, fmt: str, *args: Any) -> None:
-            pass
-
-    server = http.server.HTTPServer((host, port), _RegistryHandler)
-    logger.info("model_registry_server_started host={} port={}", host, port)
-    server.serve_forever()
-
+# ---------------------------------------------------------------------------
+# FedAvg with Prometheus instrumentation (preserved exactly)
+# ---------------------------------------------------------------------------
 
 class FedAvgWithMetrics(FedAvg):
-    """FedAvg instrumenté — appelle _fl_metrics.update() après chaque aggregate_fit."""
-
     def __init__(self, num_rounds: int = DEFAULT_NUM_ROUNDS, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self._num_rounds = num_rounds
@@ -180,7 +219,6 @@ class FedAvgWithMetrics(FedAvg):
     ) -> tuple[Parameters | None, dict[str, Scalar]]:
         round_duration = time.time() - self._round_start
 
-        # Extraire les métriques agrégées depuis les résultats clients (moyenne pondérée)
         accuracy = 0.0
         benign_recall = 0.0
         f1_macro = 0.0
@@ -220,16 +258,9 @@ class FedAvgWithMetrics(FedAvg):
         return aggregated
 
 
-def configure_logging() -> None:
-    logger.remove()
-    logger.add(
-        sys.stdout,
-        level=os.getenv("LOG_LEVEL", "INFO"),
-        serialize=os.getenv("LOG_FORMAT", "json").lower() == "json",
-        backtrace=False,
-        diagnose=False,
-    )
-
+# ---------------------------------------------------------------------------
+# MLflow helpers (preserved exactly)
+# ---------------------------------------------------------------------------
 
 def read_int_env(name: str, default: int, minimum: int = 1) -> int:
     raw_value = os.getenv(name, str(default))
@@ -249,7 +280,6 @@ def start_mlflow_run(training_mode: str, num_rounds: int) -> Any:
     if not tracking_uri:
         logger.warning("MLFLOW_TRACKING_URI is not set; MLflow logging disabled")
         return nullcontext()
-
     try:
         mlflow.set_tracking_uri(tracking_uri)
         mlflow.set_experiment(os.getenv("MLFLOW_EXPERIMENT_NAME", "p5_mock_fl_training"))
@@ -273,15 +303,9 @@ def log_mlflow_metric(name: str, value: float) -> None:
         logger.warning("Could not log {} to MLflow: {}", name, exc)
 
 
-def keep_alive_after_training() -> None:
-    keep_alive = os.getenv("KEEP_SERVER_ALIVE", "true").lower() in {"1", "true", "yes"}
-    if not keep_alive:
-        return
-
-    logger.info("Mock FL training finished; keeping fl-server container alive")
-    while True:
-        time.sleep(60)
-
+# ---------------------------------------------------------------------------
+# Training runners (preserved exactly — run in daemon threads in mock/real modes)
+# ---------------------------------------------------------------------------
 
 def run_mock_training(training_mode: str) -> None:
     host = os.getenv("FL_SERVER_HOST", "0.0.0.0")
@@ -294,11 +318,8 @@ def run_mock_training(training_mode: str) -> None:
         server_address,
         num_rounds,
     )
-    logger.info(
-        "P5 mock training profile validates orchestration, not scientific FL metrics"
-    )
+    logger.info("P5 mock training profile validates orchestration, not scientific FL metrics")
 
-    _start_metrics_server()
     _fl_metrics.update(
         round_num=0,
         accuracy=0.0,
@@ -325,8 +346,6 @@ def run_mock_training(training_mode: str) -> None:
         logger.info("Mock Flower training finished after {} rounds", num_rounds)
         log_mlflow_metric("training_finished", 1.0)
 
-    keep_alive_after_training()
-
 
 def run_real_training() -> None:
     experiment = os.getenv("REAL_FL_EXPERIMENT", DEFAULT_REAL_EXPERIMENT)
@@ -351,10 +370,8 @@ def run_real_training() -> None:
     command = [
         sys.executable,
         "/app/real_runner_wrapper.py",
-        "--experiment",
-        experiment,
-        "--rounds",
-        str(rounds),
+        "--experiment", experiment,
+        "--rounds", str(rounds),
     ]
 
     env = os.environ.copy()
@@ -363,52 +380,172 @@ def run_real_training() -> None:
     env["GIT_PYTHON_REFRESH"] = git_python_refresh
     existing_pythonpath = env.get("PYTHONPATH")
     env["PYTHONPATH"] = (
-        str(workdir)
-        if not existing_pythonpath
+        str(workdir) if not existing_pythonpath
         else f"{workdir}{os.pathsep}{existing_pythonpath}"
     )
 
     logger.info(
         "TRAINING_MODE=real: launching scientific runner experiment={} rounds={} workdir={}",
-        experiment,
-        rounds,
-        workdir,
-    )
-    logger.info(
-        "P6A-lite real mode uses simulation-based run_experiment.py, not multi-container clients"
+        experiment, rounds, workdir,
     )
     logger.info("MLFLOW_TRACKING_URI injected as {}", tracking_uri)
     logger.info("MLFLOW_ARTIFACT_ROOT injected as {}", artifact_root)
-    logger.info("GIT_PYTHON_REFRESH injected as {}", git_python_refresh)
 
     result = subprocess.run(command, cwd=str(workdir), env=env, check=False)
     if result.returncode != 0:
-        logger.critical(
-            "Scientific runner failed with exit code {}", result.returncode
-        )
+        logger.critical("Scientific runner failed with exit code {}", result.returncode)
         sys.exit(result.returncode)
 
     logger.info("Scientific runner completed successfully")
 
 
-def main() -> None:
-    configure_logging()
+# ---------------------------------------------------------------------------
+# Thread launcher for mock/real modes
+# ---------------------------------------------------------------------------
 
-    training_mode = os.getenv("TRAINING_MODE", "mock").lower()
+def _launch_training_thread(target_fn: Any, *args: Any) -> None:
+    def _wrapper():
+        try:
+            _fl_metrics.set_training_thread_status(1)
+            target_fn(*args)
+        except Exception as exc:
+            logger.error("Training thread crashed: {}", exc)
+            _fl_metrics.set_training_thread_status(0)
 
-    if training_mode in {"registry", "model_registry", "dynamic"}:
-        run_registry_server()
-        return
+    t = threading.Thread(target=_wrapper, daemon=True, name="fl-training")
+    t.start()
+    logger.info("fl_training_thread_launched target={}", target_fn.__name__)
+
+
+# ---------------------------------------------------------------------------
+# FastAPI lifespan
+# ---------------------------------------------------------------------------
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # 1. Prometheus metrics server must start first so Gauges exist before training thread writes them
+    _start_metrics_server()
+
+    # 2. Init registry gauge values
+    _update_registry_metrics()
+
+    # 3. KEEP_SERVER_ALIVE deprecation notice
+    if os.getenv("KEEP_SERVER_ALIVE") is not None:
+        logger.info("KEEP_SERVER_ALIVE is deprecated under FastAPI/uvicorn, ignored")
+
+    # 4. Training mode dispatch
+    training_mode = os.getenv("TRAINING_MODE", "registry").lower()
+    if training_mode not in {"registry", "mock", "real"}:
+        logger.warning(
+            "Unknown TRAINING_MODE={!r}, falling back to registry", training_mode
+        )
+        training_mode = "registry"
+
+    logger.info("fl_server_startup training_mode={}", training_mode)
+
     if training_mode == "mock":
-        run_mock_training(training_mode=training_mode)
-        return
-    if training_mode == "real":
-        run_real_training()
-        return
+        _launch_training_thread(run_mock_training, training_mode)
+    elif training_mode == "real":
+        _launch_training_thread(run_real_training)
 
-    logger.critical("Unsupported TRAINING_MODE={!r}; expected registry, mock, or real", training_mode)
-    sys.exit(1)
+    yield
+    # Shutdown: daemon threads auto-terminated by Python runtime
 
+
+# ---------------------------------------------------------------------------
+# FastAPI application
+# ---------------------------------------------------------------------------
+
+app = FastAPI(lifespan=lifespan, title="fl-server", version="2.0")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
+
+@app.get("/health")
+def health() -> dict:
+    return {
+        "status": "ok",
+        "service": "fl-server",
+        "version": "2.0",
+        "training_mode": os.getenv("TRAINING_MODE", "registry"),
+        "factory_available": MODEL_FACTORY_PATH.exists(),
+        **_fl_metrics.snapshot(),
+    }
+
+
+@app.get("/nodes")
+def list_nodes() -> dict:
+    return {"nodes": _node_registry.list_nodes()}
+
+
+@app.get("/models", response_model=ModelsList)
+def list_models() -> ModelsList:
+    tiers = _list_factory_tiers()
+    return ModelsList(
+        tiers=tiers,
+        factory_path=str(MODEL_FACTORY_PATH),
+        factory_available=MODEL_FACTORY_PATH.exists(),
+    )
+
+
+@app.get("/models/{tier}/metadata", response_model=TierMetadata)
+def get_model_metadata(tier: str) -> TierMetadata:
+    normalized = tier.strip().lower()
+    if normalized not in TIERS:
+        raise HTTPException(status_code=404, detail={"error": "unknown_tier", "tier": normalized})
+
+    if not MODEL_FACTORY_PATH.exists():
+        raise HTTPException(
+            status_code=404,
+            detail={"error": "factory_not_mounted", "path": str(MODEL_FACTORY_PATH)},
+        )
+
+    info = _read_tier(normalized)
+    if info is None:
+        raise HTTPException(status_code=404, detail={"error": "tier_bundle_missing", "tier": normalized})
+
+    tier_dir = MODEL_FACTORY_PATH / normalized
+    label_mapping_path = tier_dir / "label_mapping.json"
+    label_mapping_summary: dict = {}
+    if label_mapping_path.exists():
+        mapping = json.loads(label_mapping_path.read_text(encoding="utf-8"))
+        label_mapping_summary = {
+            "num_classes": len(mapping),
+            "classes": list(mapping.keys()) if isinstance(mapping, dict) else [],
+        }
+
+    return TierMetadata(**info.model_dump(), label_mapping_summary=label_mapping_summary)
+
+
+@app.post("/nodes/register", response_model=NodeRegistrationResponse)
+def register_node(body: NodeRegistrationRequest) -> NodeRegistrationResponse:
+    payload = body.model_dump()
+    try:
+        node = _node_registry.register(payload)
+        _update_registry_metrics()
+        return NodeRegistrationResponse(
+            node_id=node.node_id,
+            assigned_tier=node.assigned_tier,
+            model_version=node.model_version,
+            model_source=node.model_source,
+            status=node.status,
+        )
+    except (KeyError, TypeError, ValueError) as exc:
+        raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
+
+
+# ---------------------------------------------------------------------------
+# Entrypoint
+# ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    main()
+    import uvicorn
+    uvicorn.run("server_entrypoint:app", host="0.0.0.0", port=8080, log_level="info")

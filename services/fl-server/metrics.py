@@ -25,6 +25,7 @@ class FLServerMetrics:
     _alerts: dict[tuple[str, str], int] = field(
         default_factory=lambda: defaultdict(int)
     )
+    _training_thread_status: int = 0
     _lock: Lock = field(default_factory=Lock, repr=False)
 
     def update(
@@ -56,6 +57,10 @@ class FLServerMetrics:
                 for (node, attack_type), count in alerts.items():
                     self._alerts[(node, attack_type)] += count
 
+    def set_training_thread_status(self, status: int) -> None:
+        with self._lock:
+            self._training_thread_status = status
+
     def record_alert(self, node: str, attack_type: str, count: int = 1) -> None:
         with self._lock:
             self._alerts[(node, attack_type)] += count
@@ -83,6 +88,7 @@ class FLServerMetrics:
                 "registered_nodes_total": self._registered_nodes_total,
                 "registered_nodes_by_tier": dict(self._registered_nodes_by_tier),
                 "alerts_total": sum(self._alerts.values()),
+                "training_thread_status": self._training_thread_status,
             }
 
     def prometheus_text(self) -> str:
@@ -145,7 +151,12 @@ class FLServerMetrics:
                     f'{{node="{_escape(node)}",attack_type="{_escape(attack_type)}"}} {value}'
                 )
 
-            lines.append("")
+            lines.extend([
+                "# HELP fl_training_thread_status Background training thread health (1=up, 0=down).",
+                "# TYPE fl_training_thread_status gauge",
+                f"fl_training_thread_status {self._training_thread_status}",
+                "",
+            ])
             return "\n".join(lines)
 
 

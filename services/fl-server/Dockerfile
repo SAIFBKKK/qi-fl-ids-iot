@@ -22,5 +22,6 @@ RUN useradd --uid 1000 --create-home --shell /bin/bash appuser \
 USER appuser
 
 EXPOSE 8080
+EXPOSE 8000
 
-CMD ["python", "server_entrypoint.py"]
+CMD ["uvicorn", "server_entrypoint:app", "--host", "0.0.0.0", "--port", "8080"]
