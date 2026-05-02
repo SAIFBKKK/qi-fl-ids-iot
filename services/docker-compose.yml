@@ -220,7 +220,6 @@ services:
     build:
       context: ./iot-node
     container_name: iot-node-2
-    profiles: ["multi-node"]
     environment:
       NODE_ID: node2
       MQTT_BROKER: mosquitto
@@ -255,7 +254,6 @@ services:
     build:
       context: ./iot-node
     container_name: iot-node-3
-    profiles: ["multi-node"]
     environment:
       NODE_ID: node3
       MQTT_BROKER: mosquitto
