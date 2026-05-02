@@ -18,11 +18,13 @@ import sys
 import threading
 import time
 from contextlib import asynccontextmanager, nullcontext
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 import flwr as fl
 import mlflow
+import yaml
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from flwr.common import FitRes, Parameters, Scalar
@@ -47,7 +49,9 @@ METRICS_PORT = 8000
 TIERS = ["weak", "medium", "powerful"]
 
 MODEL_FACTORY_PATH = Path(os.getenv("MODEL_FACTORY_PATH", "/artifacts/model_factory_30rounds"))
+SCHEDULE_PATH = Path(__file__).parent / "schedule.yaml"
 _MODEL_MD5_CACHE: dict[str, str | None] = {}
+_schedule_lock = threading.Lock()
 
 # ---------------------------------------------------------------------------
 # Module-level singletons (initialised once, shared across all requests)
@@ -179,6 +183,21 @@ def _list_factory_tiers() -> list[TierInfo]:
         if info is not None:
             result.append(info)
     return result
+
+
+def load_schedule() -> dict:
+    if not SCHEDULE_PATH.exists():
+        return {"schedule": {"mode": "manual", "enabled": False}, "triggers": []}
+    with open(SCHEDULE_PATH, encoding="utf-8") as f:
+        return yaml.safe_load(f) or {}
+
+
+def update_last_run(timestamp: str | None = None) -> None:
+    with _schedule_lock:
+        data = load_schedule()
+        data.setdefault("schedule", {})["last_run_at"] = timestamp or datetime.now(UTC).isoformat()
+        with open(SCHEDULE_PATH, "w", encoding="utf-8") as f:
+            yaml.safe_dump(data, f, sort_keys=False, allow_unicode=True)
 
 
 # ---------------------------------------------------------------------------
@@ -572,6 +591,30 @@ def register_node(body: NodeRegistrationRequest) -> NodeRegistrationResponse:
         )
     except (KeyError, TypeError, ValueError) as exc:
         raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
+
+
+@app.get("/schedule")
+def get_schedule() -> dict:
+    """Return FL training schedule configuration."""
+    return load_schedule()
+
+
+@app.post("/training/trigger")
+def trigger_training(mode: str = "mock") -> dict:
+    """Trigger a FL training run. Currently only 'mock' is supported."""
+    if mode != "mock":
+        raise HTTPException(status_code=400, detail=f"Only mode='mock' is currently supported, got '{mode}'")
+
+    triggered_at = datetime.now(UTC).isoformat()
+    update_last_run(triggered_at)
+    logger.info("[training] manual trigger received at {}", triggered_at)
+
+    return {
+        "status": "accepted",
+        "mode": mode,
+        "triggered_at": triggered_at,
+        "note": "Run is mock-recorded. Real training requires fl-server restarted with TRAINING_MODE=mock or real.",
+    }
 
 
 # ---------------------------------------------------------------------------

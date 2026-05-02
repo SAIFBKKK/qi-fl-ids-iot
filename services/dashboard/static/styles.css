@@ -285,3 +285,113 @@ button:disabled {
     flex-wrap: wrap;
   }
 }
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.kpi-card {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.kpi-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.kpi-value {
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.fl-section {
+  margin-bottom: 16px;
+}
+
+.fl-section h3 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.fl-schedule {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px 24px;
+  margin-bottom: 12px;
+}
+
+.fl-schedule-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 6px 0;
+  border-bottom: 0.5px solid var(--border);
+  font-size: 13px;
+}
+
+.fl-label {
+  color: var(--text-secondary);
+}
+
+.fl-value {
+  font-weight: 500;
+}
+
+.fl-triggers {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.trigger-badge {
+  font-size: 11px;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-family: ui-monospace, monospace;
+}
+
+.trigger-on {
+  background: var(--success-bg);
+  color: var(--success-fg);
+}
+
+.trigger-off {
+  background: var(--muted-bg);
+  color: var(--muted-fg);
+  opacity: 0.7;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.chart-wrapper {
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 12px;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-title {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.chart-wrapper canvas {
+  flex: 1;
+  width: 100% !important;
+  height: auto !important;
+}

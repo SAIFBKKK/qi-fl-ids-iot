@@ -15,6 +15,7 @@ COPY metrics.py .
 COPY model_registry.py .
 COPY node_registry.py .
 COPY tier_assignment.py .
+COPY schedule.yaml .
 
 RUN useradd --uid 1000 --create-home --shell /bin/bash appuser \
     && chown -R appuser:appuser /app

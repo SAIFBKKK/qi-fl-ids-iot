@@ -17,6 +17,7 @@ from api.nodes import router as nodes_router
 
 FL_SERVER_URL = os.getenv("FL_SERVER_URL", "http://fl-server:8080")
 PROMETHEUS_URL = os.getenv("PROMETHEUS_URL", "http://prometheus:9090")
+MLFLOW_URL = os.getenv("MLFLOW_URL", "http://mlflow:5000")
 
 
 @asynccontextmanager
@@ -24,6 +25,7 @@ async def lifespan(app: FastAPI):
     app.state.http = httpx.AsyncClient(timeout=10.0)
     app.state.fl_server_url = FL_SERVER_URL.rstrip("/")
     app.state.prometheus_url = PROMETHEUS_URL.rstrip("/")
+    app.state.mlflow_url = MLFLOW_URL.rstrip("/")
     yield
     await app.state.http.aclose()
 
@@ -98,6 +100,67 @@ async def api_connect(request: Request) -> dict:
             f"{request.app.state.fl_server_url}/nodes/register",
             json=payload,
         )
+        response.raise_for_status()
+        return response.json()
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(exc.response.status_code, exc.response.text) from exc
+    except httpx.RequestError as exc:
+        raise HTTPException(502, f"fl-server unreachable: {exc}") from exc
+
+
+@app.get("/api/fl/runs")
+async def api_fl_runs(request: Request, max_results: int = 20) -> dict:
+    """Proxy MLflow runs.search to get recent FL runs."""
+    try:
+        payload = {
+            "experiment_ids": ["0"],
+            "max_results": max_results,
+            "order_by": ["attributes.start_time DESC"],
+        }
+        response = await request.app.state.http.post(
+            f"{request.app.state.mlflow_url}/api/2.0/mlflow/runs/search",
+            json=payload,
+        )
+        response.raise_for_status()
+        return response.json()
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(exc.response.status_code, exc.response.text) from exc
+    except httpx.RequestError as exc:
+        raise HTTPException(502, f"MLflow unreachable: {exc}") from exc
+
+
+@app.get("/api/fl/schedule")
+async def api_fl_schedule(request: Request) -> dict:
+    try:
+        response = await request.app.state.http.get(f"{request.app.state.fl_server_url}/schedule")
+        response.raise_for_status()
+        return response.json()
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(exc.response.status_code, exc.response.text) from exc
+    except httpx.RequestError as exc:
+        raise HTTPException(502, f"fl-server unreachable: {exc}") from exc
+
+
+@app.post("/api/fl/trigger")
+async def api_fl_trigger(request: Request) -> dict:
+    try:
+        response = await request.app.state.http.post(
+            f"{request.app.state.fl_server_url}/training/trigger",
+            params={"mode": "mock"},
+        )
+        response.raise_for_status()
+        return response.json()
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(exc.response.status_code, exc.response.text) from exc
+    except httpx.RequestError as exc:
+        raise HTTPException(502, f"fl-server unreachable: {exc}") from exc
+
+
+@app.get("/api/fl/health")
+async def api_fl_health(request: Request) -> dict:
+    """Kpi summary: combine /health from fl-server."""
+    try:
+        response = await request.app.state.http.get(f"{request.app.state.fl_server_url}/health")
         response.raise_for_status()
         return response.json()
     except httpx.HTTPStatusError as exc:

@@ -1,7 +1,120 @@
 {% extends "base.html" %}
 {% block content %}
-<section>
-  <h2>Federated Learning</h2>
-  <div class="placeholder">À implémenter au Sprint 2.</div>
+<section x-data="flTab()" x-init="init()">
+
+  <div class="section-header">
+    <h2>Federated Learning</h2>
+    <div class="actions">
+      <button @click="triggerTraining()" :disabled="busy" type="button">
+        <span x-show="!busy">Lancer training mock</span>
+        <span x-show="busy">Lancement...</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Round courant</div>
+      <div class="kpi-value" x-text="health.current_round ?? '-'"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Clients actifs</div>
+      <div class="kpi-value" x-text="health.active_clients ?? '-'"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">F1-macro courant</div>
+      <div class="kpi-value" x-text="formatFloat(health.f1_macro)"></div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Thread training</div>
+      <div class="kpi-value" x-text="health.training_thread_status === 1 ? 'actif' : 'idle'"></div>
+    </div>
+  </div>
+
+  <div class="card fl-section">
+    <h3>Planification</h3>
+    <div class="fl-schedule">
+      <div class="fl-schedule-row">
+        <span class="fl-label">Mode</span>
+        <span class="fl-value" x-text="schedule.schedule?.mode ?? '-'"></span>
+      </div>
+      <div class="fl-schedule-row">
+        <span class="fl-label">Cadence</span>
+        <span class="fl-value" x-text="schedule.schedule?.cadence_human ?? '-'"></span>
+      </div>
+      <div class="fl-schedule-row">
+        <span class="fl-label">Dernier run</span>
+        <span class="fl-value" x-text="formatDate(schedule.schedule?.last_run_at) ?? 'jamais'"></span>
+      </div>
+      <div class="fl-schedule-row">
+        <span class="fl-label">Prochain run</span>
+        <span class="fl-value" x-text="formatDate(schedule.schedule?.next_run_at) ?? 'manuel'"></span>
+      </div>
+    </div>
+    <div class="fl-triggers">
+      <template x-for="trigger in schedule.triggers" :key="trigger.type">
+        <span class="trigger-badge"
+              :class="trigger.enabled ? 'trigger-on' : 'trigger-off'"
+              :title="trigger.description"
+              x-text="trigger.type"></span>
+      </template>
+    </div>
+  </div>
+
+  <div class="card fl-section">
+    <h3>Historique des trainings</h3>
+    <table class="nodes-table">
+      <thead>
+        <tr>
+          <th>Run</th>
+          <th>Date</th>
+          <th>Statut</th>
+          <th>F1-macro</th>
+          <th>Durée</th>
+        </tr>
+      </thead>
+      <tbody>
+        <template x-for="run in runs" :key="run.info?.run_id">
+          <tr>
+            <td x-text="(run.info?.run_id || '').slice(0, 8)"></td>
+            <td x-text="formatDate(run.info?.start_time)"></td>
+            <td>
+              <span class="badge"
+                    :class="run.info?.status === 'FINISHED' ? 'badge-success' : 'badge-muted'"
+                    x-text="run.info?.status"></span>
+            </td>
+            <td x-text="formatFloat(getMetric(run, 'fit_f1_macro'))"></td>
+            <td x-text="formatDuration(run.info?.start_time, run.info?.end_time)"></td>
+          </tr>
+        </template>
+        <tr x-show="runs.length === 0">
+          <td colspan="5" class="empty-state">Aucun run MLflow trouvé.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card fl-section">
+    <h3>Métriques par round</h3>
+    <div class="charts-grid">
+      <div class="chart-wrapper">
+        <div class="chart-title">F1-macro</div>
+        <canvas id="chart-f1"></canvas>
+      </div>
+      <div class="chart-wrapper">
+        <div class="chart-title">Accuracy</div>
+        <canvas id="chart-acc"></canvas>
+      </div>
+      <div class="chart-wrapper">
+        <div class="chart-title">Benign recall</div>
+        <canvas id="chart-benign"></canvas>
+      </div>
+      <div class="chart-wrapper">
+        <div class="chart-title">Loss</div>
+        <canvas id="chart-loss"></canvas>
+      </div>
+    </div>
+  </div>
+
 </section>
 {% endblock %}

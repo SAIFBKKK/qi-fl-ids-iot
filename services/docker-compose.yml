@@ -226,6 +226,7 @@ services:
     environment:
       FL_SERVER_URL: http://fl-server:8080
       PROMETHEUS_URL: http://prometheus:9090
+      MLFLOW_URL: http://mlflow:5000
     depends_on:
       fl-server:
         condition: service_healthy
