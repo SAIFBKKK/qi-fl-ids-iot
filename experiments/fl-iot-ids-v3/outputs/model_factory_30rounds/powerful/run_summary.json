@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-05-02T16:05:01.043952Z",
+  "experiment_name": "model_factory_30rounds_powerful",
+  "status": "success",
+  "duration_sec": 3602.95,
+  "rounds": 30,
+  "completed_rounds": 30,
+  "requested_rounds": 30,
+  "architecture": "model_factory_powerful",
+  "fl_strategy": "fedavg",
+  "data_scenario": "normal_noniid",
+  "imbalance_strategy": "class_weights",
+  "num_clients": 3,
+  "feature_count": 28,
+  "num_classes": 34,
+  "seed": 42,
+  "best_round": {
+    "best_round": 30,
+    "best_metric": 0.7743827343488107,
+    "monitor_metric": "macro_f1"
+  },
+  "status_note": "Normalized by run_model_factory after Flower completed and best_checkpoint.pth was produced."
+}

@@ -1,6 +1,6 @@
 # Model Factory 30 Rounds Report
 
-Generated at: `2026-05-02T12:55:28.079300Z`
+Generated at: `2026-05-02T16:05:07.839799Z`
 
 ## 1. Resume executif
 
@@ -20,7 +20,7 @@ Ajout de `configs/model_factory_30rounds.yaml`, `scripts/run_model_factory.py`, 
 
 ## 5. Split 70/15/15
 
-Scenario: `normal_noniid`. Rows: train=15000, validation=15000, deployment=15000.
+Scenario: `normal_noniid`. Rows: train=6580944, validation=1410203, deployment=1410203.
 
 ## 6. Verification anti data leakage
 
@@ -40,15 +40,13 @@ FedAvg, 30 rounds, 1 local epoch, class weights actives, 3 clients.
 
 | model | accuracy | macro-F1 | weighted-F1 | benign recall | attack recall | FPR | taille |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| weak | 0.040867 | 0.016552 | 0.015210 | 0.000000 | 1.000000 | 1.000000 | 18.3 KB |
-| medium | 0.165600 | 0.102162 | 0.107460 | 0.000000 | 1.000000 | 1.000000 | 58.3 KB |
-| powerful | 0.282200 | 0.189052 | 0.202867 | 0.000000 | 1.000000 | 1.000000 | 177.5 KB |
+| powerful | 0.816428 | 0.774383 | 0.812706 | 0.898356 | 0.973333 | 0.101644 | 177.5 KB |
 
 Latence estimee: non mesuree dans ce run offline.
 
 ## 11. Emplacement des bundles
 
-`C:\Users\saifb\dev\qi-fl-ids-iot\experiments\fl-iot-ids-v3\outputs\model_factory_smoke_all`
+`C:\Users\saifb\dev\qi-fl-ids-iot\experiments\fl-iot-ids-v3\outputs\model_factory_30rounds`
 
 ## 12. Utilisation future dans Mode A
 

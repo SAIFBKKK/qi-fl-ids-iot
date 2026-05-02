@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-02T12:11:33.680439Z",
+  "generated_at": "2026-05-02T16:05:07.770957Z",
   "scenario": "normal_noniid",
   "source": "data/raw/{scenario}/node*/test.csv",
   "ratios": {

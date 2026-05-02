@@ -1,9 +1,9 @@
 {
-  "status": "running",
-  "started_at": "2026-05-02T13:00:41.006525Z",
-  "finished_at": null,
+  "status": "completed",
+  "started_at": "2026-05-02T15:04:57.465025Z",
+  "finished_at": "2026-05-02T16:05:07.839799Z",
   "models": [
-    "weak"
+    "powerful"
   ],
   "rounds": 30,
   "smoke_test": false,
