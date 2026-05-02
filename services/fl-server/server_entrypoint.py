@@ -47,6 +47,7 @@ METRICS_PORT = 8000
 TIERS = ["weak", "medium", "powerful"]
 
 MODEL_FACTORY_PATH = Path(os.getenv("MODEL_FACTORY_PATH", "/artifacts/model_factory_30rounds"))
+_MODEL_MD5_CACHE: dict[str, str | None] = {}
 
 # ---------------------------------------------------------------------------
 # Module-level singletons (initialised once, shared across all requests)
@@ -123,6 +124,30 @@ class NodeRegistrationResponse(BaseModel):
 # Model Factory helpers
 # ---------------------------------------------------------------------------
 
+def compute_model_md5(tier: str, model_path: Path | str) -> str | None:
+    """Compute MD5 of global_model.pth (first 8 hex chars), cached at boot."""
+    if tier in _MODEL_MD5_CACHE:
+        return _MODEL_MD5_CACHE[tier]
+
+    path = Path(model_path)
+    if not path.exists():
+        _MODEL_MD5_CACHE[tier] = None
+        return None
+
+    try:
+        h = hashlib.md5()
+        with open(path, "rb") as f:
+            for chunk in iter(lambda: f.read(8192), b""):
+                h.update(chunk)
+        short_md5 = h.hexdigest()[:8]
+        _MODEL_MD5_CACHE[tier] = short_md5
+        return short_md5
+    except Exception as exc:  # noqa: BLE001 - model catalog should degrade to null md5.
+        logger.warning("Failed to compute md5 for {}: {}", tier, exc)
+        _MODEL_MD5_CACHE[tier] = None
+        return None
+
+
 def _read_tier(tier_name: str) -> TierInfo | None:
     tier_dir = MODEL_FACTORY_PATH / tier_name
     config_path = tier_dir / "model_config.json"
@@ -131,7 +156,7 @@ def _read_tier(tier_name: str) -> TierInfo | None:
         return None
     config = json.loads(config_path.read_text(encoding="utf-8"))
     size = model_path.stat().st_size if model_path.exists() else 0
-    md5 = hashlib.md5(model_path.read_bytes()).hexdigest()[:8] if model_path.exists() else None
+    md5 = compute_model_md5(tier_name, model_path)
     return TierInfo(
         tier=tier_name,
         available=True,
@@ -428,6 +453,13 @@ async def lifespan(app: FastAPI):
 
     # 2. Init registry gauge values
     _update_registry_metrics()
+
+    for tier in TIERS:
+        md5 = compute_model_md5(tier, MODEL_FACTORY_PATH / tier / "global_model.pth")
+        if md5:
+            logger.info("[md5] {} = {}", tier, md5)
+        else:
+            logger.warning("[md5] {} unavailable", tier)
 
     # 3. KEEP_SERVER_ALIVE deprecation notice
     if os.getenv("KEEP_SERVER_ALIVE") is not None:
