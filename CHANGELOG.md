@@ -25,6 +25,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.3.0] — 2026-05-02
+### Added
+- service `feature-extractor` v2.0.0
+  - Pipeline complet : raw MQTT events → 28-feature IDS vector → StandardScaler → inference-ready
+  - Schéma raw_event v2 avec flags TCP et protocol encoding
+  - 54 tests unitaires (window aggregation, feature extraction, scaler, mapping)
+  - Dockerfile multi-stage, user non-root, HEALTHCHECK
+  - Intégration edge-ids-gateway via topic MQTT `iot/features`
+
+## [0.2.0] — Phase FL (fl-iot-ids-v3)
+### Added
+- Pipeline FL Flower + FedAvg, 3 nœuds, Dirichlet non-IID α=0.5
+- TinyMLP 28 features, 34 classes CIC-IoT-2023
+- Artefacts deployment : scaler.pkl (StandardScaler), feature_names.pkl, global_model.pth
+
+## [0.1.0] — Baseline centralisée
+### Added
+- Baseline centralisée CIC-IoT-2023
+- Pipeline preprocessing + RobustScaler
+
+---
+
 ## [multitier-v1-frozen] — 2026-04-26
 
 ### Decision
