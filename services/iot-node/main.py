@@ -13,6 +13,7 @@ from loguru import logger
 from collector import MQTTFlowCollector
 from inference_api import InferenceService
 from metrics import NodeMetrics
+from node_registration import RegistrationState, collect_hardware_profile, register_with_model_server
 from preprocessor import FlowPreprocessor
 
 
@@ -27,6 +28,7 @@ class Settings:
     model_path: str
     scaler_path: str
     label_mapping_path: str
+    model_server_url: str | None
     log_level: str
     log_format: str
 
@@ -42,6 +44,7 @@ class Settings:
             model_path=os.getenv("MODEL_PATH", "/artifacts/global_model.pth"),
             scaler_path=os.getenv("SCALER_PATH", "/artifacts/scaler.pkl"),
             label_mapping_path=os.getenv("LABEL_MAPPING_PATH", "/artifacts/label_mapping.json"),
+            model_server_url=os.getenv("MODEL_SERVER_URL"),
             log_level=os.getenv("LOG_LEVEL", "INFO"),
             log_format=os.getenv("LOG_FORMAT", "json"),
         )
@@ -61,6 +64,7 @@ def configure_logging(settings: Settings) -> None:
 settings = Settings.from_env()
 configure_logging(settings)
 metrics = NodeMetrics()
+registration_state = RegistrationState()
 preprocessor = FlowPreprocessor(
     scaler_path=settings.scaler_path,
     label_mapping_path=settings.label_mapping_path,
@@ -84,7 +88,11 @@ collector = MQTTFlowCollector(
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> Any:
+    global registration_state
     metrics.set_node_status(True)
+    profile = collect_hardware_profile()
+    registration_state = register_with_model_server(settings.model_server_url, profile)
+    metrics.set_assigned_tier(registration_state.assigned_tier)
     logger.info(
         "iot_node_startup",
         node_id=settings.node_id,
@@ -92,6 +100,8 @@ async def lifespan(_app: FastAPI) -> Any:
         mqtt_port=settings.mqtt_port,
         inference_engine=inference_service.engine_type,
         threshold=settings.inference_threshold,
+        assigned_tier=registration_state.assigned_tier,
+        model_server_url=settings.model_server_url,
     )
     collector.start()
     try:
@@ -113,6 +123,9 @@ def health() -> dict[str, Any]:
         "mqtt_connected": metrics.snapshot()["mqtt_connected"],
         "inference_engine": inference_service.engine_type,
         "model_version": "baseline_fedavg_normal_classweights",
+        "assigned_tier": registration_state.assigned_tier,
+        "model_source": registration_state.model_source,
+        "registration_status": registration_state.status,
         "threshold": settings.inference_threshold,
     }
 

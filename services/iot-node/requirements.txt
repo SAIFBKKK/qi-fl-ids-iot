@@ -9,3 +9,5 @@ joblib
 scikit-learn
 torch==2.5.1+cpu
 python-dotenv
+psutil
+requests

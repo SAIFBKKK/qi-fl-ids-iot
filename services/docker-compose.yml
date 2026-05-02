@@ -62,6 +62,11 @@ services:
       MODEL_PATH: /artifacts/global_model.pth
       SCALER_PATH: /artifacts/scaler.pkl
       LABEL_MAPPING_PATH: /artifacts/label_mapping.json
+      MODEL_SERVER_URL: http://fl-server:8080
+      DEVICE_TYPE: docker_node
+      NETWORK_QUALITY: medium
+      BATTERY_POWERED: "false"
+      NODE_TIER_OVERRIDE: weak
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       LOG_FORMAT: ${LOG_FORMAT:-json}
     ports:
@@ -73,6 +78,8 @@ services:
     depends_on:
       mosquitto:
         condition: service_healthy
+      fl-server:
+        condition: service_started
     healthcheck:
       test:
         [
@@ -176,7 +183,6 @@ services:
     build:
       context: ./fl-server
     container_name: fl-server
-    profiles: ["training"]
     env_file:
       - .env
     environment:
@@ -187,7 +193,7 @@ services:
       REAL_FL_ROUNDS: ${REAL_FL_ROUNDS:-1}
       REAL_FL_WORKDIR: /app/experiments/fl-iot-ids-v3
       MLFLOW_TRACKING_URI: http://mlflow:5000
-      TRAINING_MODE: ${TRAINING_MODE:-mock}
+      TRAINING_MODE: ${FL_SERVER_MODE:-registry}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       LOG_FORMAT: ${LOG_FORMAT:-json}
     ports:
@@ -200,6 +206,76 @@ services:
     depends_on:
       - mlflow
     restart: "no"
+
+  iot-node-2:
+    build:
+      context: ./iot-node
+    container_name: iot-node-2
+    profiles: ["multi-node"]
+    environment:
+      NODE_ID: node2
+      MQTT_BROKER: mosquitto
+      MQTT_PORT: ${MQTT_PORT:-1883}
+      MQTT_USERNAME: ${MQTT_USERNAME:-ids_user}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-changeme_in_dotenv}
+      INFERENCE_THRESHOLD: ${INFERENCE_THRESHOLD:-0.5}
+      MODEL_PATH: /artifacts/global_model.pth
+      SCALER_PATH: /artifacts/scaler.pkl
+      LABEL_MAPPING_PATH: /artifacts/label_mapping.json
+      MODEL_SERVER_URL: http://fl-server:8080
+      DEVICE_TYPE: docker_node
+      NETWORK_QUALITY: medium
+      BATTERY_POWERED: "false"
+      NODE_TIER_OVERRIDE: medium
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    ports:
+      - "8002:8000"
+    volumes:
+      - ../experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights:/artifacts:ro
+    networks:
+      - iot-net
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+      fl-server:
+        condition: service_started
+    restart: unless-stopped
+
+  iot-node-3:
+    build:
+      context: ./iot-node
+    container_name: iot-node-3
+    profiles: ["multi-node"]
+    environment:
+      NODE_ID: node3
+      MQTT_BROKER: mosquitto
+      MQTT_PORT: ${MQTT_PORT:-1883}
+      MQTT_USERNAME: ${MQTT_USERNAME:-ids_user}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-changeme_in_dotenv}
+      INFERENCE_THRESHOLD: ${INFERENCE_THRESHOLD:-0.5}
+      MODEL_PATH: /artifacts/global_model.pth
+      SCALER_PATH: /artifacts/scaler.pkl
+      LABEL_MAPPING_PATH: /artifacts/label_mapping.json
+      MODEL_SERVER_URL: http://fl-server:8080
+      DEVICE_TYPE: docker_node
+      NETWORK_QUALITY: high
+      BATTERY_POWERED: "false"
+      NODE_TIER_OVERRIDE: powerful
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    ports:
+      - "8003:8000"
+    volumes:
+      - ../experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights:/artifacts:ro
+    networks:
+      - iot-net
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+      fl-server:
+        condition: service_started
+    restart: unless-stopped
 
   fl-client-1:
     build:
@@ -348,8 +424,3 @@ services:
       retries: 5
       start_period: 20s
     restart: unless-stopped
-
-  # NOTE: iot-node-2 and iot-node-3
-  # will be added in future prompts.
-  # Future services should reuse the bind mounts documented in
-  # x-future-service-mounts above.

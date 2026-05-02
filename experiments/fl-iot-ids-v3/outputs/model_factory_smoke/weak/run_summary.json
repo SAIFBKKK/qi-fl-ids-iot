@@ -1,0 +1,22 @@
+{
+  "generated_at": "2026-05-02T12:50:34.154971Z",
+  "experiment_name": "model_factory_smoke_model_factory_smoke_weak",
+  "status": "partial",
+  "duration_sec": 23.38,
+  "rounds": 1,
+  "completed_rounds": 0,
+  "requested_rounds": 1,
+  "architecture": "model_factory_weak",
+  "fl_strategy": "fedavg",
+  "data_scenario": "normal_noniid_smoke_model_factory_smoke",
+  "imbalance_strategy": "class_weights",
+  "num_clients": 3,
+  "feature_count": 28,
+  "num_classes": 34,
+  "seed": 42,
+  "best_round": {
+    "best_round": 1,
+    "best_metric": 0.05151384086468817,
+    "monitor_metric": "macro_f1"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "generated_at": "2026-05-02T12:55:27.980277Z",
+  "model": "powerful",
+  "validation": {
+    "accuracy": 0.2822,
+    "macro_f1": 0.18905154255263043,
+    "weighted_f1": 0.20286674256003748,
+    "benign_recall": 0.0,
+    "attack_recall": 1.0,
+    "false_positive_rate": 1.0,
+    "num_samples": 15000.0
+  },
+  "federated_summary": {
+    "status": "success",
+    "completed_rounds": 1,
+    "requested_rounds": 1
+  }
+}

@@ -1,0 +1,33 @@
+models:
+  weak:
+    input_dim: 28
+    hidden_layers: [64]
+    output_dim: 34
+
+  medium:
+    input_dim: 28
+    hidden_layers: [128, 64]
+    output_dim: 34
+
+  powerful:
+    input_dim: 28
+    hidden_layers: [256, 128]
+    output_dim: 34
+
+training:
+  rounds: 30
+  local_epochs: 1
+  strategy: fedavg
+  use_class_weights: true
+  batch_size: 256
+  learning_rate: 0.0005
+  dropout: 0.2
+  scenario: normal_noniid
+  seed: 42
+
+split:
+  train: 0.70
+  validation: 0.15
+  deployment: 0.15
+  stratified: true
+  scaler_fit_on: train_only

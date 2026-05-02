@@ -33,6 +33,7 @@ class NodeMetrics:
     latency_buckets: dict[float, int] = field(default_factory=lambda: defaultdict(int))
     latency_count: int = 0
     latency_sum: float = 0.0
+    assigned_tier: str = "legacy"
     _lock: Lock = field(default_factory=Lock, repr=False)
 
     def set_node_status(self, up: bool) -> None:
@@ -74,6 +75,10 @@ class NodeMetrics:
         with self._lock:
             self.last_error = reason
 
+    def set_assigned_tier(self, tier: str) -> None:
+        with self._lock:
+            self.assigned_tier = tier
+
     def snapshot(self) -> dict[str, Any]:
         with self._lock:
             uptime_seconds = (datetime.now(UTC) - self.started_at).total_seconds()
@@ -89,6 +94,7 @@ class NodeMetrics:
                 "flows_rejected_total": sum(self.flows_rejected.values()),
                 "predictions_total": sum(self.predictions.values()),
                 "alerts_total": sum(self.alerts.values()),
+                "assigned_tier": self.assigned_tier,
             }
 
     def prometheus_text(self, node_id: str, default_source_topic: str | None = None) -> str:
@@ -171,6 +177,10 @@ class NodeMetrics:
                     "# HELP ids_node_status IoT node process status.",
                     "# TYPE ids_node_status gauge",
                     f'ids_node_status{{node_id="{_escape(node_id)}"}} {1 if self.node_up else 0}',
+                    "# HELP ids_node_assigned_tier_info Assigned dynamic model tier for this IoT node.",
+                    "# TYPE ids_node_assigned_tier_info gauge",
+                    "ids_node_assigned_tier_info"
+                    f'{{node_id="{_escape(node_id)}",tier="{_escape(self.assigned_tier)}"}} 1',
                     "",
                 ]
             )

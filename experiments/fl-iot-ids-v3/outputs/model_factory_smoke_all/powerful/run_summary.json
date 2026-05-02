@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-05-02T12:55:27.946280Z",
+  "experiment_name": "model_factory_smoke_model_factory_smoke_all_powerful",
+  "status": "success",
+  "duration_sec": 17.36,
+  "rounds": 1,
+  "completed_rounds": 1,
+  "requested_rounds": 1,
+  "architecture": "model_factory_powerful",
+  "fl_strategy": "fedavg",
+  "data_scenario": "normal_noniid_smoke_model_factory_smoke_all",
+  "imbalance_strategy": "class_weights",
+  "num_clients": 3,
+  "feature_count": 28,
+  "num_classes": 34,
+  "seed": 42,
+  "best_round": {
+    "best_round": 1,
+    "best_metric": 0.18905154255263043,
+    "monitor_metric": "macro_f1"
+  },
+  "status_note": "Normalized by run_model_factory after Flower completed and best_checkpoint.pth was produced."
+}

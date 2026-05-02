@@ -18,6 +18,10 @@ class FLServerMetrics:
     _active_clients: int = 0
     _bandwidth_bytes: int = 0
     _false_positive_rate: float = 0.0
+    _registered_nodes_total: int = 0
+    _registered_nodes_by_tier: dict[str, int] = field(
+        default_factory=lambda: {"weak": 0, "medium": 0, "powerful": 0}
+    )
     _alerts: dict[tuple[str, str], int] = field(
         default_factory=lambda: defaultdict(int)
     )
@@ -56,6 +60,15 @@ class FLServerMetrics:
         with self._lock:
             self._alerts[(node, attack_type)] += count
 
+    def update_registered_nodes(self, total: int, by_tier: dict[str, int]) -> None:
+        with self._lock:
+            self._registered_nodes_total = int(total)
+            self._registered_nodes_by_tier = {
+                "weak": int(by_tier.get("weak", 0)),
+                "medium": int(by_tier.get("medium", 0)),
+                "powerful": int(by_tier.get("powerful", 0)),
+            }
+
     def snapshot(self) -> dict[str, Any]:
         with self._lock:
             return {
@@ -67,6 +80,8 @@ class FLServerMetrics:
                 "active_clients": self._active_clients,
                 "bandwidth_bytes": self._bandwidth_bytes,
                 "false_positive_rate": self._false_positive_rate,
+                "registered_nodes_total": self._registered_nodes_total,
+                "registered_nodes_by_tier": dict(self._registered_nodes_by_tier),
                 "alerts_total": sum(self._alerts.values()),
             }
 
@@ -105,9 +120,22 @@ class FLServerMetrics:
                 "# TYPE ids_false_positive_rate gauge",
                 f"ids_false_positive_rate {self._false_positive_rate:.6f}",
 
+                "# HELP registered_nodes_total Total registered dynamic Mode A nodes.",
+                "# TYPE registered_nodes_total gauge",
+                f"registered_nodes_total {self._registered_nodes_total}",
+
+                "# HELP registered_nodes_by_tier Registered dynamic Mode A nodes by assigned tier.",
+                "# TYPE registered_nodes_by_tier gauge",
+            ]
+            for tier, value in sorted(self._registered_nodes_by_tier.items()):
+                lines.append(f'registered_nodes_by_tier{{tier="{_escape(tier)}"}} {value}')
+
+            lines.extend(
+                [
                 "# HELP ids_alerts_total Alertes IDS détectées par nœud et type d'attaque.",
                 "# TYPE ids_alerts_total counter",
-            ]
+                ]
+            )
             alerts = dict(self._alerts)
             if not alerts:
                 alerts[("unknown", "unknown")] = 0

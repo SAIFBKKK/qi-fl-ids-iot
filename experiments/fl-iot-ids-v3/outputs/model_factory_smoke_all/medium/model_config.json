@@ -1,0 +1,27 @@
+{
+  "model_name": "medium",
+  "input_dim": 28,
+  "hidden_layers": [
+    128,
+    64
+  ],
+  "hidden_dims": [
+    128,
+    64
+  ],
+  "output_dim": 34,
+  "num_classes": 34,
+  "dropout": 0.2,
+  "fl_strategy": "fedavg",
+  "rounds": 1,
+  "local_epochs": 1,
+  "use_class_weights": true,
+  "scenario": "normal_noniid_smoke_model_factory_smoke_all",
+  "checkpoint_round": 1,
+  "bundle_built_at": "2026-05-02T12:55:10.550929Z",
+  "sha256": {
+    "global_model.pth": "17493d11fb0d7212fc1b847731a87a6f4d18e5892c594cf36852632194682683",
+    "scaler.pkl": "aa0024644df57bcfaf5c953e46c5e1c35c821958113244685cd0a4df076028eb",
+    "feature_names.pkl": "22bf5e33a7778b923f94ec6663279847567fe85c02b743b6154bba51c20f0179"
+  }
+}

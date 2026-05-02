@@ -1,5 +1,6 @@
 """Flower training dispatcher for the Compose training profile.
 
+TRAINING_MODE=registry exposes the dynamic Mode A node/model registry.
 TRAINING_MODE=mock keeps the P5 lightweight Flower orchestration.
 TRAINING_MODE=real delegates to the validated scientific runner mounted from
 experiments/fl-iot-ids-v3 without modifying that source tree.
@@ -25,6 +26,8 @@ from flwr.server.strategy import FedAvg
 from loguru import logger
 
 from metrics import FLServerMetrics
+from model_registry import ModelRegistry
+from node_registry import NodeRegistry
 
 
 DEFAULT_NUM_ROUNDS = 10
@@ -34,6 +37,28 @@ METRICS_PORT = 8000
 
 
 _fl_metrics = FLServerMetrics()
+_node_registry = NodeRegistry()
+_model_registry = ModelRegistry()
+
+
+def _json_response(handler: http.server.BaseHTTPRequestHandler, status: int, payload: dict[str, Any]) -> None:
+    body = json.dumps(payload, sort_keys=True).encode()
+    handler.send_response(status)
+    handler.send_header("Content-Type", "application/json")
+    handler.send_header("Content-Length", str(len(body)))
+    handler.end_headers()
+    handler.wfile.write(body)
+
+
+def _not_found(handler: http.server.BaseHTTPRequestHandler) -> None:
+    _json_response(handler, 404, {"status": "error", "error": "not_found"})
+
+
+def _update_registry_metrics() -> None:
+    _fl_metrics.update_registered_nodes(
+        total=_node_registry.total(),
+        by_tier=_node_registry.counts_by_tier(),
+    )
 
 
 def _start_metrics_server() -> None:
@@ -69,6 +94,74 @@ def _start_metrics_server() -> None:
     t = threading.Thread(target=server.serve_forever, daemon=True)
     t.start()
     logger.info("fl_metrics_server_started port={}", METRICS_PORT)
+
+
+def run_registry_server() -> None:
+    host = os.getenv("FL_SERVER_HOST", "0.0.0.0")
+    port = read_int_env("FL_SERVER_PORT", 8080)
+    _update_registry_metrics()
+    _start_metrics_server()
+
+    class _RegistryHandler(http.server.BaseHTTPRequestHandler):
+        def do_GET(self) -> None:  # noqa: N802
+            if self.path == "/health":
+                _json_response(
+                    self,
+                    200,
+                    {
+                        "status": "ok",
+                        "service": "fl-server",
+                        "mode": "registry",
+                        **_fl_metrics.snapshot(),
+                    },
+                )
+                return
+            if self.path == "/nodes":
+                _json_response(self, 200, {"nodes": _node_registry.list_nodes()})
+                return
+            if self.path == "/models":
+                _json_response(self, 200, {"models": _model_registry.list_models()})
+                return
+            if self.path.startswith("/models/") and self.path.endswith("/metadata"):
+                tier = self.path.split("/")[2]
+                try:
+                    _json_response(self, 200, _model_registry.get_metadata(tier))
+                except KeyError:
+                    _json_response(self, 404, {"status": "error", "error": "unknown_tier", "tier": tier})
+                return
+            _not_found(self)
+
+        def do_POST(self) -> None:  # noqa: N802
+            if self.path != "/nodes/register":
+                _not_found(self)
+                return
+
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+                raw_body = self.rfile.read(length).decode("utf-8")
+                payload = json.loads(raw_body) if raw_body else {}
+                node = _node_registry.register(payload)
+                _update_registry_metrics()
+                _json_response(
+                    self,
+                    200,
+                    {
+                        "node_id": node.node_id,
+                        "assigned_tier": node.assigned_tier,
+                        "model_version": node.model_version,
+                        "model_source": node.model_source,
+                        "status": node.status,
+                    },
+                )
+            except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
+                _json_response(self, 400, {"status": "error", "error": str(exc)})
+
+        def log_message(self, fmt: str, *args: Any) -> None:
+            pass
+
+    server = http.server.HTTPServer((host, port), _RegistryHandler)
+    logger.info("model_registry_server_started host={} port={}", host, port)
+    server.serve_forever()
 
 
 class FedAvgWithMetrics(FedAvg):
@@ -303,6 +396,9 @@ def main() -> None:
 
     training_mode = os.getenv("TRAINING_MODE", "mock").lower()
 
+    if training_mode in {"registry", "model_registry", "dynamic"}:
+        run_registry_server()
+        return
     if training_mode == "mock":
         run_mock_training(training_mode=training_mode)
         return
@@ -310,7 +406,7 @@ def main() -> None:
         run_real_training()
         return
 
-    logger.critical("Unsupported TRAINING_MODE={!r}; expected mock or real", training_mode)
+    logger.critical("Unsupported TRAINING_MODE={!r}; expected registry, mock, or real", training_mode)
     sys.exit(1)
 
 

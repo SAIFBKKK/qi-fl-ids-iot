@@ -1,0 +1,18 @@
+{
+  "status": "completed",
+  "started_at": "2026-05-02T12:54:44.803842Z",
+  "finished_at": "2026-05-02T12:55:28.080300Z",
+  "models": [
+    "weak",
+    "medium",
+    "powerful"
+  ],
+  "rounds": 1,
+  "smoke_test": true,
+  "environment": {
+    "sys_executable": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\.venv\\Scripts\\python.exe",
+    "flwr_version": "1.29.0",
+    "flwr_file": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\.venv\\Lib\\site-packages\\flwr\\__init__.py",
+    "venv_warning": false
+  }
+}

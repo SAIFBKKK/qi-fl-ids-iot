@@ -1,0 +1,51 @@
+{
+  "generated_at": "2026-05-02T12:50:35.082188Z",
+  "config": "experiments\\fl-iot-ids-v3\\configs\\model_factory_30rounds.yaml",
+  "output": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\fl-iot-ids-v3\\outputs\\model_factory_smoke",
+  "models": {
+    "weak": {
+      "generated_at": "2026-05-02T12:50:34.198292Z",
+      "model": "weak",
+      "validation": {
+        "accuracy": 0.09046666666666667,
+        "macro_f1": 0.05151384086468816,
+        "weighted_f1": 0.0550534025011353,
+        "benign_recall": 0.0,
+        "attack_recall": 1.0,
+        "false_positive_rate": 1.0,
+        "num_samples": 15000.0
+      },
+      "federated_summary": {
+        "status": "partial",
+        "completed_rounds": 0,
+        "requested_rounds": 1
+      }
+    }
+  },
+  "deployment": {
+    "generated_at": "2026-05-02T12:50:35.080108Z",
+    "scenario": "normal_noniid_smoke_model_factory_smoke",
+    "source": "data/raw/{scenario}/node*/test.csv",
+    "ratios": {
+      "train": 0.7,
+      "validation": 0.15,
+      "deployment": 0.15
+    },
+    "rows": {
+      "train": 15000,
+      "validation": 15000,
+      "deployment": 15000
+    },
+    "deployment_file": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\fl-iot-ids-v3\\outputs\\model_factory_smoke\\deployment_data\\deployment_15.parquet",
+    "anti_leakage": {
+      "deployment_used_for_training": false,
+      "deployment_used_for_validation": false,
+      "fl_partitions_source": "train split only",
+      "validation_source": "val split only",
+      "deployment_source": "test split only",
+      "row_id_column": "__row_id"
+    }
+  },
+  "report": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\docs\\reports\\MODEL_FACTORY_30ROUNDS_REPORT.md",
+  "smoke_test": true
+}

@@ -1,0 +1,25 @@
+{
+  "model_name": "weak",
+  "input_dim": 28,
+  "hidden_layers": [
+    64
+  ],
+  "hidden_dims": [
+    64
+  ],
+  "output_dim": 34,
+  "num_classes": 34,
+  "dropout": 0.2,
+  "fl_strategy": "fedavg",
+  "rounds": 1,
+  "local_epochs": 1,
+  "use_class_weights": true,
+  "scenario": "normal_noniid_smoke_model_factory_smoke_all",
+  "checkpoint_round": 1,
+  "bundle_built_at": "2026-05-02T12:54:58.003323Z",
+  "sha256": {
+    "global_model.pth": "5c9e25cfa08f22cb5516527facece6d4b96bcdc4a8cf544ef2946aaeffd88ad1",
+    "scaler.pkl": "aa0024644df57bcfaf5c953e46c5e1c35c821958113244685cd0a4df076028eb",
+    "feature_names.pkl": "22bf5e33a7778b923f94ec6663279847567fe85c02b743b6154bba51c20f0179"
+  }
+}
