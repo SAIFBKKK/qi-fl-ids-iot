@@ -255,10 +255,12 @@ services:
     container_name: dashboard
     ports:
       - "8090:8090"
+    # Backend URLs consumed by dashboard proxy/health aggregation routes.
     environment:
       FL_SERVER_URL: http://fl-server:8080
       PROMETHEUS_URL: http://prometheus:9090
       MLFLOW_URL: http://mlflow:5000
+      GRAFANA_URL: http://grafana:3000
     depends_on:
       fl-server:
         condition: service_healthy
