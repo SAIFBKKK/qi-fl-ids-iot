@@ -17,6 +17,24 @@
       <a href="/tab/qi" class="tab {% if active_tab == 'qi' %}active{% endif %}">3. QI vs Classique</a>
       <a href="/tab/monitoring" class="tab {% if active_tab == 'monitoring' %}active{% endif %}">4. Monitoring</a>
     </nav>
+    <div class="scenario-selector"
+         x-data="scenarioSelector()"
+         x-init="loadScenarios()">
+      <label>Mode :</label>
+      <select x-model="selected" @change="onChange()">
+        <option value="live">🟢 Live</option>
+        <template x-for="scenario in scenarios" :key="scenario.id">
+          <option :value="scenario.id" x-text="'📼 ' + scenario.name"></option>
+        </template>
+      </select>
+      <button x-show="selected !== 'live'"
+              @click="play()"
+              :disabled="playing"
+              type="button">
+        <span x-show="!playing">▶ Lancer</span>
+        <span x-show="playing">⏸ En cours...</span>
+      </button>
+    </div>
     <div class="status-pill"
          id="conn-status"
          x-data="systemStatus()"

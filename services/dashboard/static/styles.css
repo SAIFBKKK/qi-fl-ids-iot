@@ -695,6 +695,31 @@ button:disabled {
   background: var(--text-secondary);
 }
 
+.scenario-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.scenario-selector label {
+  color: var(--text-secondary);
+}
+
+.scenario-selector select {
+  font-size: 12px;
+  padding: 4px 8px;
+  border: 0.5px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  cursor: pointer;
+}
+
+.scenario-selector button {
+  font-size: 11px;
+  padding: 3px 10px;
+}
+
 /* Monitoring tab */
 .mon-section {
   margin-bottom: 16px;

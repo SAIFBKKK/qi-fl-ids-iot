@@ -441,3 +441,77 @@ function systemStatus() {
     },
   };
 }
+
+function scenarioSelector() {
+  return {
+    scenarios: [],
+    selected: 'live',
+    playing: false,
+    currentScenario: null,
+    timers: [],
+
+    async loadScenarios() {
+      try {
+        const response = await fetch('/api/scenarios');
+        const data = await response.json();
+        this.scenarios = data.scenarios || [];
+      } catch (err) {
+        console.error('loadScenarios failed:', err);
+      }
+    },
+
+    onChange() {
+      this.stop();
+      if (this.selected !== 'live') {
+        this.loadScenario(this.selected);
+      } else {
+        this.currentScenario = null;
+        this.broadcastMode('live');
+      }
+    },
+
+    async loadScenario(id) {
+      try {
+        const response = await fetch(`/api/scenarios/${id}`);
+        if (!response.ok) throw new Error(`scenario ${response.status}`);
+        this.currentScenario = await response.json();
+      } catch (err) {
+        alert(`Echec chargement scenario: ${err.message}`);
+      }
+    },
+
+    play() {
+      if (!this.currentScenario) return;
+      this.stop();
+      this.playing = true;
+      this.broadcastMode('replay', this.currentScenario);
+
+      (this.currentScenario.events || []).forEach((event) => {
+        const timer = setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('scenario-event', { detail: event }));
+        }, event.t * 1000);
+        this.timers.push(timer);
+      });
+
+      const endTimer = setTimeout(() => {
+        this.stop();
+        this.selected = 'live';
+        this.currentScenario = null;
+        this.broadcastMode('live');
+      }, (this.currentScenario.duration_seconds + 2) * 1000);
+      this.timers.push(endTimer);
+    },
+
+    stop() {
+      this.timers.forEach(clearTimeout);
+      this.timers = [];
+      this.playing = false;
+    },
+
+    broadcastMode(mode, scenario = null) {
+      window.dispatchEvent(new CustomEvent('mode-change', {
+        detail: { mode, scenario },
+      }));
+    },
+  };
+}
