@@ -22,6 +22,7 @@ class RegisteredNode:
     status: str = "registered"
     registered_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     updated_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
+    last_heartbeat: str | None = None
 
 
 class NodeRegistry:
@@ -55,11 +56,42 @@ class NodeRegistry:
                 assigned_tier=tier,
                 model_version="placeholder",
                 model_source="local_registry",
+                status="connected",
                 registered_at=registered_at,
                 updated_at=now,
+                last_heartbeat=now,
             )
             self._nodes[profile.node_id] = node
             return node
+
+    def heartbeat(self, node_id: str) -> dict[str, Any] | None:
+        now = datetime.now(UTC).isoformat()
+        with self._lock:
+            node = self._nodes.get(node_id)
+            if node is None:
+                return None
+            node.last_heartbeat = now
+            node.updated_at = now
+            node.status = "connected"
+            return asdict(node)
+
+    def refresh_heartbeat_statuses(self, stale_seconds: int, timeout_seconds: int) -> None:
+        now = datetime.now(UTC)
+        with self._lock:
+            for node in self._nodes.values():
+                if not node.last_heartbeat:
+                    continue
+                try:
+                    last_heartbeat = datetime.fromisoformat(
+                        node.last_heartbeat.replace("Z", "+00:00")
+                    )
+                except ValueError:
+                    continue
+                age = (now - last_heartbeat).total_seconds()
+                if age > timeout_seconds:
+                    node.status = "disconnected"
+                elif age > stale_seconds:
+                    node.status = "stale"
 
     def list_nodes(self) -> list[dict[str, Any]]:
         with self._lock:

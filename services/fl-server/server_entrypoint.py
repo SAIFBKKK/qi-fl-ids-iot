@@ -50,6 +50,8 @@ TIERS = ["weak", "medium", "powerful"]
 
 MODEL_FACTORY_PATH = Path(os.getenv("MODEL_FACTORY_PATH", "/artifacts/model_factory_30rounds"))
 SCHEDULE_PATH = Path(__file__).parent / "schedule.yaml"
+HEARTBEAT_TIMEOUT_SECONDS = int(os.getenv("HEARTBEAT_TIMEOUT_S", "30"))
+HEARTBEAT_STALE_SECONDS = int(os.getenv("HEARTBEAT_STALE_S", "15"))
 _MODEL_MD5_CACHE: dict[str, str | None] = {}
 _schedule_lock = threading.Lock()
 
@@ -243,6 +245,15 @@ def _start_metrics_server() -> None:
     t = threading.Thread(target=server.serve_forever, daemon=True)
     t.start()
     logger.info("fl_metrics_server_started port={}", METRICS_PORT)
+
+
+def _heartbeat_watcher() -> None:
+    while True:
+        _node_registry.refresh_heartbeat_statuses(
+            stale_seconds=HEARTBEAT_STALE_SECONDS,
+            timeout_seconds=HEARTBEAT_TIMEOUT_SECONDS,
+        )
+        time.sleep(10)
 
 
 # ---------------------------------------------------------------------------
@@ -473,6 +484,8 @@ async def lifespan(app: FastAPI):
     # 2. Init registry gauge values
     _update_registry_metrics()
 
+    threading.Thread(target=_heartbeat_watcher, daemon=True, name="hb-watcher").start()
+
     for tier in TIERS:
         md5 = compute_model_md5(tier, MODEL_FACTORY_PATH / tier / "global_model.pth")
         if md5:
@@ -591,6 +604,18 @@ def register_node(body: NodeRegistrationRequest) -> NodeRegistrationResponse:
         )
     except (KeyError, TypeError, ValueError) as exc:
         raise HTTPException(status_code=400, detail={"error": str(exc)}) from exc
+
+
+@app.post("/nodes/{node_id}/heartbeat")
+def post_heartbeat(node_id: str) -> dict:
+    node = _node_registry.heartbeat(node_id)
+    if node is None:
+        raise HTTPException(status_code=404, detail=f"Unknown node {node_id}")
+    return {
+        "node_id": node_id,
+        "heartbeat_ok": True,
+        "last_heartbeat": node["last_heartbeat"],
+    }
 
 
 @app.get("/schedule")

@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import os
 import sys
+import threading
+import time
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import Any
 
+import requests
 import uvicorn
 from fastapi import FastAPI, Response
 from loguru import logger
@@ -29,6 +32,7 @@ class Settings:
     scaler_path: str
     label_mapping_path: str
     model_server_url: str | None
+    heartbeat_interval_seconds: int
     log_level: str
     log_format: str
 
@@ -45,6 +49,7 @@ class Settings:
             scaler_path=os.getenv("SCALER_PATH", "/artifacts/scaler.pkl"),
             label_mapping_path=os.getenv("LABEL_MAPPING_PATH", "/artifacts/label_mapping.json"),
             model_server_url=os.getenv("MODEL_SERVER_URL"),
+            heartbeat_interval_seconds=int(os.getenv("HEARTBEAT_INTERVAL_S", "10")),
             log_level=os.getenv("LOG_LEVEL", "INFO"),
             log_format=os.getenv("LOG_FORMAT", "json"),
         )
@@ -84,6 +89,21 @@ collector = MQTTFlowCollector(
     inference_service=inference_service,
     metrics=metrics,
 )
+heartbeat_stop = threading.Event()
+
+
+def _heartbeat_loop() -> None:
+    if not settings.model_server_url:
+        return
+
+    url = f"{settings.model_server_url.rstrip('/')}/nodes/{settings.node_id}/heartbeat"
+    while not heartbeat_stop.is_set():
+        try:
+            response = requests.post(url, timeout=3)
+            response.raise_for_status()
+        except Exception as exc:  # noqa: BLE001 - heartbeat must not kill inference.
+            logger.warning("heartbeat_failed", node_id=settings.node_id, url=url, error=str(exc))
+        heartbeat_stop.wait(settings.heartbeat_interval_seconds)
 
 
 @asynccontextmanager
@@ -104,9 +124,12 @@ async def lifespan(_app: FastAPI) -> Any:
         model_server_url=settings.model_server_url,
     )
     collector.start()
+    heartbeat_stop.clear()
+    threading.Thread(target=_heartbeat_loop, daemon=True, name="iot-heartbeat").start()
     try:
         yield
     finally:
+        heartbeat_stop.set()
         metrics.set_node_status(False)
         collector.stop()
         logger.info("iot_node_shutdown", node_id=settings.node_id)
