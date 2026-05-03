@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<section>
+  <div class="section-header">
+    <h2>Monitoring système</h2>
+    <div class="actions">
+      <a href="http://localhost:3000" target="_blank" class="btn-link">Ouvrir Grafana ↗</a>
+      <a href="http://localhost:9090" target="_blank" class="btn-link">Ouvrir Prometheus ↗</a>
+    </div>
+  </div>
+
+  <div class="card mon-section">
+    <h3>Vue Grafana</h3>
+    <div class="grafana-frame-wrapper">
+      <iframe src="http://localhost:3000/d/?kiosk&orgId=1" frameborder="0" class="grafana-frame"></iframe>
+    </div>
+    <div class="mon-note">
+      Si Grafana ne s'affiche pas, ouvrir directement
+      <a href="http://localhost:3000">http://localhost:3000</a>
+      (login admin / qi-lab-2026 si demandé).
+    </div>
+  </div>
+</section>
+{% endblock %}

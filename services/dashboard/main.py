@@ -49,7 +49,12 @@ async def root() -> RedirectResponse:
 
 @app.get("/tab/{tab_name}")
 async def tab_view(tab_name: str, request: Request):
-    valid_tabs = {"iot": "tab_iot.html", "fl": "tab_fl.html", "qi": "tab_qi.html"}
+    valid_tabs = {
+        "iot": "tab_iot.html",
+        "fl": "tab_fl.html",
+        "qi": "tab_qi.html",
+        "monitoring": "tab_monitoring.html",
+    }
     if tab_name not in valid_tabs:
         raise HTTPException(404, "Unknown tab")
     return templates.TemplateResponse(
