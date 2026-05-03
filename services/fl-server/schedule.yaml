@@ -1,23 +1,19 @@
-# Configuration de la planification des trainings FL
-# Source de vérité pour /api/fl/schedule
-
 schedule:
-  mode: "manual"
+  mode: manual
   next_run_at: null
-  last_run_at: null
-  cadence_human: "Hebdomadaire (chaque lundi 02:00 UTC)"
-  cadence_cron: "0 2 * * 1"
+  last_run_at: '2026-05-03T01:21:22.672387+00:00'
+  cadence_human: Hebdomadaire (chaque lundi 02:00 UTC)
+  cadence_cron: 0 2 * * 1
   enabled: true
-  reason: "Démo PFE — déclenchement manuel via dashboard"
-
+  reason: Démo PFE — déclenchement manuel via dashboard
 triggers:
-  - type: "manual"
-    description: "Bouton 'Lancer training' dans le dashboard"
-    enabled: true
-  - type: "drift_detection"
-    description: "Re-training si benign_recall chute sous 0.40"
-    threshold: 0.40
-    enabled: false
-  - type: "scheduled"
-    description: "Selon cadence_cron"
-    enabled: false
+- type: manual
+  description: Bouton 'Lancer training' dans le dashboard
+  enabled: true
+- type: drift_detection
+  description: Re-training si benign_recall chute sous 0.40
+  threshold: 0.4
+  enabled: false
+- type: scheduled
+  description: Selon cadence_cron
+  enabled: false
