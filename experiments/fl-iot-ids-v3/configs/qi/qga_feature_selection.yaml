@@ -1,0 +1,15 @@
+qga_feature_selection:
+  method: qga_binary_mask
+  k_features: 16
+  population_size: 24
+  generations: 20
+  mutation_rate: 0.08
+  crossover_rate: 0.8
+  redundancy_penalty: 0.02
+  size_penalty: 1.0
+  random_seed: 42
+  max_rows_per_node: 5000
+
+  smoke:
+    max_rows_per_node: 256
+    allow_synthetic_if_missing: true

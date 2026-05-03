@@ -100,6 +100,45 @@ def resolve_node_dir(node_id: str, scenario: str):
     )
 
 
+def resolve_selected_feature_indices(
+    config: Mapping[str, object],
+    scenario: str,
+) -> list[int] | None:
+    model_cfg = dict(config.get("model", {}))
+    feature_cfg = dict(config.get("feature_selection", {}))
+    feature_cfg.update(dict(model_cfg.get("feature_selection", {})))
+    if not bool(feature_cfg.get("enabled", False)):
+        return None
+
+    raw_path = str(
+        feature_cfg.get(
+            "artifact_path",
+            "artifacts/qi_feature_selection/{scenario}/selected_features.json",
+        )
+    ).format(scenario=scenario)
+    artifact_path = Path(raw_path)
+    if not artifact_path.is_absolute():
+        artifact_path = ARTIFACTS_DIR.parent / artifact_path
+    if not artifact_path.exists():
+        raise FileNotFoundError(
+            f"QGA selected features artifact not found: {artifact_path}. "
+            "Run: python -m src.scripts.run_qi_feature_selection "
+            f"--scenario {scenario} --config configs/qi/qga_feature_selection.yaml"
+        )
+
+    payload = json.loads(artifact_path.read_text(encoding="utf-8"))
+    indices = payload.get("selected_indices")
+    if not isinstance(indices, list) or not indices:
+        raise ValueError(f"Invalid selected_indices in {artifact_path}")
+    expected_k = feature_cfg.get("k_features")
+    if expected_k is not None and len(indices) != int(expected_k):
+        raise ValueError(
+            f"Selected feature count mismatch for {artifact_path}: "
+            f"expected {int(expected_k)}, got {len(indices)}."
+        )
+    return [int(index) for index in indices]
+
+
 class FlowerClient(fl.client.NumPyClient):
     def __init__(
         self,
@@ -122,6 +161,7 @@ class FlowerClient(fl.client.NumPyClient):
         enable_submodel_training: bool = False,
         model_width: float = 1.0,
         multitier_enabled: bool = False,
+        selected_feature_indices: list[int] | None = None,
     ):
         self.node_id = node_id
         self.scenario = scenario
@@ -140,6 +180,7 @@ class FlowerClient(fl.client.NumPyClient):
         self.multitier_enabled = bool(multitier_enabled)
         self.enable_submodel_training = bool(enable_submodel_training)
         self.model_width = validate_width_compatibility(model_width)
+        self.selected_feature_indices = selected_feature_indices
         self.scaffold_state_dir = (
             Path(scaffold_state_dir) if scaffold_state_dir is not None else None
         )
@@ -151,6 +192,7 @@ class FlowerClient(fl.client.NumPyClient):
             node_dir=node_dir,
             batch_size=batch_size,
             num_workers=0,
+            selected_feature_indices=selected_feature_indices,
         )
 
         sample_batch = next(iter(self.train_loader))
@@ -666,6 +708,7 @@ def make_client_fn(config: Mapping[str, object]):
     num_clients = int(scenario_cfg.get("num_clients", 3))
     node_ids = list(scenario_cfg.get("node_ids", get_expected_node_ids(num_clients)))
     scaffold_state_dir = runtime_cfg.get("scaffold_state_dir")
+    selected_feature_indices = resolve_selected_feature_indices(config, scenario)
 
     assert len(node_ids) == num_clients, (
         f"node_ids length mismatch: node_ids={node_ids}, num_clients={num_clients}"
@@ -704,6 +747,7 @@ def make_client_fn(config: Mapping[str, object]):
             enable_submodel_training=enable_submodel_training,
             model_width=model_width,
             multitier_enabled=multitier_enabled,
+            selected_feature_indices=selected_feature_indices,
         ).to_client()
 
     return configured_client_fn
