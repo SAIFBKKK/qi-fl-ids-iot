@@ -22,6 +22,11 @@ from api.system import router as system_router
 FL_SERVER_URL = os.getenv("FL_SERVER_URL", "http://fl-server:8080")
 PROMETHEUS_URL = os.getenv("PROMETHEUS_URL", "http://prometheus:9090")
 MLFLOW_URL = os.getenv("MLFLOW_URL", "http://mlflow:5000")
+MLFLOW_EXPERIMENT_IDS = [
+    item.strip()
+    for item in os.getenv("MLFLOW_EXPERIMENT_IDS", "").split(",")
+    if item.strip()
+]
 
 
 @asynccontextmanager
@@ -125,8 +130,24 @@ async def api_connect(request: Request) -> dict:
 async def api_fl_runs(request: Request, max_results: int = 20) -> dict:
     """Proxy MLflow runs.search to get recent FL runs."""
     try:
+        experiment_ids = list(MLFLOW_EXPERIMENT_IDS)
+        if not experiment_ids:
+            experiments_response = await request.app.state.http.post(
+                f"{request.app.state.mlflow_url}/api/2.0/mlflow/experiments/search",
+                json={"max_results": 50},
+            )
+            experiments_response.raise_for_status()
+            experiment_ids = [
+                str(experiment.get("experiment_id"))
+                for experiment in experiments_response.json().get("experiments", [])
+                if experiment.get("experiment_id") is not None
+            ]
+
+        if not experiment_ids:
+            return {"runs": [], "warning": "no experiments found in MLflow"}
+
         payload = {
-            "experiment_ids": ["0"],
+            "experiment_ids": experiment_ids,
             "max_results": max_results,
             "order_by": ["attributes.start_time DESC"],
         }
@@ -135,7 +156,9 @@ async def api_fl_runs(request: Request, max_results: int = 20) -> dict:
             json=payload,
         )
         response.raise_for_status()
-        return response.json()
+        payload = response.json()
+        payload.setdefault("runs", [])
+        return payload
     except httpx.HTTPStatusError as exc:
         raise HTTPException(exc.response.status_code, exc.response.text) from exc
     except httpx.RequestError as exc:
