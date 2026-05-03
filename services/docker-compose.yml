@@ -535,6 +535,100 @@ services:
       - fl-server
     restart: "no"
 
+  fl-server-mock-runner:
+    build:
+      context: ./fl-server
+    container_name: fl-server-mock-runner
+    profiles: ["demo-data"]
+    command:
+      [
+        "python",
+        "-c",
+        "from server_entrypoint import configure_logging, run_mock_training; configure_logging(); run_mock_training('mock')",
+      ]
+    env_file:
+      - .env
+    environment:
+      FL_SERVER_HOST: 0.0.0.0
+      FL_SERVER_PORT: 8081
+      FL_NUM_ROUNDS: 10
+      REAL_FL_EXPERIMENT: qi-fl-ids-mock-demo
+      MLFLOW_EXPERIMENT_NAME: qi-fl-ids-mock-demo
+      MLFLOW_RUN_NAME: qi-fl-ids-mock-runner
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      TRAINING_MODE: mock
+      MODEL_FACTORY_PATH: /model_factory
+      GIT_PYTHON_REFRESH: quiet
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    volumes:
+      - ../experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights:/artifacts:ro
+      - ../experiments/fl-iot-ids-v3/outputs/model_factory_30rounds:/model_factory:ro
+      - ../experiments/fl-iot-ids-v3:/app/experiments/fl-iot-ids-v3
+      - ./fl-server/schedule.yaml:/app/schedule.yaml
+    networks:
+      - iot-net
+    depends_on:
+      - mlflow
+    restart: "no"
+
+  fl-client-mock-1:
+    build:
+      context: ./fl-client
+    container_name: fl-client-mock-1
+    profiles: ["demo-data"]
+    env_file:
+      - .env
+    environment:
+      CLIENT_ID: client1
+      FL_SERVER_ADDRESS: fl-server-mock-runner:8081
+      TRAINING_MODE: mock
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    networks:
+      - iot-net
+    depends_on:
+      - fl-server-mock-runner
+    restart: "no"
+
+  fl-client-mock-2:
+    build:
+      context: ./fl-client
+    container_name: fl-client-mock-2
+    profiles: ["demo-data"]
+    env_file:
+      - .env
+    environment:
+      CLIENT_ID: client2
+      FL_SERVER_ADDRESS: fl-server-mock-runner:8081
+      TRAINING_MODE: mock
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    networks:
+      - iot-net
+    depends_on:
+      - fl-server-mock-runner
+    restart: "no"
+
+  fl-client-mock-3:
+    build:
+      context: ./fl-client
+    container_name: fl-client-mock-3
+    profiles: ["demo-data"]
+    env_file:
+      - .env
+    environment:
+      CLIENT_ID: client3
+      FL_SERVER_ADDRESS: fl-server-mock-runner:8081
+      TRAINING_MODE: mock
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    networks:
+      - iot-net
+    depends_on:
+      - fl-server-mock-runner
+    restart: "no"
+
   node-red:
     image: nodered/node-red:latest
     container_name: node-red

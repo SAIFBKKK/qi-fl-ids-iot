@@ -308,6 +308,10 @@ class FedAvgWithMetrics(FedAvg):
             bandwidth_bytes=total_bandwidth,
             false_positive_rate=0.0,
         )
+        log_mlflow_metric("fit_accuracy", accuracy)
+        log_mlflow_metric("fit_recall_macro", benign_recall)
+        log_mlflow_metric("fit_f1_macro", f1_macro)
+        log_mlflow_metric("global_loss", max(0.0, 1.0 - f1_macro))
 
         self._round_start = time.time()
         return aggregated
