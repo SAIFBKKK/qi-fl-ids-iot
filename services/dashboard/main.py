@@ -13,6 +13,7 @@ from fastapi.templating import Jinja2Templates
 
 from api.models import router as models_router
 from api.nodes import router as nodes_router
+from api.metrics import router as metrics_router
 from api.qi import router as qi_router
 from api.system import router as system_router
 
@@ -36,6 +37,7 @@ app = FastAPI(title="QI-FL-IDS-IoT Dashboard", version="1.0", lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(nodes_router, prefix="/api")
 app.include_router(models_router, prefix="/api")
+app.include_router(metrics_router)
 app.include_router(qi_router)
 app.include_router(system_router)
 
