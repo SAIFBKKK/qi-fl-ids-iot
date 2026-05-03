@@ -32,7 +32,18 @@
       "Bash(Get-ChildItem -Recurse -Include *.py, *.yml, *.yaml, Dockerfile)",
       "Bash(Select-Object FullName)",
       "PowerShell(ls -Recurse -Path \"C:\\\\Users\\\\saifb\\\\dev\\\\qi-fl-ids-iot\" -Directory | Where-Object { $_.Name -in @\\(\"centralized\", \"federated\", \"qi_modules\", \"docker\", \"data\"\\) } | Select-Object -ExpandProperty FullName)",
-      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\saifb\\\\dev\\\\qi-fl-ids-iot\" -Directory -Depth 1 | Where-Object { $_.Name -notmatch \"^\\\\.\" } | Select-Object -ExpandProperty Name | Sort-Object)"
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\saifb\\\\dev\\\\qi-fl-ids-iot\" -Directory -Depth 1 | Where-Object { $_.Name -notmatch \"^\\\\.\" } | Select-Object -ExpandProperty Name | Sort-Object)",
+      "Bash(docker info *)",
+      "Bash(docker compose *)",
+      "Bash(curl -s http://localhost:8080/health)",
+      "Bash(curl -s http://localhost:8080/nodes)",
+      "Bash(curl -s http://localhost:8080/models)",
+      "Bash(curl -si -X OPTIONS http://localhost:8080/nodes -H 'Origin: http://localhost:8090' -H 'Access-Control-Request-Method: GET')",
+      "Bash(curl -s -X POST http://localhost:8080/nodes/register -H 'Content-Type: application/json' -d '{\"node_id\":\"test_sprint0\",\"cpu_cores\":2,\"ram_mb\":1024,\"device_type\":\"docker_node\"}')",
+      "Bash(curl -s http://localhost:8000/metrics)",
+      "Bash(curl -si http://localhost:8080/docs)",
+      "Bash(git add *)",
+      "Bash(curl -s 'http://localhost:9090/api/v1/query?query=ids_node_assigned_tier_info')"
     ]
   }
 }

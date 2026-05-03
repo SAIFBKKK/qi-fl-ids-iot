@@ -19,6 +19,17 @@ scrape_configs:
       - targets: ["iot-node-3:8000"]
     metrics_path: "/metrics"
 
+  # nodes 4,5 actifs uniquement avec --profile extended
+  - job_name: "iot-node-4"
+    static_configs:
+      - targets: ["iot-node-4:8000"]
+    metrics_path: "/metrics"
+
+  - job_name: "iot-node-5"
+    static_configs:
+      - targets: ["iot-node-5:8000"]
+    metrics_path: "/metrics"
+
   # ── Traffic generator ─────────────────────────────────────────────────────
   - job_name: "traffic-generator"
     static_configs:
