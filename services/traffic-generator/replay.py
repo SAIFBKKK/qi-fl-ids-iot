@@ -26,6 +26,9 @@ from metrics import TrafficGeneratorMetrics
 @dataclass(frozen=True)
 class Settings:
     node_id: str
+    target_node_ids_raw: str
+    target_nodes: tuple[str, ...]
+    distribution_mode: str
     mqtt_broker: str
     mqtt_port: int
     mqtt_username: str | None
@@ -40,8 +43,24 @@ class Settings:
     @classmethod
     def from_env(cls) -> "Settings":
         load_dotenv()
+        node_id = os.getenv("NODE_ID", "node1")
+        target_node_ids_raw = os.getenv("TARGET_NODE_IDS", "").strip()
+        if target_node_ids_raw:
+            target_nodes = tuple(n.strip() for n in target_node_ids_raw.split(",") if n.strip())
+            distribution_mode = "round_robin"
+        else:
+            target_nodes = (node_id,)
+            distribution_mode = "single_node"
+
+        if not target_nodes:
+            target_nodes = (node_id,)
+            distribution_mode = "single_node"
+
         settings = cls(
-            node_id=os.getenv("NODE_ID", "node1"),
+            node_id=node_id,
+            target_node_ids_raw=target_node_ids_raw,
+            target_nodes=target_nodes,
+            distribution_mode=distribution_mode,
             mqtt_broker=os.getenv("MQTT_BROKER", "mosquitto"),
             mqtt_port=int(os.getenv("MQTT_PORT", "1883")),
             mqtt_username=os.getenv("MQTT_USERNAME", "ids_user"),
@@ -65,12 +84,12 @@ class TrafficReplayService:
         self.feature_names = self._load_feature_names()
         self.dataset_path = self.settings.dataset_dir / f"{self.settings.replay_scenario}.parquet"
         self.dataset = self._load_dataset()
-        self.flow_topic = f"ids/flows/{self.settings.node_id}"
         self.status_topic = f"ids/status/{self.settings.node_id}"
         self.stop_event = threading.Event()
         self.connected_event = threading.Event()
         self.worker: threading.Thread | None = None
         self.sequence = 0
+        self.index_counts = {node_id: 0 for node_id in self.settings.target_nodes}
         self.client = self._build_client()
 
     @property
@@ -81,10 +100,23 @@ class TrafficReplayService:
         logger.info(
             "traffic_generator_starting",
             node_id=self.settings.node_id,
+            target_node_ids=self.settings.target_node_ids_raw or "(unset)",
+            distribution_mode=self.settings.distribution_mode,
+            target_nodes=list(self.settings.target_nodes),
             scenario=self.settings.replay_scenario,
             rows_loaded=self.rows_loaded,
             replay_rate=self.settings.replay_rate,
         )
+        logger.info("=" * 60)
+        logger.info("traffic-generator starting")
+        logger.info(f"  NODE_ID            = {self.settings.node_id}")
+        logger.info(f"  TARGET_NODE_IDS    = {self.settings.target_node_ids_raw or '(unset)'}")
+        logger.info(f"  DISTRIBUTION_MODE  = {self.settings.distribution_mode}")
+        logger.info(f"  TARGET_NODES       = {list(self.settings.target_nodes)}")
+        logger.info(f"  REPLAY_SCENARIO    = {self.settings.replay_scenario}")
+        logger.info(f"  REPLAY_RATE        = {self.settings.replay_rate}")
+        logger.info(f"  rows_loaded        = {self.rows_loaded}")
+        logger.info("=" * 60)
         self.stop_event.clear()
         self._connect_with_retry()
         self.metrics.set_service_up(True)
@@ -111,6 +143,12 @@ class TrafficReplayService:
             "mqtt_connected": metrics["mqtt_connected"],
             "rows_loaded": self.rows_loaded,
             "published_flows": metrics["published_flows"],
+            "distribution_mode": self.settings.distribution_mode,
+            "target_nodes": list(self.settings.target_nodes),
+            "published_flows_by_target": {
+                f"{target_node_id}:{scenario}": value
+                for (target_node_id, scenario), value in metrics["published_flows_by_target"].items()
+            },
             "replay_rate": self.settings.replay_rate,
         }
 
@@ -213,33 +251,43 @@ class TrafficReplayService:
 
             row = self.dataset.iloc[row_index]
             row_index = (row_index + 1) % self.rows_loaded
+            target_node_id = self.settings.target_nodes[self.sequence % len(self.settings.target_nodes)]
+            topic = f"ids/flows/{target_node_id}"
 
             try:
-                payload = self._build_flow_message(row)
-                publish_result = self.client.publish(self.flow_topic, json.dumps(payload, separators=(",", ":")), qos=1)
+                payload = self._build_flow_message(row, target_node_id)
+                publish_result = self.client.publish(topic, json.dumps(payload, separators=(",", ":")), qos=1)
                 if publish_result.rc != mqtt.MQTT_ERR_SUCCESS:
                     raise RuntimeError(f"publish failed with rc={publish_result.rc}")
                 self.metrics.mark_published()
-                logger.debug("flow_published", flow_id=payload["flow_id"], topic=self.flow_topic)
+                self.metrics.mark_published_by_target(
+                    target_node_id=target_node_id,
+                    scenario=self.settings.replay_scenario,
+                )
+                self.index_counts[target_node_id] = self.index_counts.get(target_node_id, 0) + 1
+                if self.sequence % 100 == 0:
+                    counts = {node_id: self.index_counts.get(node_id, 0) for node_id in self.settings.target_nodes}
+                    logger.info(f"[replay] index={self.sequence} distribution: {counts}")
+                logger.debug("flow_published", flow_id=payload["flow_id"], topic=topic)
             except ValueError as exc:
                 self.metrics.mark_skipped("invalid_feature_value", str(exc))
                 logger.error("row_skipped", reason="invalid_feature_value", error=str(exc))
             except Exception as exc:  # noqa: BLE001
                 self.metrics.mark_skipped("publish_error", str(exc))
-                logger.warning("publish_failed", topic=self.flow_topic, error=str(exc))
+                logger.warning("publish_failed", topic=topic, error=str(exc))
 
             time.sleep(delay)
 
-    def _build_flow_message(self, row: pd.Series) -> dict[str, Any]:
+    def _build_flow_message(self, row: pd.Series, target_node_id: str) -> dict[str, Any]:
         self.sequence += 1
         features = {name: self._feature_value(row, name) for name in self.feature_names}
-        flow_id = f"{self.settings.node_id}_{self.settings.replay_scenario}_{self.sequence:06d}"
+        flow_id = f"{self.settings.replay_scenario}_{self.sequence:06d}_{target_node_id}"
 
         return {
             "schema_version": "1.0",
             "event_type": "iot_flow",
             "flow_id": flow_id,
-            "node_id": self.settings.node_id,
+            "node_id": target_node_id,
             "scenario": self.settings.replay_scenario,
             "timestamp": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
             "features": features,

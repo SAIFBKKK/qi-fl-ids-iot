@@ -104,6 +104,10 @@ services:
       - .env
     environment:
       NODE_ID: ${NODE_ID:-node1}
+      # Round-robin distribution across 3 IDS tiers (weak, medium, powerful).
+      # Future work: profile-aware routing (route by flow size/class to matching tier).
+      # See rapport § Perspectives.
+      TARGET_NODE_IDS: node1,node2,node3
       MQTT_BROKER: ${MQTT_BROKER:-mosquitto}
       MQTT_PORT: ${MQTT_PORT:-1883}
       MQTT_USERNAME: ${MQTT_USERNAME:-ids_user}

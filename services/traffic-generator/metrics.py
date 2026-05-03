@@ -9,6 +9,7 @@ from typing import Any
 @dataclass
 class TrafficGeneratorMetrics:
     published_flows: int = 0
+    published_flows_by_target: dict[tuple[str, str], int] = field(default_factory=lambda: defaultdict(int))
     skipped_rows: dict[str, int] = field(default_factory=lambda: defaultdict(int))
     mqtt_connected: bool = False
     service_up: bool = False
@@ -27,6 +28,10 @@ class TrafficGeneratorMetrics:
         with self._lock:
             self.published_flows += 1
 
+    def mark_published_by_target(self, target_node_id: str, scenario: str) -> None:
+        with self._lock:
+            self.published_flows_by_target[(target_node_id, scenario)] += 1
+
     def mark_skipped(self, reason: str, error: str | None = None) -> None:
         with self._lock:
             self.skipped_rows[reason] += 1
@@ -40,6 +45,7 @@ class TrafficGeneratorMetrics:
         with self._lock:
             return {
                 "published_flows": self.published_flows,
+                "published_flows_by_target": dict(self.published_flows_by_target),
                 "skipped_rows": dict(self.skipped_rows),
                 "mqtt_connected": self.mqtt_connected,
                 "service_up": self.service_up,
@@ -56,9 +62,22 @@ class TrafficGeneratorMetrics:
                 "# HELP traffic_generator_flows_published_total Flow messages published.",
                 "# TYPE traffic_generator_flows_published_total counter",
                 f"traffic_generator_flows_published_total{{{labels}}} {self.published_flows}",
+                "# HELP traffic_generator_flows_published_by_target_total Number of flows published per target node.",
+                "# TYPE traffic_generator_flows_published_by_target_total counter",
+            ]
+
+            for (target_node_id, target_scenario), value in sorted(self.published_flows_by_target.items()):
+                lines.append(
+                    "traffic_generator_flows_published_by_target_total"
+                    f'{{target_node_id="{_escape(target_node_id)}",scenario="{_escape(target_scenario)}"}} {value}'
+                )
+
+            lines.extend(
+                [
                 "# HELP traffic_generator_rows_skipped_total Dataset rows skipped before publish.",
                 "# TYPE traffic_generator_rows_skipped_total counter",
-            ]
+                ]
+            )
 
             skipped = dict(self.skipped_rows)
             skipped.setdefault("invalid_feature_value", 0)
