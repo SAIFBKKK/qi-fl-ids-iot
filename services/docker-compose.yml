@@ -244,6 +244,7 @@ services:
       - ../experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights:/artifacts:ro
       - ../experiments/fl-iot-ids-v3/outputs/model_factory_30rounds:/model_factory:ro
       - ../experiments/fl-iot-ids-v3:/app/experiments/fl-iot-ids-v3
+      - ./fl-server/schedule.yaml:/app/schedule.yaml
     networks:
       - iot-net
     depends_on:
