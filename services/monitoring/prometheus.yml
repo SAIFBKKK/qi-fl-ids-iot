@@ -25,17 +25,9 @@ scrape_configs:
       - targets: ["traffic-generator:8000"]
     metrics_path: "/metrics"
 
-  # ── Edge IDS gateway ──────────────────────────────────────────────────────
-  - job_name: "edge-ids-gateway"
-    static_configs:
-      - targets: ["edge-ids-gateway:8000"]
-    metrics_path: "/metrics"
-
-  # ── Feature extractor ─────────────────────────────────────────────────────
-  - job_name: "feature-extractor"
-    static_configs:
-      - targets: ["feature-extractor:8000"]
-    metrics_path: "/metrics"
+  # Optional profile targets are intentionally not scraped by default:
+  # - edge-ids-gateway:8000  # only when --profile gateway is active
+  # - feature-extractor:8000 # only when --profile extraction is active
 
   # ── FL server (profil training uniquement — up=0 quand arrêté) ───────────
   - job_name: "fl-server"
