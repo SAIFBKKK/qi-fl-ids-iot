@@ -47,6 +47,38 @@ experiments:
     imbalance_strategy: class_weights
     description: "FedAvg sur scenario absent_local avec class weights."
 
+  - name: exp_v3_qifa_normal_classweights
+    architecture: flat_34
+    fl_strategy: qifa
+    fl_config: qifa
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    description: "QIFA sur partition normal_noniid avec class weights."
+
+  - name: exp_v3_qifa_absentlocal_classweights
+    architecture: flat_34
+    fl_strategy: qifa
+    fl_config: qifa
+    data_scenario: absent_local
+    imbalance_strategy: class_weights
+    description: "QIFA sur scenario absent_local avec class weights."
+
+  - name: exp_v3_qga_fedavg_normal_classweights
+    architecture: flat_34_qga_k16
+    fl_strategy: fedavg
+    fl_config: fedavg
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    description: "QGA feature selection K=16 + FedAvg sur normal_noniid."
+
+  - name: exp_v3_qga_qifa_normal_classweights
+    architecture: flat_34_qga_k16
+    fl_strategy: qifa
+    fl_config: qifa
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    description: "QGA feature selection K=16 + QIFA sur normal_noniid."
+
   - name: exp_v3_scaffold_absentlocal_classweights
     architecture: flat_34
     fl_strategy: scaffold

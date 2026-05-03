@@ -60,6 +60,51 @@ def test_tracker_exports_round_curves_for_mlflow():
     ]
 
 
+def test_tracker_completion_does_not_require_strategy_optional_metrics():
+    tracker = BaselineArtifactTracker(
+        experiment={
+            "name": "exp_qifa_test",
+            "architecture": "flat_34",
+            "fl_strategy": "qifa",
+            "data_scenario": "normal_noniid",
+            "imbalance_strategy": "class_weights",
+        },
+        config={
+            "strategy": {"num_rounds": 1},
+            "scenario": {"num_clients": 3},
+            "dataset": {"feature_count": 28, "num_classes": 34},
+            "project": {"seed": 42},
+        },
+    )
+    tracker.record_fit_round(
+        1,
+        {
+            "train_loss_last": 0.42,
+            "train_time_sec": 1.5,
+            "update_size_bytes": 2048,
+            "qifa_lambda": 0.15,
+        },
+    )
+    tracker.record_evaluate_round(
+        1,
+        distributed_loss=0.33,
+        metrics={
+            "accuracy": 0.91,
+            "macro_f1": 0.88,
+            "recall_macro": 0.87,
+            "benign_recall": 0.86,
+            "false_positive_rate": 0.14,
+            "rare_class_recall": 0.77,
+            "rare_macro_f1": 0.70,
+        },
+    )
+
+    summary = tracker.build_run_summary(status="success", duration_sec=1.0)
+
+    assert summary["status"] == "success"
+    assert summary["completed_rounds"] == 1
+
+
 def test_build_mlflow_round_metrics_supports_live_round_logging():
     metrics = build_mlflow_round_metrics(
         {

@@ -10,6 +10,10 @@ FIT_METRIC_KEYS = (
     "update_size_bytes",
     "scaffold_delta_c_norm",
     "scaffold_c_local_norm",
+    "qifa_lambda",
+    "qifa_diversity_norm",
+    "qifa_perturbation_norm",
+    "qifa_effective_clients",
 )
 
 FIT_SUM_KEYS = {

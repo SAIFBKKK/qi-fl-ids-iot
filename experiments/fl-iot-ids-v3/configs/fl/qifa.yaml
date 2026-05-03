@@ -1,0 +1,36 @@
+strategy:
+  name: qifa
+  num_rounds: 10
+  fraction_train: 1.0
+  fraction_evaluate: 1.0
+  min_train_nodes: 3
+  min_evaluate_nodes: 3
+  min_available_nodes: 3
+  expert_factor: 1.0
+  expert_node_id: node3
+  multitier_enabled: false
+  qifa:
+    lambda_qifa: 0.15
+    epsilon_default: 1.0
+    epsilon_by_client:
+      node1: 1.0
+      node2: 1.0
+      node3: 1.0
+    perturbation_enabled: false
+    delta_perturbation: 0.01
+    sigma_noise: 0.001
+    perturbation_frequency: 2
+    random_seed: 42
+
+train:
+  local_epochs: 1
+  batch_size: 256
+  learning_rate: 0.0005
+  optimizer: adam
+  weight_decay: 0.0001
+  proximal_mu: 0.0
+
+evaluation:
+  centralized_eval: false
+  federated_eval: true
+  best_round_monitor: macro_f1

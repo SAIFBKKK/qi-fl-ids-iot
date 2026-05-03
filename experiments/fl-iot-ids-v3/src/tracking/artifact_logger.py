@@ -17,6 +17,10 @@ FIT_METRIC_KEYS = (
     "update_size_bytes",
     "scaffold_delta_c_norm",
     "scaffold_c_local_norm",
+    "qifa_lambda",
+    "qifa_diversity_norm",
+    "qifa_perturbation_norm",
+    "qifa_effective_clients",
 )
 
 EVALUATE_METRIC_KEYS = (
@@ -31,7 +35,9 @@ EVALUATE_METRIC_KEYS = (
 
 ROUND_REQUIRED_KEYS = (
     "distributed_loss",
-    *FIT_METRIC_KEYS,
+    "train_loss_last",
+    "train_time_sec",
+    "update_size_bytes",
     *EVALUATE_METRIC_KEYS,
 )
 
@@ -42,6 +48,10 @@ MLFLOW_ROUND_METRIC_ALIASES = {
     "update_size_bytes": "communication/update_size_bytes",
     "scaffold_delta_c_norm": "scaffold/delta_c_norm",
     "scaffold_c_local_norm": "scaffold/c_local_norm",
+    "qifa_lambda": "qifa/lambda",
+    "qifa_diversity_norm": "qifa/diversity_norm",
+    "qifa_perturbation_norm": "qifa/perturbation_norm",
+    "qifa_effective_clients": "qifa/effective_clients",
     "accuracy": "validation/accuracy",
     "macro_f1": "validation/macro_f1",
     "rare_macro_f1": "validation/rare_macro_f1",

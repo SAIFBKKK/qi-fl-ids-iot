@@ -21,6 +21,7 @@ from src.common.logger import get_logger
 from src.common.paths import CONFIGS_DIR
 from src.fl.aggregation_hooks import aggregate_evaluate_metrics, aggregate_fit_metrics
 from src.fl.node_profiler import NodeProfiler
+from src.fl.qifa_strategy import ReportingQIFA
 from src.fl.reporting_strategy import ReportingFedAvg, ReportingScaffold
 from src.tracking.artifact_logger import BaselineArtifactTracker
 
@@ -72,15 +73,20 @@ def build_server_components(
             config.get("strategy", {}).get("name", "fedavg"),
         )
     ).lower()
-    if strategy_name not in {"fedavg", "fedprox", "scaffold"}:
+    if strategy_name not in {"fedavg", "fedprox", "scaffold", "qifa"}:
         raise ValueError(
             f"Unsupported FL strategy {strategy_name!r}. "
-            "Supported strategies: fedavg, fedprox, scaffold."
+            "Supported strategies: fedavg, fedprox, scaffold, qifa."
         )
 
     strategy_cfg = dict(config.get("strategy", {}))
     num_rounds = int(strategy_cfg.get("num_rounds", 3))
-    strategy_cls = ReportingScaffold if strategy_name == "scaffold" else ReportingFedAvg
+    if strategy_name == "scaffold":
+        strategy_cls = ReportingScaffold
+    elif strategy_name == "qifa":
+        strategy_cls = ReportingQIFA
+    else:
+        strategy_cls = ReportingFedAvg
     model_cfg = dict(config.get("model", {}))
     node_profiler = NodeProfiler(_resolve_tier_profiles_path(config))
     model_config = {
@@ -101,25 +107,40 @@ def build_server_components(
         "max_hidden_2": int(model_cfg.get("max_hidden_2", 128)),
         "dropout": float(model_cfg.get("dropout", 0.2)),
     }
-    strategy = strategy_cls(
-        tracker=tracker,
-        monitor_metric=str(config.get("evaluation", {}).get("best_round_monitor", "macro_f1")),
-        expert_node_id=str(strategy_cfg.get("expert_node_id", "node3")),
-        expert_factor=float(strategy_cfg.get("expert_factor", 1.0)),
-        fraction_fit=float(strategy_cfg.get("fraction_train", 1.0)),
-        fraction_evaluate=float(strategy_cfg.get("fraction_evaluate", 1.0)),
-        min_fit_clients=int(strategy_cfg.get("min_train_nodes", 3)),
-        min_evaluate_clients=int(strategy_cfg.get("min_evaluate_nodes", 3)),
-        min_available_clients=int(strategy_cfg.get("min_available_nodes", 3)),
-        fit_metrics_aggregation_fn=aggregate_fit_metrics,
-        evaluate_metrics_aggregation_fn=aggregate_evaluate_metrics,
-        round_metric_logger=round_metric_logger,
-        output_dir=tracker.report_dir if tracker is not None else None,
-        node_profiler=node_profiler,
-        model_config=model_config,
-        supernet_config=model_config,
-        multitier_enabled=bool(strategy_cfg.get("multitier_enabled", False)),
-    )
+    strategy_kwargs: dict[str, Any] = {
+        "tracker": tracker,
+        "monitor_metric": str(config.get("evaluation", {}).get("best_round_monitor", "macro_f1")),
+        "expert_node_id": str(strategy_cfg.get("expert_node_id", "node3")),
+        "expert_factor": float(strategy_cfg.get("expert_factor", 1.0)),
+        "fraction_fit": float(strategy_cfg.get("fraction_train", 1.0)),
+        "fraction_evaluate": float(strategy_cfg.get("fraction_evaluate", 1.0)),
+        "min_fit_clients": int(strategy_cfg.get("min_train_nodes", 3)),
+        "min_evaluate_clients": int(strategy_cfg.get("min_evaluate_nodes", 3)),
+        "min_available_clients": int(strategy_cfg.get("min_available_nodes", 3)),
+        "fit_metrics_aggregation_fn": aggregate_fit_metrics,
+        "evaluate_metrics_aggregation_fn": aggregate_evaluate_metrics,
+        "round_metric_logger": round_metric_logger,
+        "output_dir": tracker.report_dir if tracker is not None else None,
+        "node_profiler": node_profiler,
+        "model_config": model_config,
+        "supernet_config": model_config,
+        "multitier_enabled": bool(strategy_cfg.get("multitier_enabled", False)),
+    }
+    if strategy_name == "qifa":
+        qifa_cfg = dict(strategy_cfg.get("qifa", {}))
+        strategy_kwargs.update(
+            {
+                "lambda_qifa": float(qifa_cfg.get("lambda_qifa", 0.0)),
+                "perturbation_enabled": bool(qifa_cfg.get("perturbation_enabled", False)),
+                "delta_perturbation": float(qifa_cfg.get("delta_perturbation", 0.0)),
+                "sigma_noise": float(qifa_cfg.get("sigma_noise", 0.0)),
+                "perturbation_frequency": int(qifa_cfg.get("perturbation_frequency", 1)),
+                "random_seed": int(qifa_cfg.get("random_seed", config.get("project", {}).get("seed", 42))),
+                "epsilon_default": float(qifa_cfg.get("epsilon_default", 1.0)),
+                "epsilon_by_client": dict(qifa_cfg.get("epsilon_by_client", {})),
+            }
+        )
+    strategy = strategy_cls(**strategy_kwargs)
     if tracker is not None:
         tracker.strategy = strategy
 
