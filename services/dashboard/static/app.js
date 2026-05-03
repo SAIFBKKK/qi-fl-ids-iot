@@ -4,6 +4,9 @@ function iotTab() {
     selected: null,
     busy: false,
     error: null,
+    filterStatus: 'all',
+    filterTier: 'all',
+    sparklines: {},
     async loadNodes() {
       try {
         const resp = await fetch('/api/nodes');
@@ -25,10 +28,20 @@ function iotTab() {
         });
         this.nodes = nodes;
         this.error = null;
+        setTimeout(() => {
+          this.nodes.forEach((node) => this.updateSparkline(node.node_id));
+        }, 0);
       } catch (err) {
         this.error = `Dashboard indisponible: ${err.message}`;
         console.error('loadNodes failed:', err);
       }
+    },
+    get filteredNodes() {
+      return this.nodes.filter((node) => {
+        const statusOk = this.filterStatus === 'all' || node.status === this.filterStatus;
+        const tierOk = this.filterTier === 'all' || node.assigned_tier === this.filterTier;
+        return statusOk && tierOk;
+      });
     },
     showDetails(node) {
       this.selected = node;
@@ -58,7 +71,52 @@ function iotTab() {
     },
     isConnected(node) {
       return ['connected', 'registered', 'detecting'].includes(node.status);
-    }
+    },
+    async initSparkline(nodeId) {
+      await this.$nextTick();
+      const canvas = document.getElementById(`spark-${nodeId}`);
+      if (!canvas || this.sparklines[nodeId]) return;
+      this.sparklines[nodeId] = {
+        canvas,
+        ctx: canvas.getContext('2d'),
+        data: [],
+      };
+      await this.updateSparkline(nodeId);
+    },
+    async updateSparkline(nodeId) {
+      const sparkline = this.sparklines[nodeId];
+      if (!sparkline) return;
+      try {
+        const query = `sum(rate(ids_predictions_total{node_id="${nodeId}"}[30s]))`;
+        const response = await fetch(`/api/prometheus/query?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        const value = parseFloat(data?.data?.result?.[0]?.value?.[1] || '0');
+        sparkline.data.push(Number.isNaN(value) ? 0 : value);
+        if (sparkline.data.length > 30) sparkline.data.shift();
+        this.drawSparkline(sparkline);
+      } catch (_err) {
+        // Prometheus metrics may be absent during startup or replay demos.
+      }
+    },
+    drawSparkline(sparkline) {
+      const { ctx, canvas, data } = sparkline;
+      const width = canvas.width;
+      const height = canvas.height;
+      ctx.clearRect(0, 0, width, height);
+      if (data.length < 2) return;
+
+      const max = Math.max(...data, 0.001);
+      ctx.strokeStyle = '#0F6E56';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      data.forEach((value, index) => {
+        const x = (index / (data.length - 1)) * width;
+        const y = height - (value / max) * (height - 4) - 2;
+        if (index === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+    },
   };
 }
 

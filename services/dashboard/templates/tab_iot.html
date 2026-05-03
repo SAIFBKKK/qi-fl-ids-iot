@@ -16,6 +16,28 @@
 
   <div class="error-banner" x-show="error" x-text="error"></div>
 
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label>Status :</label>
+      <button @click="filterStatus = 'all'" :class="filterStatus === 'all' ? 'pill-active' : ''" type="button">Tous</button>
+      <button @click="filterStatus = 'connected'" :class="filterStatus === 'connected' ? 'pill-active' : ''" type="button">Connectés</button>
+      <button @click="filterStatus = 'stale'" :class="filterStatus === 'stale' ? 'pill-active' : ''" type="button">Stale</button>
+      <button @click="filterStatus = 'disconnected'" :class="filterStatus === 'disconnected' ? 'pill-active' : ''" type="button">Déconnectés</button>
+    </div>
+    <div class="filter-group">
+      <label>Tier :</label>
+      <button @click="filterTier = 'all'" :class="filterTier === 'all' ? 'pill-active' : ''" type="button">Tous</button>
+      <button @click="filterTier = 'weak'" :class="filterTier === 'weak' ? 'pill-active' : ''" type="button">Weak</button>
+      <button @click="filterTier = 'medium'" :class="filterTier === 'medium' ? 'pill-active' : ''" type="button">Medium</button>
+      <button @click="filterTier = 'powerful'" :class="filterTier === 'powerful' ? 'pill-active' : ''" type="button">Powerful</button>
+    </div>
+    <div class="filter-group">
+      <span class="counter">
+        <span x-text="filteredNodes.length"></span> / <span x-text="nodes.length"></span> nœuds affichés
+      </span>
+    </div>
+  </div>
+
   <div class="card">
     <table class="nodes-table">
       <thead>
@@ -26,13 +48,14 @@
           <th>Tier</th>
           <th>Modèle (md5)</th>
           <th>Alertes</th>
+          <th>Activité 5min</th>
           <th>Latence</th>
           <th></th>
         </tr>
       </thead>
       <tbody>
-        <template x-for="node in nodes" :key="node.node_id">
-          <tr>
+        <template x-for="node in filteredNodes" :key="node.node_id">
+          <tr :data-status="node.status || ''">
             <td x-text="node.node_id"></td>
             <td>
               <span class="badge"
@@ -49,12 +72,19 @@
                     :title="'md5 du global_model.pth pour le tier ' + node.assigned_tier"></span>
             </td>
             <td x-text="node.attacks_detected ?? '-'"></td>
+            <td>
+              <canvas :id="'spark-' + node.node_id"
+                      class="sparkline-canvas"
+                      x-init="initSparkline(node.node_id)"
+                      width="80"
+                      height="30"></canvas>
+            </td>
             <td x-text="formatLatency(node)"></td>
             <td><button @click="showDetails(node)" type="button">Détails</button></td>
           </tr>
         </template>
-        <tr x-show="nodes.length === 0">
-          <td colspan="8" class="empty-state">Aucun nœud enregistré.</td>
+        <tr x-show="filteredNodes.length === 0">
+          <td colspan="9" class="empty-state">Aucun nœud enregistré.</td>
         </tr>
       </tbody>
     </table>
