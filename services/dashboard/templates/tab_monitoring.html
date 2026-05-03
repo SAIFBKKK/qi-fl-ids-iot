@@ -1,25 +1,85 @@
 {% extends "base.html" %}
 {% block content %}
-<section>
+<section x-data="monitoringTab()" x-init="init()">
   <div class="section-header">
-    <h2>Monitoring système</h2>
+    <div>
+      <h2>Monitoring système</h2>
+      <p class="section-subtitle">Vue Grafana conservée, statut compact des services et targets Prometheus.</p>
+    </div>
     <div class="actions">
-      <a href="http://localhost:3000" target="_blank" class="btn-link">Ouvrir Grafana ↗</a>
-      <a href="http://localhost:9090" target="_blank" class="btn-link">Ouvrir Prometheus ↗</a>
+      <a href="http://localhost:3000" target="_blank" class="btn-link">Grafana</a>
+      <a href="http://localhost:9090" target="_blank" class="btn-link">Prometheus</a>
+      <a href="http://localhost:5000" target="_blank" class="btn-link">MLflow</a>
     </div>
   </div>
 
-  <div class="card mon-section">
-    <h3>Vue Grafana</h3>
+  <div class="kpi-grid">
+    <template x-for="service in services" :key="service.service">
+      <div class="kpi-card">
+        <div class="kpi-head">
+          <span x-text="service.service"></span>
+          <span class="data-badge badge-live">LIVE</span>
+        </div>
+        <div class="kpi-value small" x-text="service.status"></div>
+        <div class="kpi-sub" x-text="service.latency_ms ? service.latency_ms + ' ms' : service.http_status || service.error || 'N/A'"></div>
+      </div>
+    </template>
+  </div>
+
+  <div class="grid two-one">
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <h3>Prometheus targets</h3>
+          <p>node4/node5 DOWN sont traités comme EXTENDED PROFILE si le profil extended n'est pas lancé.</p>
+        </div>
+        <span class="data-badge badge-live">LIVE</span>
+      </div>
+      <div class="target-list">
+        <template x-for="target in targets" :key="target.job + target.instance">
+          <div class="target-row">
+            <strong x-text="target.job"></strong>
+            <span x-text="target.instance"></span>
+            <span class="status-mini" :class="target.up ? 'ok' : target.extended ? 'info' : 'warn'" x-text="target.up ? 'UP' : target.extended ? 'EXTENDED PROFILE' : 'DOWN'"></span>
+            <em x-text="target.scrapeDuration !== null ? formatMs(target.scrapeDuration * 1000) : 'N/A'"></em>
+          </div>
+        </template>
+        <div class="empty-state compact" x-show="targets.length === 0">Prometheus target summary indisponible.</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <h3>Monitoring links</h3>
+          <p>Accès direct aux surfaces de preuve.</p>
+        </div>
+        <span class="data-badge badge-measured">CONFIG</span>
+      </div>
+      <div class="link-grid">
+        <a href="http://localhost:3000/d/qi-fl-ids-overview/qi-fl-ids-overview?orgId=1&refresh=10s" target="_blank">Grafana overview</a>
+        <a href="http://localhost:9090/targets" target="_blank">Prometheus targets</a>
+        <a href="http://localhost:9090/graph" target="_blank">Prometheus graph</a>
+        <a href="http://localhost:5000" target="_blank">MLflow runs</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel mon-section">
+    <div class="panel-header">
+      <div>
+        <h3>Vue Grafana</h3>
+        <p>Dashboard embarquée, rafraîchie par Grafana.</p>
+      </div>
+      <span class="data-badge badge-live">LIVE</span>
+    </div>
     <div class="grafana-frame-wrapper">
       <iframe src="http://localhost:3000/d/qi-fl-ids-overview/qi-fl-ids-overview?kiosk&orgId=1&refresh=10s"
               frameborder="0"
               class="grafana-frame"></iframe>
     </div>
     <div class="mon-note">
-      Si Grafana ne s'affiche pas, ouvrir directement
-      <a href="http://localhost:3000">http://localhost:3000</a>
-      (login admin / qi-lab-2026 si demandé).
+      Si Grafana ne s'affiche pas, ouvrir directement http://localhost:3000.
     </div>
   </div>
 </section>

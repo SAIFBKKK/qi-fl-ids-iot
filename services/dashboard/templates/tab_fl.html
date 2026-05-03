@@ -1,101 +1,123 @@
 {% extends "base.html" %}
 {% block content %}
 <section x-data="flTab()" x-init="init()">
-
   <div class="section-header">
-    <h2>Federated Learning</h2>
+    <div>
+      <h2>Federated Learning</h2>
+      <p class="section-subtitle">Suivi du serveur FL, du scheduler YAML et des runs MLflow sans prétendre que QI est runtime.</p>
+    </div>
     <div class="actions">
-      <button @click="triggerTraining()" :disabled="busy" type="button">
+      <button @click="triggerTraining()" :disabled="busy" type="button" class="primary-action">
         <span x-show="!busy">Lancer training mock</span>
         <span x-show="busy">Lancement...</span>
+        <span class="data-badge badge-mock">MOCK</span>
       </button>
     </div>
   </div>
 
+  <div class="evidence-strip">
+    <div>
+      <span class="data-badge badge-measured">MEASURED</span>
+      <strong>FL Evidence</strong>
+    </div>
+    <p>Les données brutes IoT restent locales aux clients. Le pipeline actuel échange des paramètres/modèles et utilise FedAvg baseline. Les modules QI sont marqués planned/experimental tant qu'ils ne sont pas branchés runtime.</p>
+  </div>
+
   <div class="kpi-grid">
-    <div class="kpi-card">
-      <div class="kpi-label">Round courant</div>
-      <div class="kpi-value" x-text="health.current_round ?? '-'"></div>
+    <div class="kpi-card cyan">
+      <div class="kpi-head"><span>Round courant</span><span class="data-badge badge-live">LIVE</span></div>
+      <div class="kpi-value" x-text="health.current_round ?? 'N/A'"></div>
+      <div class="kpi-sub">/api/fl/health</div>
     </div>
-    <div class="kpi-card">
-      <div class="kpi-label">Clients actifs</div>
-      <div class="kpi-value" x-text="health.active_clients ?? '-'"></div>
+    <div class="kpi-card green">
+      <div class="kpi-head"><span>Clients actifs</span><span class="data-badge badge-live">LIVE</span></div>
+      <div class="kpi-value" x-text="health.active_clients ?? 'N/A'"></div>
+      <div class="kpi-sub">node1, node2, node3 attendus</div>
     </div>
-    <div class="kpi-card">
-      <div class="kpi-label">F1-macro courant</div>
+    <div class="kpi-card violet">
+      <div class="kpi-head"><span>F1-macro FL</span><span class="data-badge badge-measured">MEASURED</span></div>
       <div class="kpi-value" x-text="formatFloat(health.f1_macro)"></div>
+      <div class="kpi-sub">Métrique FL, pas KPI runtime IDS</div>
     </div>
-    <div class="kpi-card">
-      <div class="kpi-label">Thread training</div>
-      <div class="kpi-value" x-text="health.training_thread_status === 1 ? 'actif' : 'idle'"></div>
-    </div>
-  </div>
-
-  <div class="card fl-section">
-    <h3>Planification</h3>
-    <div class="fl-schedule">
-      <div class="fl-schedule-row">
-        <span class="fl-label">Mode</span>
-        <span class="fl-value" x-text="schedule.schedule?.mode ?? '-'"></span>
-      </div>
-      <div class="fl-schedule-row">
-        <span class="fl-label">Cadence</span>
-        <span class="fl-value" x-text="schedule.schedule?.cadence_human ?? '-'"></span>
-      </div>
-      <div class="fl-schedule-row">
-        <span class="fl-label">Dernier run</span>
-        <span class="fl-value" x-text="formatDate(schedule.schedule?.last_run_at) ?? 'jamais'"></span>
-      </div>
-      <div class="fl-schedule-row">
-        <span class="fl-label">Prochain run</span>
-        <span class="fl-value" x-text="formatDate(schedule.schedule?.next_run_at) ?? 'manuel'"></span>
-      </div>
-    </div>
-    <div class="fl-triggers">
-      <template x-for="trigger in schedule.triggers" :key="trigger.type">
-        <span class="trigger-badge"
-              :class="trigger.enabled ? 'trigger-on' : 'trigger-off'"
-              :title="trigger.description"
-              x-text="trigger.type"></span>
-      </template>
+    <div class="kpi-card amber">
+      <div class="kpi-head"><span>Training mode</span><span class="data-badge" :class="health.training_mode === 'mock' ? 'badge-mock' : 'badge-measured'" x-text="health.training_mode === 'mock' ? 'MOCK' : 'MEASURED'"></span></div>
+      <div class="kpi-value" x-text="health.training_mode || 'registry'"></div>
+      <div class="kpi-sub" x-text="health.training_thread_status === 1 ? 'thread actif' : 'thread idle'"></div>
     </div>
   </div>
 
-  <div class="card fl-section">
-    <h3>Historique des trainings</h3>
-    <table class="nodes-table">
-      <thead>
-        <tr>
-          <th>Run</th>
-          <th>Date</th>
-          <th>Statut</th>
-          <th>F1-macro</th>
-          <th>Durée</th>
-        </tr>
-      </thead>
-      <tbody>
-        <template x-for="run in runs" :key="run.info?.run_id">
-          <tr>
-            <td x-text="(run.info?.run_id || '').slice(0, 8)"></td>
-            <td x-text="formatDate(run.info?.start_time)"></td>
-            <td>
-              <span class="badge"
-                    :class="run.info?.status === 'FINISHED' ? 'badge-success' : 'badge-muted'"
-                    x-text="run.info?.status"></span>
-            </td>
-            <td x-text="formatFloat(getMetric(run, 'fit_f1_macro'))"></td>
-            <td x-text="formatDuration(run.info?.start_time, run.info?.end_time)"></td>
-          </tr>
+  <div class="grid two-one">
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <h3>Scheduler YAML</h3>
+          <p>Configuration lue via /api/fl/schedule.</p>
+        </div>
+        <span class="data-badge badge-measured">MEASURED</span>
+      </div>
+      <div class="kv-grid">
+        <div><span>Mode</span><strong x-text="schedule.schedule?.mode ?? 'N/A'"></strong></div>
+        <div><span>Cadence</span><strong x-text="schedule.schedule?.cadence_human ?? 'N/A'"></strong></div>
+        <div><span>Dernier run</span><strong x-text="formatDate(schedule.schedule?.last_run_at) || 'jamais'"></strong></div>
+        <div><span>Prochain run</span><strong x-text="formatDate(schedule.schedule?.next_run_at) || 'manuel'"></strong></div>
+      </div>
+      <div class="chip-list">
+        <template x-for="trigger in schedule.triggers" :key="trigger.type">
+          <span class="trigger-badge"
+                :class="trigger.enabled ? 'trigger-on' : 'trigger-off'"
+                :title="trigger.description"
+                x-text="trigger.type"></span>
         </template>
-        <tr x-show="runs.length === 0">
-          <td colspan="5" class="empty-state">Aucun run MLflow trouvé.</td>
-        </tr>
-      </tbody>
-    </table>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <h3>Aggregation boundary</h3>
+          <p>Etat scientifique du moteur courant.</p>
+        </div>
+        <span class="data-badge badge-measured">MEASURED</span>
+      </div>
+      <div class="kv-grid single">
+        <div><span>Runtime aggregation</span><strong>FedAvg baseline</strong></div>
+        <div><span>QI modules</span><strong>planned / experimental</strong></div>
+        <div><span>Raw data sharing</span><strong>never shared</strong></div>
+        <div><span>Clients</span><strong>node1, node2, node3</strong></div>
+      </div>
+    </div>
   </div>
 
-  <div class="card fl-section">
-    <h3>Métriques par round</h3>
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <h3>MLflow timeline</h3>
+        <p>Runs récents et métriques disponibles dans MLflow.</p>
+      </div>
+      <span class="data-badge badge-measured">MEASURED</span>
+    </div>
+    <div class="run-list">
+      <template x-for="run in runs" :key="run.info?.run_id">
+        <div class="run-row">
+          <strong x-text="(run.info?.run_id || '').slice(0, 8)"></strong>
+          <span x-text="formatDate(run.info?.start_time) || 'N/A'"></span>
+          <span class="status-mini" :class="run.info?.status === 'FINISHED' ? 'ok' : 'warn'" x-text="run.info?.status || 'N/A'"></span>
+          <span>F1 <em x-text="formatFloat(getMetric(run, 'fit_f1_macro'))"></em></span>
+          <span x-text="formatDuration(run.info?.start_time, run.info?.end_time)"></span>
+        </div>
+      </template>
+      <div class="empty-state compact" x-show="runs.length === 0">Aucun run MLflow trouvé.</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <h3>Métriques par run</h3>
+        <p>Graphiques construits uniquement depuis les métriques MLflow disponibles.</p>
+      </div>
+      <span class="data-badge badge-measured">MEASURED</span>
+    </div>
     <div class="charts-grid">
       <div class="chart-wrapper">
         <div class="chart-title">F1-macro</div>
@@ -106,7 +128,7 @@
         <canvas id="chart-acc"></canvas>
       </div>
       <div class="chart-wrapper">
-        <div class="chart-title">Benign recall</div>
+        <div class="chart-title">Recall macro</div>
         <canvas id="chart-benign"></canvas>
       </div>
       <div class="chart-wrapper">
@@ -115,6 +137,5 @@
       </div>
     </div>
   </div>
-
 </section>
 {% endblock %}

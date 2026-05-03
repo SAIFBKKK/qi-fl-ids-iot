@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" data-theme="light">
+<html lang="fr" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,45 +9,70 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">QI-FL-IDS-IoT</div>
+  <header class="topbar" x-data="headerStatus()" x-init="init()">
+    <div class="brand-block">
+      <div class="brand-logo">QI</div>
+      <div>
+        <div class="brand-title">QI-FL-IDS</div>
+        <div class="brand-subtitle">IoT Intrusion Detection System</div>
+      </div>
+    </div>
+
     <nav class="tabs">
-      <a href="/tab/iot" class="tab {% if active_tab == 'iot' %}active{% endif %}">1. Réseau IoT</a>
-      <a href="/tab/fl" class="tab {% if active_tab == 'fl' %}active{% endif %}">2. Federated Learning</a>
-      <a href="/tab/qi" class="tab {% if active_tab == 'qi' %}active{% endif %}">3. QI vs Classique</a>
-      <a href="/tab/monitoring" class="tab {% if active_tab == 'monitoring' %}active{% endif %}">4. Monitoring</a>
+      <a href="/tab/iot" class="tab {% if active_tab == 'iot' %}active{% endif %}">Réseau & IDS</a>
+      <a href="/tab/fl" class="tab {% if active_tab == 'fl' %}active{% endif %}">Federated Learning</a>
+      <a href="/tab/qi" class="tab {% if active_tab == 'qi' %}active{% endif %}">QI vs FedAvg</a>
+      <a href="/tab/monitoring" class="tab {% if active_tab == 'monitoring' %}active{% endif %}">Monitoring</a>
     </nav>
+
+    <div class="header-evidence">
+      <div class="status-pill" :class="'status-' + coreOverall" :title="coreTitle">
+        <span class="status-dot"></span>
+        <span>Core services</span>
+        <strong x-text="coreLabel"></strong>
+      </div>
+      <div class="status-pill" :class="'status-' + idsOverall" :title="idsTitle">
+        <span class="status-dot"></span>
+        <span>IDS nodes</span>
+        <strong x-text="idsLabel"></strong>
+      </div>
+      <div class="header-meta-pill">
+        <span x-text="modeLabel"></span>
+        <strong x-text="scenarioLabel"></strong>
+      </div>
+      <div class="header-clock" x-text="clock"></div>
+    </div>
+
+    <div class="quick-links">
+      <a href="http://localhost:9090" target="_blank">Prometheus</a>
+      <a href="http://localhost:3000" target="_blank">Grafana</a>
+      <a href="http://localhost:5000" target="_blank">MLflow</a>
+    </div>
+
     <div class="scenario-selector"
          x-data="scenarioSelector()"
-         x-init="loadScenarios()">
-      <label>Mode :</label>
+         x-init="init()">
+      <label>Mode</label>
       <select x-model="selected" @change="onChange()">
-        <option value="live">🟢 Live</option>
+        <option value="live">Live runtime</option>
         <template x-for="scenario in scenarios" :key="scenario.id">
-          <option :value="scenario.id" x-text="'📼 ' + scenario.name"></option>
+          <option :value="scenario.id" x-text="'Replay - ' + scenario.name"></option>
         </template>
       </select>
       <button x-show="selected !== 'live'"
               @click="play()"
               :disabled="playing"
               type="button">
-        <span x-show="!playing">▶ Lancer</span>
-        <span x-show="playing">⏸ En cours...</span>
+        <span x-show="!playing">Lancer</span>
+        <span x-show="playing">En cours</span>
       </button>
     </div>
-    <div class="status-pill"
-         id="conn-status"
-         x-data="systemStatus()"
-         x-init="init()"
-         :class="'status-' + overall"
-         :title="title">
-      <span class="status-dot"></span>
-      <span x-text="label"></span>
-    </div>
   </header>
+
   <main>
     {% block content %}{% endblock %}
   </main>
+
   <script src="/static/app.js"></script>
   {% block extra_scripts %}{% endblock %}
 </body>

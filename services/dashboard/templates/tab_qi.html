@@ -1,36 +1,88 @@
 {% extends "base.html" %}
 {% block content %}
 <section x-data="qiTab()" x-init="init()">
-
   <div class="section-header">
-    <h2>QI vs Classique</h2>
+    <div>
+      <h2>QI vs FedAvg</h2>
+      <p class="section-subtitle">Séparation stricte entre baseline mesurée, projections attendues et littérature.</p>
+    </div>
     <div class="actions">
-      <span class="counter">Scenario A - expected depuis litterature</span>
+      <span class="data-badge badge-measured">FEDAVG BASELINE</span>
+      <span class="data-badge badge-expected">QI PLANNED</span>
     </div>
   </div>
 
-  <div class="card qi-intro">
-    <p class="qi-intro-text">
-      Comparaison du systeme classique (FedAvg + MLP) avec 4 modules Quantum-Inspired
-      places dans differentes phases du pipeline FL, plus une combinaison finale.
-      Le baseline est mesure ; les modules QI sont des valeurs attendues issues
-      des papiers de reference.
-    </p>
+  <div class="evidence-strip">
+    <div>
+      <span class="data-badge badge-measured">MEASURED</span>
+      <strong>Evidence block</strong>
+    </div>
+    <p>Le runtime actuel reste FedAvg baseline. QGA, QIARM, FedTN et Full QI stack sont affichés comme EXPECTED, LITERATURE ou PLANNED tant que les modules ne sont pas validés dans le pipeline live.</p>
   </div>
 
-  <div class="card qi-section">
-    <h3>Tableau comparatif</h3>
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <h3>Ablation ladder</h3>
+        <p>Lecture progressive des contributions prévues, sans claim runtime.</p>
+      </div>
+      <span class="data-badge badge-expected">EXPECTED</span>
+    </div>
+    <div class="ablation-grid">
+      <div class="ablation-card measured">
+        <span class="data-badge badge-measured">MEASURED</span>
+        <h4>FedAvg baseline</h4>
+        <strong x-text="formatValue('classical_baseline', 'f1_macro')"></strong>
+        <p>Baseline locale actuelle: FedAvg + MLP microservices.</p>
+      </div>
+      <div class="ablation-card">
+        <span class="data-badge badge-expected">EXPECTED</span>
+        <h4>+ QGA feature selection</h4>
+        <strong x-text="formatValue('qga_qea', 'f1_macro')"></strong>
+        <p>Sélection de features et tuning côté entraînement.</p>
+      </div>
+      <div class="ablation-card">
+        <span class="data-badge badge-expected">EXPECTED</span>
+        <h4>+ QIARM orchestration</h4>
+        <strong x-text="formatValue('qiarm', 'f1_macro')"></strong>
+        <p>Sélection, scheduling et robustesse non-IID attendus.</p>
+      </div>
+      <div class="ablation-card">
+        <span class="data-badge badge-expected">EXPECTED</span>
+        <h4>+ FedTN compression</h4>
+        <strong x-text="formatValue('fedtn_mps', 'bandwidth_mb_round')"></strong>
+        <p>Compression modèle et réduction de bande passante à valider.</p>
+      </div>
+      <div class="ablation-card planned">
+        <span class="data-badge badge-expected">PLANNED</span>
+        <h4>Full QI stack</h4>
+        <strong x-text="formatValue('combined', 'f1_macro')"></strong>
+        <p>Perspective Sprint Quantum, pas moteur runtime actuel.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <h3>Tableau comparatif</h3>
+        <p>Source de vérité: /api/qi/overview et statuts du fichier qi_metrics.yaml.</p>
+      </div>
+      <div class="badge-row">
+        <span class="data-badge badge-measured">MEASURED</span>
+        <span class="data-badge badge-expected">EXPECTED</span>
+        <span class="data-badge badge-literature">LITERATURE</span>
+      </div>
+    </div>
     <div class="qi-table-wrapper">
       <table class="qi-table">
         <thead>
           <tr>
-            <th class="qi-th-metric">Metrique</th>
+            <th class="qi-th-metric">Métrique</th>
             <template x-for="method in methodsList" :key="method.id">
               <th class="qi-th-method">
                 <div class="qi-method-label" x-text="method.label"></div>
-                <div class="qi-method-status">
-                  <span class="qi-status-pill" :class="'status-' + method.status" x-text="method.status"></span>
-                </div>
+                <span class="data-badge" :class="statusBadgeClass(method.status)" x-text="statusLabel(method.status)"></span>
               </th>
             </template>
           </tr>
@@ -54,33 +106,63 @@
     </div>
   </div>
 
-  <div class="card qi-section">
-    <h3>Vue radar - 6 axes</h3>
-    <div class="qi-radar-wrapper">
-      <canvas id="qi-radar-chart"></canvas>
-    </div>
-    <div class="qi-radar-legend">
-      <template x-for="method in methodsList" :key="'leg-' + method.id">
-        <div class="qi-legend-item">
-          <span class="qi-legend-dot" :style="'background:' + method.color"></span>
-          <span x-text="method.label"></span>
+  <div class="grid two-one">
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <h3>Radar normalisé</h3>
+          <p>Comparaison visuelle normalisée, pas une mesure runtime.</p>
         </div>
-      </template>
+        <span class="data-badge badge-expected">EXPECTED MIX</span>
+      </div>
+      <div class="qi-radar-wrapper">
+        <canvas id="qi-radar-chart"></canvas>
+      </div>
+      <div class="qi-radar-legend">
+        <template x-for="method in methodsList" :key="'leg-' + method.id">
+          <div class="qi-legend-item">
+            <span class="qi-legend-dot" :style="'background:' + method.color"></span>
+            <span x-text="method.label"></span>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <h3>Notes scientifiques</h3>
+          <p>Messages à garder clairs pendant la soutenance.</p>
+        </div>
+        <span class="data-badge badge-literature">LITERATURE</span>
+      </div>
+      <div class="kv-grid single">
+        <div><span>Hardware</span><strong>classical CPU/GPU, no quantum computer</strong></div>
+        <div><span>Runtime actuel</span><strong>FedAvg baseline</strong></div>
+        <div><span>QI gains</span><strong>requires Sprint Quantum validation</strong></div>
+        <div><span>Source baseline</span><strong>experiments/fl-iot-ids-v3</strong></div>
+      </div>
     </div>
   </div>
 
-  <div class="card qi-section">
-    <h3>Roadmap scientifique</h3>
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <h3>Roadmap scientifique</h3>
+        <p>Rôle, phase et sources par méthode.</p>
+      </div>
+      <span class="data-badge badge-expected">PLANNED</span>
+    </div>
     <div class="qi-roadmap">
       <template x-for="method in methodsList" :key="'rm-' + method.id">
         <div class="qi-roadmap-item">
           <div class="qi-roadmap-head">
             <span class="qi-method-name" x-text="method.label"></span>
-            <span class="qi-status-pill" :class="'status-' + method.status" x-text="method.status"></span>
+            <span class="data-badge" :class="statusBadgeClass(method.status)" x-text="statusLabel(method.status)"></span>
           </div>
           <div class="qi-roadmap-body">
             <div class="qi-row"><span class="qi-row-label">Phase</span><span x-text="method.phase"></span></div>
-            <div class="qi-row"><span class="qi-row-label">Role</span><span x-text="method.role"></span></div>
+            <div class="qi-row"><span class="qi-row-label">Rôle</span><span x-text="method.role"></span></div>
             <div class="qi-row qi-sources">
               <span class="qi-row-label">Sources</span>
               <ul>
@@ -94,6 +176,5 @@
       </template>
     </div>
   </div>
-
 </section>
 {% endblock %}

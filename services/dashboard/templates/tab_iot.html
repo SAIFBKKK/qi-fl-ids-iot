@@ -1,100 +1,239 @@
 {% extends "base.html" %}
 {% block content %}
-<section x-data="iotTab()" x-init="loadNodes(); setInterval(loadNodes, 5000)">
+<section x-data="iotTab()" x-init="init()">
   <div class="section-header">
     <div>
-      <h2>État du réseau IoT</h2>
-      <p class="section-subtitle">Inventaire live des nœuds enregistrés par fl-server.</p>
+      <h2>Réseau IoT & IDS</h2>
+      <p class="section-subtitle">Mode A multi-tier, traffic replay round-robin et preuves runtime mesurées.</p>
     </div>
     <div class="actions">
-      <span class="counter">
-        <span x-text="nodes.length"></span> / 5 nœuds connectés
-      </span>
-      <button @click="connectNew()" :disabled="busy" type="button">+ Connecter un nœud</button>
+      <span class="data-badge badge-live">LIVE</span>
+      <span class="counter">Dernière mise à jour <strong x-text="lastUpdatedLabel"></strong></span>
     </div>
   </div>
 
   <div class="error-banner" x-show="error" x-text="error"></div>
 
-  <div class="filter-bar">
-    <div class="filter-group">
-      <label>Status :</label>
-      <button @click="filterStatus = 'all'" :class="filterStatus === 'all' ? 'pill-active' : ''" type="button">Tous</button>
-      <button @click="filterStatus = 'connected'" :class="filterStatus === 'connected' ? 'pill-active' : ''" type="button">Connectés</button>
-      <button @click="filterStatus = 'stale'" :class="filterStatus === 'stale' ? 'pill-active' : ''" type="button">Stale</button>
-      <button @click="filterStatus = 'disconnected'" :class="filterStatus === 'disconnected' ? 'pill-active' : ''" type="button">Déconnectés</button>
+  <div class="hero-evidence">
+    <div>
+      <div class="eyebrow">Runtime Evidence</div>
+      <h3>Mode A multi-tier IDS actif</h3>
+      <p>deployment_15.parquet alimente traffic-generator, distribué en round-robin vers node1, node2 et node3 via Mosquitto MQTT.</p>
     </div>
-    <div class="filter-group">
-      <label>Tier :</label>
-      <button @click="filterTier = 'all'" :class="filterTier === 'all' ? 'pill-active' : ''" type="button">Tous</button>
-      <button @click="filterTier = 'weak'" :class="filterTier === 'weak' ? 'pill-active' : ''" type="button">Weak</button>
-      <button @click="filterTier = 'medium'" :class="filterTier === 'medium' ? 'pill-active' : ''" type="button">Medium</button>
-      <button @click="filterTier = 'powerful'" :class="filterTier === 'powerful' ? 'pill-active' : ''" type="button">Powerful</button>
-    </div>
-    <div class="filter-group">
-      <span class="counter">
-        <span x-text="filteredNodes.length"></span> / <span x-text="nodes.length"></span> nœuds affichés
-      </span>
+    <div class="evidence-grid">
+      <div class="evidence-item">
+        <span>Source</span>
+        <strong>deployment_15.parquet</strong>
+        <em>REPLAY DATASET</em>
+      </div>
+      <div class="evidence-item">
+        <span>Distribution</span>
+        <strong>round-robin</strong>
+        <em>MEASURED CONFIG</em>
+      </div>
+      <div class="evidence-item">
+        <span>IDS nodes</span>
+        <strong x-text="`${modeAOnline}/${modeANodes.length || 3}`"></strong>
+        <em>LIVE</em>
+      </div>
+      <div class="evidence-item">
+        <span>MQTT</span>
+        <strong x-text="mqttConnectedLabel"></strong>
+        <em>LIVE PROMETHEUS</em>
+      </div>
+      <div class="evidence-item">
+        <span>Prometheus</span>
+        <strong x-text="prometheusLabel"></strong>
+        <em>LIVE SCRAPE</em>
+      </div>
+      <div class="evidence-item">
+        <span>Pipeline</span>
+        <strong>FedAvg baseline</strong>
+        <em>NO RUNTIME QI CLAIM</em>
+      </div>
     </div>
   </div>
 
-  <div class="card">
-    <table class="nodes-table">
-      <thead>
-        <tr>
-          <th>Node</th>
-          <th>État</th>
-          <th>CPU / RAM</th>
-          <th>Tier</th>
-          <th>Modèle (md5)</th>
-          <th>Alertes</th>
-          <th>Activité 5min</th>
-          <th>Latence</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <template x-for="node in filteredNodes" :key="node.node_id">
-          <tr :data-status="node.status || ''">
-            <td x-text="node.node_id"></td>
-            <td>
-              <span class="badge"
-                    :class="isConnected(node) ? 'badge-success' : 'badge-muted'"
-                    x-text="node.status || '-'"></span>
-            </td>
-            <td x-text="formatCapacity(node)"></td>
-            <td>
-              <span class="tier-badge" :class="'tier-' + (node.assigned_tier || 'unknown')"
-                    x-text="node.assigned_tier || '-'"></span>
-            </td>
-            <td>
-              <span class="md5-badge" x-text="node.assigned_model_md5 || '-'"
-                    :title="'md5 du global_model.pth pour le tier ' + node.assigned_tier"></span>
-            </td>
-            <td x-text="node.attacks_detected ?? '-'"></td>
-            <td>
-              <canvas :id="'spark-' + node.node_id"
-                      class="sparkline-canvas"
-                      x-init="initSparkline(node.node_id)"
-                      width="80"
-                      height="30"></canvas>
-            </td>
-            <td x-text="formatLatency(node)"></td>
-            <td><button @click="showDetails(node)" type="button">Détails</button></td>
-          </tr>
+  <div class="kpi-grid kpi-grid-wide">
+    <div class="kpi-card cyan">
+      <div class="kpi-head"><span>IDS nodes online</span><span class="data-badge badge-live">LIVE</span></div>
+      <div class="kpi-value" x-text="`${modeAOnline}/${modeANodes.length || 3}`"></div>
+      <div class="kpi-sub">Mode A: node1, node2, node3</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-head"><span>Flows received</span><span class="data-badge badge-live">LIVE</span></div>
+      <div class="kpi-value" x-text="formatCount(kpis.flows)"></div>
+      <div class="kpi-sub">sum(ids_flows_received_total)</div>
+    </div>
+    <div class="kpi-card violet">
+      <div class="kpi-head"><span>Predictions</span><span class="data-badge badge-live">LIVE</span></div>
+      <div class="kpi-value" x-text="formatCount(kpis.predictions)"></div>
+      <div class="kpi-sub">sum(ids_predictions_total)</div>
+    </div>
+    <div class="kpi-card red">
+      <div class="kpi-head"><span>Alerts</span><span class="data-badge badge-live">LIVE</span></div>
+      <div class="kpi-value" x-text="formatCount(kpis.alerts)"></div>
+      <div class="kpi-sub">sum(ids_alerts_total)</div>
+    </div>
+    <div class="kpi-card amber">
+      <div class="kpi-head"><span>Avg latency</span><span class="data-badge badge-live">LIVE</span></div>
+      <div class="kpi-value" x-text="formatMs(kpis.avgLatencyMs)"></div>
+      <div class="kpi-sub">latency sum/count over 1 min</div>
+    </div>
+    <div class="kpi-card cyan">
+      <div class="kpi-head"><span>Schema reject rate</span><span class="data-badge badge-live">LIVE</span></div>
+      <div class="kpi-value" x-text="formatPercent(kpis.rejectRate, 2)"></div>
+      <div class="kpi-sub">invalid schema / received flows</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-head"><span>Generator published</span><span class="data-badge badge-live">LIVE</span></div>
+      <div class="kpi-value" x-text="formatCount(kpis.generatorPublished)"></div>
+      <div class="kpi-sub">traffic_generator_flows_published_total</div>
+    </div>
+  </div>
+
+  <div class="grid two-one">
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <h3>IDS node cards</h3>
+          <p>Statut live, compteurs Prometheus et empreintes modèles mesurées.</p>
+        </div>
+        <span class="data-badge badge-measured">MEASURED</span>
+      </div>
+      <div class="node-card-grid">
+        <template x-for="node in modeANodes" :key="node.node_id">
+          <article class="node-card" :class="'node-' + tierOf(node)">
+            <div class="node-header">
+              <div>
+                <div class="node-id" x-text="node.node_id"></div>
+                <div class="node-topic" x-text="`ids/flows/${node.node_id}`"></div>
+              </div>
+              <span class="status-mini" :class="isConnected(node) ? 'ok' : 'warn'" x-text="node.status || 'N/A'"></span>
+            </div>
+            <div class="node-model-row">
+              <span class="tier-badge" :class="'tier-' + tierOf(node)" x-text="tierOf(node)"></span>
+              <span class="md5-badge" x-text="modelMeta(node).md5"></span>
+            </div>
+            <div class="node-meta">
+              <div><span>hidden_dims</span><strong x-text="formatDims(modelMeta(node).hidden_dims)"></strong></div>
+              <div><span>params</span><strong x-text="formatCount(modelMeta(node).param_count)"></strong></div>
+              <div><span>flows</span><strong x-text="formatCount(node.metrics?.flows)"></strong></div>
+              <div><span>predictions</span><strong x-text="formatCount(node.metrics?.predictions)"></strong></div>
+              <div><span>alerts</span><strong x-text="formatCount(node.metrics?.alerts)"></strong></div>
+              <div><span>latency</span><strong x-text="formatMs(node.metrics?.avgLatencyMs)"></strong></div>
+              <div><span>model loaded</span><strong>MEASURED</strong></div>
+              <div><span>mqtt</span><strong x-text="mqttConnectedLabel"></strong></div>
+            </div>
+            <canvas :id="'spark-' + node.node_id"
+                    class="sparkline-canvas"
+                    x-init="initSparkline(node.node_id)"
+                    width="180"
+                    height="36"></canvas>
+          </article>
         </template>
-        <tr x-show="filteredNodes.length === 0">
-          <td colspan="9" class="empty-state">Aucun nœud enregistré.</td>
-        </tr>
-      </tbody>
-    </table>
+        <div class="empty-state" x-show="modeANodes.length === 0">Aucun noeud Mode A détecté via /api/nodes.</div>
+      </div>
+      <div class="note-strip">
+        node4/node5 ne sont pas comptés comme erreur critique: ils appartiennent au profil extended quand il est lancé.
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <h3>Round-robin by target</h3>
+          <p>Distribution publiée par traffic-generator.</p>
+        </div>
+        <span class="data-badge badge-live">LIVE</span>
+      </div>
+      <div class="bar-list">
+        <template x-for="row in targetDistribution" :key="row.label">
+          <div class="bar-row">
+            <div class="bar-label" x-text="row.label"></div>
+            <div class="bar-track"><div class="bar-fill cyan" :style="`width:${row.percent}%`"></div></div>
+            <div class="bar-value" x-text="formatCount(row.value)"></div>
+          </div>
+        </template>
+        <div class="empty-state compact" x-show="targetDistribution.length === 0">N/A - metric target indisponible.</div>
+      </div>
+    </div>
   </div>
 
-  <div class="modal-backdrop" x-show="selected" @click.self="selected = null" x-cloak>
-    <div class="modal" x-show="selected">
-      <h3>Détails du nœud <span x-text="selected?.node_id"></span></h3>
-      <pre x-text="JSON.stringify(selected, null, 2)"></pre>
-      <button @click="selected = null" type="button">Fermer</button>
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <h3>Runtime pipeline</h3>
+        <p>Chemin d'exécution validé pour la soutenance live.</p>
+      </div>
+      <span class="data-badge badge-measured">MEASURED</span>
+    </div>
+    <div class="pipeline">
+      <div class="pipeline-step"><strong>deployment_15.parquet</strong><span class="data-badge badge-replay">REPLAY</span></div>
+      <div class="pipeline-arrow"></div>
+      <div class="pipeline-step"><strong>traffic-generator</strong><span class="data-badge badge-live">LIVE</span></div>
+      <div class="pipeline-arrow"></div>
+      <div class="pipeline-step"><strong>Mosquitto MQTT</strong><span class="data-badge badge-live">LIVE</span></div>
+      <div class="pipeline-arrow"></div>
+      <div class="pipeline-step"><strong>node1 / node2 / node3</strong><span class="data-badge badge-live">LIVE</span></div>
+      <div class="pipeline-arrow"></div>
+      <div class="pipeline-step"><strong>predictions / alerts</strong><span class="data-badge badge-live">LIVE</span></div>
+      <div class="pipeline-arrow"></div>
+      <div class="pipeline-step"><strong>Prometheus / Grafana / Dashboard</strong><span class="data-badge badge-live">LIVE</span></div>
+    </div>
+  </div>
+
+  <div class="grid two-one">
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <h3>Attack distribution aggregate</h3>
+          <p>Aggrégation par predicted_label depuis Prometheus, pas un historique événementiel.</p>
+        </div>
+        <span class="data-badge badge-live">LIVE</span>
+      </div>
+      <div class="bar-list">
+        <template x-for="row in attackDistribution" :key="row.label">
+          <div class="bar-row">
+            <div class="bar-label wide" x-text="row.label"></div>
+            <div class="bar-track"><div class="bar-fill violet" :style="`width:${row.percent}%`"></div></div>
+            <div class="bar-value" x-text="formatCount(row.value)"></div>
+          </div>
+        </template>
+        <div class="empty-state compact" x-show="attackDistribution.length === 0">N/A - requires prediction history or Prometheus samples.</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <h3>Recent alert history</h3>
+          <p>Aucune fausse alerte live n'est générée dans la dashboard.</p>
+        </div>
+        <span class="data-badge" :class="replayAlerts.length ? 'badge-replay' : 'badge-na'" x-text="replayAlerts.length ? 'REPLAY' : 'N/A'"></span>
+      </div>
+      <div class="alert-list" x-show="replayAlerts.length > 0">
+        <template x-for="alert in replayAlerts" :key="alert.key">
+          <div class="alert-row">
+            <span x-text="alert.t + 's'"></span>
+            <strong x-text="alert.node_id"></strong>
+            <span x-text="alert.attack_class"></span>
+            <em x-text="formatPercent(alert.confidence, 1)"></em>
+            <span class="data-badge badge-replay">REPLAY</span>
+          </div>
+        </template>
+      </div>
+      <div class="empty-state" x-show="replayAlerts.length === 0">Recent alert history requires event-history API. Prometheus counters above remain live.</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <div>
+        <h3>Offline evaluation / benchmark boundary</h3>
+        <p>F1-Macro, Benign Recall et FPR ne sont pas affichés ici comme métriques runtime live. Les résultats de performance modèle restent dans les vues FL/QI avec leurs statuts de source.</p>
+      </div>
+      <span class="data-badge badge-measured">SCIENTIFIC CONTROL</span>
     </div>
   </div>
 </section>
