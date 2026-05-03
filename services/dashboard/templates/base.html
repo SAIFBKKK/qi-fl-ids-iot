@@ -16,7 +16,15 @@
       <a href="/tab/fl" class="tab {% if active_tab == 'fl' %}active{% endif %}">2. Federated Learning</a>
       <a href="/tab/qi" class="tab {% if active_tab == 'qi' %}active{% endif %}">3. QI vs Classique</a>
     </nav>
-    <div class="status-pill" id="conn-status">● Connecté</div>
+    <div class="status-pill"
+         id="conn-status"
+         x-data="systemStatus()"
+         x-init="init()"
+         :class="'status-' + overall"
+         :title="title">
+      <span class="status-dot"></span>
+      <span x-text="label"></span>
+    </div>
   </header>
   <main>
     {% block content %}{% endblock %}

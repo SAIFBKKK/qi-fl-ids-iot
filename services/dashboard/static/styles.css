@@ -588,3 +588,59 @@ button:disabled {
   color: var(--text-secondary);
   font-style: italic;
 }
+
+/* Global system status pill */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  cursor: help;
+  white-space: nowrap;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-healthy {
+  background: #eaf3de;
+  color: #173404;
+}
+
+.status-healthy .status-dot {
+  background: #639922;
+}
+
+.status-degraded {
+  background: #faeeda;
+  color: #412402;
+}
+
+.status-degraded .status-dot {
+  background: #ba7517;
+}
+
+.status-down {
+  background: #fcebeb;
+  color: #501313;
+}
+
+.status-down .status-dot {
+  background: #a32d2d;
+}
+
+.status-unknown {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+}
+
+.status-unknown .status-dot {
+  background: var(--text-secondary);
+}

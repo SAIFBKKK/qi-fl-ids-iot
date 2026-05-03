@@ -354,3 +354,32 @@ function qiTab() {
     },
   };
 }
+
+function systemStatus() {
+  return {
+    overall: 'unknown',
+    label: 'Verification...',
+    title: '',
+
+    async init() {
+      await this.refresh();
+      setInterval(() => this.refresh(), 10000);
+    },
+
+    async refresh() {
+      try {
+        const response = await fetch('/api/system/health');
+        const data = await response.json();
+        this.overall = data.overall;
+        this.label = `${data.ups}/${data.total} services`;
+        this.title = (data.services || []).map((service) => (
+          `${service.service}: ${service.status}${service.latency_ms ? ` (${service.latency_ms}ms)` : ''}`
+        )).join('\n');
+      } catch (_err) {
+        this.overall = 'down';
+        this.label = 'dashboard isole';
+        this.title = 'Erreur fetch /api/system/health';
+      }
+    },
+  };
+}
