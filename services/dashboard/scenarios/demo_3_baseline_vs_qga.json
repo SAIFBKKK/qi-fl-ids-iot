@@ -1,0 +1,64 @@
+{
+  "id": "demo_3",
+  "name": "Comparaison baseline vs QGA",
+  "description": "Évolution des métriques F1 et benign_recall sur 30 rounds, baseline puis QGA expected",
+  "duration_seconds": 30,
+  "events": [
+    {
+      "t": 0,
+      "type": "round_metric",
+      "round": 1,
+      "method": "baseline",
+      "f1_macro": 0.41,
+      "benign_recall": 0.32
+    },
+    {
+      "t": 5,
+      "type": "round_metric",
+      "round": 5,
+      "method": "baseline",
+      "f1_macro": 0.48,
+      "benign_recall": 0.36
+    },
+    {
+      "t": 10,
+      "type": "round_metric",
+      "round": 10,
+      "method": "baseline",
+      "f1_macro": 0.53,
+      "benign_recall": 0.39
+    },
+    {
+      "t": 15,
+      "type": "round_metric",
+      "round": 15,
+      "method": "baseline",
+      "f1_macro": 0.5673,
+      "benign_recall": 0.3984
+    },
+    {
+      "t": 18,
+      "type": "round_metric",
+      "round": 16,
+      "method": "qga_expected",
+      "f1_macro": 0.582,
+      "benign_recall": 0.42
+    },
+    {
+      "t": 22,
+      "type": "round_metric",
+      "round": 22,
+      "method": "qga_expected",
+      "f1_macro": 0.605,
+      "benign_recall": 0.455
+    },
+    {
+      "t": 28,
+      "type": "round_metric",
+      "round": 30,
+      "method": "qga_expected",
+      "f1_macro": 0.621,
+      "benign_recall": 0.475
+    }
+  ]
+}

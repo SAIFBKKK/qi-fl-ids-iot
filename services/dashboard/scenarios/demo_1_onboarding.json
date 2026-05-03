@@ -1,0 +1,53 @@
+{
+  "id": "demo_1",
+  "name": "Onboarding 5 nœuds hétérogènes",
+  "description": "Démarrage progressif de 5 nœuds avec tier-assignment automatique",
+  "duration_seconds": 60,
+  "events": [
+    {
+      "t": 0,
+      "type": "node_register",
+      "node_id": "demo_n1",
+      "cpu_cores": 1,
+      "ram_mb": 512,
+      "device_type": "raspberrypi-zero",
+      "expected_tier": "weak"
+    },
+    {
+      "t": 10,
+      "type": "node_register",
+      "node_id": "demo_n2",
+      "cpu_cores": 2,
+      "ram_mb": 1024,
+      "device_type": "raspberrypi-3",
+      "expected_tier": "medium"
+    },
+    {
+      "t": 20,
+      "type": "node_register",
+      "node_id": "demo_n3",
+      "cpu_cores": 8,
+      "ram_mb": 4096,
+      "device_type": "jetson-nano",
+      "expected_tier": "powerful"
+    },
+    {
+      "t": 35,
+      "type": "node_register",
+      "node_id": "demo_n4",
+      "cpu_cores": 4,
+      "ram_mb": 2048,
+      "device_type": "raspberrypi-4",
+      "expected_tier": "medium"
+    },
+    {
+      "t": 50,
+      "type": "node_register",
+      "node_id": "demo_n5",
+      "cpu_cores": 1,
+      "ram_mb": 256,
+      "device_type": "esp32",
+      "expected_tier": "weak"
+    }
+  ]
+}

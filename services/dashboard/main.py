@@ -15,6 +15,7 @@ from api.models import router as models_router
 from api.nodes import router as nodes_router
 from api.metrics import router as metrics_router
 from api.qi import router as qi_router
+from api.scenarios import router as scenarios_router
 from api.system import router as system_router
 
 
@@ -39,6 +40,7 @@ app.include_router(nodes_router, prefix="/api")
 app.include_router(models_router, prefix="/api")
 app.include_router(metrics_router)
 app.include_router(qi_router)
+app.include_router(scenarios_router)
 app.include_router(system_router)
 
 templates = Jinja2Templates(directory="templates")
