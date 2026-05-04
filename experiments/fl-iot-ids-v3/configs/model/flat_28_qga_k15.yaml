@@ -1,0 +1,13 @@
+model:
+  name: flat_28_qga_k15
+  input_dim: 15
+  hidden_dims: [256, 128]
+  output_dim: 34
+  dropout: 0.2
+  seed: 42
+
+feature_selection:
+  enabled: true
+  method: qga
+  k_features: 15
+  artifact_path: artifacts/qi_feature_selection/{scenario}/selected_features.json

@@ -70,6 +70,7 @@ def test_qifa_lambda_zero_without_perturbation_matches_fedavg():
     for qifa_layer, fedavg_layer in zip(result, baseline):
         assert np.allclose(qifa_layer, fedavg_layer)
     assert metrics["qifa_perturbation_norm"] == 0.0
+    assert metrics["qifa/perturbation_applied"] == 0.0
 
 
 def test_qifa_perturbation_can_be_disabled():
@@ -87,7 +88,9 @@ def test_qifa_perturbation_can_be_disabled():
     )
 
     assert disabled_metrics["qifa_perturbation_norm"] == 0.0
+    assert disabled_metrics["qifa/perturbation_applied"] == 0.0
     assert enabled_metrics["qifa_perturbation_norm"] > 0.0
+    assert enabled_metrics["qifa/perturbation_applied"] == 1.0
     assert any(not np.allclose(a, b) for a, b in zip(disabled, enabled))
 
 

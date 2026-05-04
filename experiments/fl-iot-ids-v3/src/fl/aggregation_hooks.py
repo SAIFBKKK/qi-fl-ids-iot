@@ -14,6 +14,9 @@ FIT_METRIC_KEYS = (
     "qifa_diversity_norm",
     "qifa_perturbation_norm",
     "qifa_effective_clients",
+    "qifa/diversity_mean",
+    "qifa/perturbation_applied",
+    "qifa/weight_norm_delta",
 )
 
 FIT_SUM_KEYS = {

@@ -79,6 +79,38 @@ experiments:
     imbalance_strategy: class_weights
     description: "QGA feature selection K=16 + QIFA sur normal_noniid."
 
+  - name: exp_qi_baseline_fedavg_28f
+    architecture: flat_34
+    fl_strategy: fedavg
+    fl_config: fedavg
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    description: "QI sprint baseline: FedAvg avec les 28 features."
+
+  - name: exp_qi_qga15_fedavg
+    architecture: flat_28_qga_k15
+    fl_strategy: fedavg
+    fl_config: fedavg
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    description: "QI sprint: QGA K=15 + FedAvg."
+
+  - name: exp_qi_qifa_28f
+    architecture: flat_34
+    fl_strategy: qifa
+    fl_config: qifa_formula
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    description: "QI sprint: QIFA formule normalisee avec les 28 features."
+
+  - name: exp_qi_qga15_qifa
+    architecture: flat_28_qga_k15
+    fl_strategy: qifa
+    fl_config: qifa_formula
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    description: "QI sprint: QGA K=15 + QIFA formule normalisee."
+
   - name: exp_v3_scaffold_absentlocal_classweights
     architecture: flat_34
     fl_strategy: scaffold

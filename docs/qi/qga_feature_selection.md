@@ -1,38 +1,52 @@
 # QGA Feature Selection
 
-The QGA feature-selection module is a quantum-inspired optimiser for binary
-feature masks in `experiments/fl-iot-ids-v3`. It does not modify raw CSV files
-and does not refit scalers.
+The QGA/QI feature-selection module is a quantum-inspired selector for the
+28-feature CICIoT2023 representation used by `fl-iot-ids-v3`. It never edits raw
+CSVs and never refits scalers.
 
 ## Files
 
-- Module: `experiments/fl-iot-ids-v3/src/qi/feature_selection.py`
+- Selector: `experiments/fl-iot-ids-v3/src/qi/qi_feature_selector.py`
 - CLI: `experiments/fl-iot-ids-v3/src/scripts/run_qi_feature_selection.py`
 - Config: `experiments/fl-iot-ids-v3/configs/qi/qga_feature_selection.yaml`
-- Reduced model config: `experiments/fl-iot-ids-v3/configs/model/flat_34_qga_k16.yaml`
+- Reduced model: `experiments/fl-iot-ids-v3/configs/model/flat_28_qga_k15.yaml`
 
-## Method
+## Representation
 
-Each candidate solution is a binary vector of length `n_features`. A bit set to
-1 means the feature is selected. The current v3 pipeline uses 28 features, so
-`K=16` means selecting 16 out of 28 features.
+The selector maintains a theta vector of length 28:
 
-The smoke/full selector uses:
+```text
+theta = [theta_1, ..., theta_28]
+p_i = sin(theta_i)^2
+```
 
-- deterministic population initialisation
-- exact-K mask repair
-- crossover
-- mutation
-- train/validation filter fitness
-- redundancy penalty for correlated selected features
+Each candidate mask is sampled from `p_i`, then repaired to exactly `K`
+selected features. For the sprint benchmark, `K=15`.
 
-The fitness is intentionally lightweight so it can run before expensive FL
-training. The benchmark stage must still compare all-features and reduced
-features with real FL runs.
+After each generation, theta moves toward the best mask:
+
+```text
+theta <- theta + alpha * (theta_best - theta)
+```
+
+This is quantum-inspired search over binary masks. It is not quantum hardware.
+
+## Fitness
+
+Fitness is based on a mini `MLPClassifier`:
+
+- sample up to `max_samples_per_class`
+- split internally into train/validation
+- train a small MLP for `epochs`
+- score validation Macro-F1
+- optionally apply a light feature-count penalty
+
+The smoke mode keeps `n_generations`, `pop_size`, `epochs` and samples small.
+The full mode is configured but should be run only when time is available.
 
 ## Artifacts
 
-For a scenario such as `normal_noniid`, artifacts are written to:
+For `normal_noniid`, artifacts are saved under:
 
 ```text
 experiments/fl-iot-ids-v3/artifacts/qi_feature_selection/normal_noniid/
@@ -44,21 +58,21 @@ Expected files:
 - `feature_mask.npy`
 - `selection_report.md`
 
-The `.npy` mask is ignored by Git policy. The JSON and Markdown files are small
-and document the selected subset.
+The `.npy` mask is ignored by Git. The JSON and Markdown files are small and
+document the selected subset.
 
 ## Runtime Integration
 
-The reduced model config enables feature selection:
+Reduced-feature experiments use:
 
 ```yaml
 feature_selection:
   enabled: true
   method: qga
-  k_features: 16
+  k_features: 15
   artifact_path: artifacts/qi_feature_selection/{scenario}/selected_features.json
 ```
 
-At client startup, the dataset loader applies `selected_indices` from the JSON
-artifact to both train and validation NPZ files. The model input dimension is
-then inferred from the reduced tensor shape.
+At client startup, `selected_indices` are applied to train and validation NPZ
+files before the MLP is built. The model therefore receives 15 inputs while the
+source data remains the validated 28-feature representation.

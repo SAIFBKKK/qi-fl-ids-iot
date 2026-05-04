@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from numbers import Number
+from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
@@ -22,7 +21,7 @@ class QIFAClientUpdate:
     parameters: NDArrayList
     num_examples: int
     node_id: str
-    epsilon: float = 1.0
+    epsilon: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -35,8 +34,6 @@ class QIFAConfig:
     sigma_noise: float = 0.0
     perturbation_frequency: int = 1
     random_seed: int = 42
-    epsilon_default: float = 1.0
-    epsilon_by_client: dict[str, float] = field(default_factory=dict)
 
 
 def _validate_updates(updates: list[QIFAClientUpdate]) -> None:
@@ -57,13 +54,20 @@ def _validate_updates(updates: list[QIFAClientUpdate]) -> None:
 
 def _weighted_average(updates: list[QIFAClientUpdate], weights: np.ndarray) -> NDArrayList:
     return [
-        sum(float(weight) * np.asarray(update.parameters[layer_idx]) for weight, update in zip(weights, updates))
+        sum(
+            float(weight) * np.asarray(update.parameters[layer_idx])
+            for weight, update in zip(weights, updates)
+        )
         for layer_idx in range(len(updates[0].parameters))
     ]
 
 
 def _update_norm(arrays: NDArrayList) -> float:
     return float(np.sqrt(sum(float(np.sum(np.square(np.asarray(array)))) for array in arrays)))
+
+
+def _subtract_arrays(left: NDArrayList, right: NDArrayList) -> NDArrayList:
+    return [np.asarray(a) - np.asarray(b) for a, b in zip(left, right)]
 
 
 def aggregate_qifa_ndarrays(
@@ -85,36 +89,24 @@ def aggregate_qifa_ndarrays(
     weights = examples / float(examples.sum())
     fedavg = _weighted_average(updates, weights)
 
-    client_deltas: list[NDArrayList] = []
-    client_norms: list[float] = []
+    avg_norm = _update_norm(fedavg)
+    epsilons: list[float] = []
     for update in updates:
-        delta = [
-            np.asarray(client_array) - np.asarray(avg_array)
-            for client_array, avg_array in zip(update.parameters, fedavg)
-        ]
-        client_deltas.append(delta)
-        client_norms.append(_update_norm(delta))
+        delta = _subtract_arrays(update.parameters, fedavg)
+        epsilons.append(_update_norm(delta) / (avg_norm + 1e-8))
 
-    weighted_diversity_norm = float(
-        sum(float(weight) * norm for weight, norm in zip(weights, client_norms))
-    )
-    normalizer = weighted_diversity_norm if weighted_diversity_norm > 0.0 else 1.0
+    effective_weights = weights * (1.0 + float(config.lambda_qifa) * np.asarray(epsilons))
+    effective_weight_sum = float(effective_weights.sum())
+    if not np.isfinite(effective_weight_sum) or effective_weight_sum <= 0.0:
+        effective_weights = weights
+    else:
+        effective_weights = effective_weights / effective_weight_sum
 
-    diversity_adjustment: NDArrayList = []
-    for layer_idx in range(len(fedavg)):
-        layer_adjustment = np.zeros_like(fedavg[layer_idx], dtype=np.float64)
-        for weight, update, delta, norm in zip(weights, updates, client_deltas, client_norms):
-            epsilon = float(update.epsilon)
-            diversity_coeff = epsilon * (norm / normalizer)
-            layer_adjustment += float(weight) * diversity_coeff * np.asarray(delta[layer_idx])
-        diversity_adjustment.append(layer_adjustment)
-
-    aggregated = [
-        np.asarray(avg_array) + float(config.lambda_qifa) * adjustment
-        for avg_array, adjustment in zip(fedavg, diversity_adjustment)
-    ]
+    aggregated = _weighted_average(updates, effective_weights)
+    pre_noise_weight_norm_delta = _update_norm(_subtract_arrays(aggregated, fedavg))
 
     perturbation_norm = 0.0
+    perturbation_applied = 0.0
     if (
         config.perturbation_enabled
         and config.sigma_noise > 0.0
@@ -134,6 +126,7 @@ def aggregate_qifa_ndarrays(
             perturbations.append(perturbation)
         aggregated = [layer + perturb for layer, perturb in zip(aggregated, perturbations)]
         perturbation_norm = _update_norm(perturbations)
+        perturbation_applied = 1.0
 
     casted = [
         np.asarray(layer, dtype=np.asarray(updates[0].parameters[idx]).dtype)
@@ -141,9 +134,12 @@ def aggregate_qifa_ndarrays(
     ]
     metrics = {
         "qifa_lambda": float(config.lambda_qifa),
-        "qifa_diversity_norm": float(weighted_diversity_norm),
+        "qifa_diversity_norm": float(np.mean(epsilons)),
         "qifa_perturbation_norm": float(perturbation_norm),
         "qifa_effective_clients": float(len(updates)),
+        "qifa/diversity_mean": float(np.mean(epsilons)),
+        "qifa/perturbation_applied": float(perturbation_applied),
+        "qifa/weight_norm_delta": float(pre_noise_weight_norm_delta),
     }
     return casted, metrics
 
@@ -160,8 +156,6 @@ class ReportingQIFA(ReportingFedAvg):
         sigma_noise: float = 0.0,
         perturbation_frequency: int = 1,
         random_seed: int = 42,
-        epsilon_default: float = 1.0,
-        epsilon_by_client: dict[str, float] | None = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -172,26 +166,12 @@ class ReportingQIFA(ReportingFedAvg):
             sigma_noise=float(sigma_noise),
             perturbation_frequency=int(perturbation_frequency),
             random_seed=int(random_seed),
-            epsilon_default=float(epsilon_default),
-            epsilon_by_client={
-                str(client_id): float(value)
-                for client_id, value in (epsilon_by_client or {}).items()
-                if isinstance(value, Number)
-            },
         )
 
     def _epsilon_for_fit_res(self, fit_res: FitRes) -> tuple[str, float]:
         metrics = fit_res.metrics or {}
         node_id = str(metrics.get("node_id") or metrics.get("client_id") or "unknown")
-        raw_epsilon = metrics.get("qifa_epsilon")
-        if isinstance(raw_epsilon, Number):
-            return node_id, float(raw_epsilon)
-        return node_id, float(
-            self.qifa_config.epsilon_by_client.get(
-                node_id,
-                self.qifa_config.epsilon_default,
-            )
-        )
+        return node_id, 0.0
 
     def _fit_results_to_qifa_updates(
         self,

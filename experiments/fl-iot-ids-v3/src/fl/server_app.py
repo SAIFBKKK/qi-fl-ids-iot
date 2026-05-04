@@ -136,8 +136,6 @@ def build_server_components(
                 "sigma_noise": float(qifa_cfg.get("sigma_noise", 0.0)),
                 "perturbation_frequency": int(qifa_cfg.get("perturbation_frequency", 1)),
                 "random_seed": int(qifa_cfg.get("random_seed", config.get("project", {}).get("seed", 42))),
-                "epsilon_default": float(qifa_cfg.get("epsilon_default", 1.0)),
-                "epsilon_by_client": dict(qifa_cfg.get("epsilon_by_client", {})),
             }
         )
     strategy = strategy_cls(**strategy_kwargs)

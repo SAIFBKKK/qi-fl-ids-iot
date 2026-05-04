@@ -4,14 +4,14 @@ import argparse
 from pathlib import Path
 from typing import Any
 
-import numpy as np
 import yaml
+import numpy as np
 
-from src.common.paths import ARTIFACTS_DIR, DATA_DIR, get_processed_path
-from src.qi.feature_selection import (
-    QGAFeatureSelectionConfig,
-    run_qga_feature_selection,
-    save_feature_selection_artifacts,
+from src.common.paths import ARTIFACTS_DIR, get_processed_path
+from src.qi.qi_feature_selector import (
+    QIFeatureSelectorConfig,
+    run_qi_feature_selection,
+    save_qi_feature_selection_artifacts,
 )
 
 
@@ -43,24 +43,10 @@ def load_yaml(path: str | Path) -> dict[str, Any]:
     return data
 
 
-def _sample_rows(
-    X: np.ndarray,
-    y: np.ndarray,
-    max_rows: int,
-    rng: np.random.Generator,
-) -> tuple[np.ndarray, np.ndarray]:
-    if max_rows <= 0 or X.shape[0] <= max_rows:
-        return X, y
-    indices = rng.choice(X.shape[0], size=max_rows, replace=False)
-    return X[indices], y[indices]
-
-
 def _load_split(
     scenario: str,
     split: str,
     node_ids: list[str],
-    max_rows_per_node: int,
-    rng: np.random.Generator,
 ) -> tuple[np.ndarray, np.ndarray, list[str]]:
     X_parts = []
     y_parts = []
@@ -70,9 +56,8 @@ def _load_split(
         if not path.exists():
             raise FileNotFoundError(path)
         data = np.load(path, allow_pickle=True)
-        X_node, y_node = _sample_rows(data["X"], data["y"], max_rows_per_node, rng)
-        X_parts.append(X_node.astype(np.float32, copy=False))
-        y_parts.append(y_node.astype(np.int64, copy=False))
+        X_parts.append(data["X"].astype(np.float32, copy=False))
+        y_parts.append(data["y"].astype(np.int64, copy=False))
         names = [str(name) for name in data["feature_names"].tolist()]
         if feature_names is None:
             feature_names = names
@@ -84,75 +69,60 @@ def _load_split(
     return np.vstack(X_parts), np.concatenate(y_parts), feature_names
 
 
-def _synthetic_smoke_dataset(config: QGAFeatureSelectionConfig) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, list[str]]:
-    rng = np.random.default_rng(config.random_seed)
-    n_features = 28
-    X_train = rng.normal(size=(96, n_features)).astype(np.float32)
-    y_train = rng.integers(0, 4, size=96, dtype=np.int64)
-    X_val = rng.normal(size=(48, n_features)).astype(np.float32)
-    y_val = rng.integers(0, 4, size=48, dtype=np.int64)
+def _synthetic_smoke_dataset(
+    config: QIFeatureSelectorConfig,
+) -> tuple[np.ndarray, np.ndarray, list[str]]:
+    rng = np.random.default_rng(config.seed)
+    n_features = int(config.n_features)
+    rows = max(96, int(config.max_samples_per_class) * 4)
+    X = rng.normal(size=(rows, n_features)).astype(np.float32)
+    y = rng.integers(0, 4, size=rows, dtype=np.int64)
     signal_features = np.arange(min(config.k_features, n_features))
-    X_train[:, signal_features] += y_train[:, None] * 0.25
-    X_val[:, signal_features] += y_val[:, None] * 0.25
-    return X_train, y_train, X_val, y_val, [f"feature_{idx}" for idx in range(n_features)]
+    X[:, signal_features] += y[:, None] * 0.35
+    return X, y, [f"feature_{idx}" for idx in range(n_features)]
 
 
 def main() -> None:
     args = parse_args()
     raw_cfg = load_yaml(args.config)
     qga_cfg = dict(raw_cfg.get("qga_feature_selection", raw_cfg))
-    config = QGAFeatureSelectionConfig(
-        k_features=int(qga_cfg.get("k_features", 16)),
-        population_size=int(qga_cfg.get("population_size", 24)),
-        generations=int(qga_cfg.get("generations", 20)),
-        mutation_rate=float(qga_cfg.get("mutation_rate", 0.08)),
-        crossover_rate=float(qga_cfg.get("crossover_rate", 0.8)),
-        redundancy_penalty=float(qga_cfg.get("redundancy_penalty", 0.02)),
-        size_penalty=float(qga_cfg.get("size_penalty", 1.0)),
-        random_seed=int(qga_cfg.get("random_seed", 42)),
-    )
+    mode = "smoke" if args.smoke else str(qga_cfg.get("mode", "full"))
     smoke_cfg = dict(qga_cfg.get("smoke", {}))
-    max_rows_per_node = int(
-        smoke_cfg.get("max_rows_per_node", 512)
-        if args.smoke
-        else qga_cfg.get("max_rows_per_node", 5000)
+    active_cfg = {**qga_cfg, **(smoke_cfg if args.smoke else {})}
+    config = QIFeatureSelectorConfig(
+        n_features=int(active_cfg.get("n_features", 28)),
+        k_features=int(active_cfg.get("k_features", 15)),
+        n_generations=int(active_cfg.get("n_generations", active_cfg.get("generations", 12))),
+        pop_size=int(active_cfg.get("pop_size", active_cfg.get("population_size", 12))),
+        epochs=int(active_cfg.get("epochs", 2)),
+        max_samples_per_class=int(active_cfg.get("max_samples_per_class", 40)),
+        seed=int(active_cfg.get("seed", active_cfg.get("random_seed", 42))),
+        mode=mode,
+        theta_update_rate=float(active_cfg.get("theta_update_rate", 0.12)),
+        size_penalty=float(active_cfg.get("size_penalty", 0.0)),
     )
     allow_synthetic_smoke = bool(smoke_cfg.get("allow_synthetic_if_missing", True))
 
-    rng = np.random.default_rng(config.random_seed)
     try:
-        X_train, y_train, feature_names = _load_split(
+        X, y, feature_names = _load_split(
             args.scenario,
             "train",
             args.node_ids,
-            max_rows_per_node,
-            rng,
         )
-        X_val, y_val, val_feature_names = _load_split(
-            args.scenario,
-            "val",
-            args.node_ids,
-            max_rows_per_node,
-            rng,
-        )
-        if feature_names != val_feature_names:
-            raise ValueError("Train and validation feature names differ.")
     except FileNotFoundError:
         if not args.smoke or not allow_synthetic_smoke:
             raise
-        X_train, y_train, X_val, y_val, feature_names = _synthetic_smoke_dataset(config)
+        X, y, feature_names = _synthetic_smoke_dataset(config)
 
-    result = run_qga_feature_selection(
-        X_train,
-        y_train,
-        X_val,
-        y_val,
+    result = run_qi_feature_selection(
+        X,
+        y,
         feature_names,
         config=config,
-        smoke=bool(args.smoke),
+        num_classes=int(qga_cfg.get("num_classes", 34)),
     )
     output_dir = ARTIFACTS_DIR / "qi_feature_selection" / args.scenario
-    paths = save_feature_selection_artifacts(
+    paths = save_qi_feature_selection_artifacts(
         result,
         output_dir=output_dir,
         scenario=args.scenario,

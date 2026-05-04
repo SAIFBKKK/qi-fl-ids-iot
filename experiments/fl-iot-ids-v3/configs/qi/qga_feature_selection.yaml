@@ -1,15 +1,21 @@
 qga_feature_selection:
-  method: qga_binary_mask
-  k_features: 16
-  population_size: 24
-  generations: 20
-  mutation_rate: 0.08
-  crossover_rate: 0.8
-  redundancy_penalty: 0.02
+  method: qi_theta_qga_mini_mlp
+  n_features: 28
+  k_features: 15
+  n_generations: 12
+  pop_size: 12
+  epochs: 2
+  max_samples_per_class: 40
+  seed: 42
+  mode: full
+  theta_update_rate: 0.12
   size_penalty: 1.0
-  random_seed: 42
-  max_rows_per_node: 5000
+  num_classes: 34
 
   smoke:
-    max_rows_per_node: 256
+    mode: smoke
+    n_generations: 3
+    pop_size: 4
+    epochs: 1
+    max_samples_per_class: 6
     allow_synthetic_if_missing: true

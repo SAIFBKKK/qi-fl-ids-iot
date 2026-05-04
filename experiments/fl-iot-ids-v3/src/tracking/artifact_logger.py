@@ -21,6 +21,9 @@ FIT_METRIC_KEYS = (
     "qifa_diversity_norm",
     "qifa_perturbation_norm",
     "qifa_effective_clients",
+    "qifa/diversity_mean",
+    "qifa/perturbation_applied",
+    "qifa/weight_norm_delta",
 )
 
 EVALUATE_METRIC_KEYS = (
@@ -52,6 +55,9 @@ MLFLOW_ROUND_METRIC_ALIASES = {
     "qifa_diversity_norm": "qifa/diversity_norm",
     "qifa_perturbation_norm": "qifa/perturbation_norm",
     "qifa_effective_clients": "qifa/effective_clients",
+    "qifa/diversity_mean": "qifa/diversity_mean",
+    "qifa/perturbation_applied": "qifa/perturbation_applied",
+    "qifa/weight_norm_delta": "qifa/weight_norm_delta",
     "accuracy": "validation/accuracy",
     "macro_f1": "validation/macro_f1",
     "rare_macro_f1": "validation/rare_macro_f1",
