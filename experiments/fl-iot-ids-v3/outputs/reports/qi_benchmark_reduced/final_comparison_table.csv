@@ -1,0 +1,10 @@
+experiment_id,experiment_name,scenario,aggregation,features,rounds,macro_f1_final,benign_recall_final,false_positive_rate_final,rare_class_recall_final,rare_macro_f1_final,accuracy_final,loss_final,update_size_bytes_final,status
+E1,exp_bench30_normal_fedavg_28f,normal_noniid,FedAvg,28,0,,,,,,,,,missing
+E2,exp_bench30_normal_qifa_28f,normal_noniid,QIFA,28,0,,,,,,,,,missing
+E3,exp_bench30_normal_fedavg_qga15,normal_noniid,FedAvg,QGA-15,0,,,,,,,,,missing
+E4,exp_bench30_normal_qifa_qga15,normal_noniid,QIFA,QGA-15,0,,,,,,,,,missing
+E5,exp_bench30_absent_fedavg_28f,absent_local,FedAvg,28,0,,,,,,,,,missing
+E6,exp_bench30_absent_qifa_28f,absent_local,QIFA,28,0,,,,,,,,,missing
+E7,exp_bench30_absent_fedavg_qga15,absent_local,FedAvg,QGA-15,0,,,,,,,,,missing
+E8,exp_bench30_absent_qifa_qga15,absent_local,QIFA,QGA-15,0,,,,,,,,,missing
+R,model_factory_30rounds_powerful,normal_noniid,Centralized,28,30,0.7743827343488107,0.8983555555555556,0.10164444444444443,,,0.8164278476219381,,,success

@@ -2,10 +2,10 @@ qga_feature_selection:
   method: qi_theta_qga_mini_mlp
   n_features: 28
   k_features: 15
-  n_generations: 12
-  pop_size: 12
+  n_generations: 20
+  pop_size: 15
   epochs: 2
-  max_samples_per_class: 40
+  max_samples_per_class: 2000
   seed: 42
   mode: full
   theta_update_rate: 0.12

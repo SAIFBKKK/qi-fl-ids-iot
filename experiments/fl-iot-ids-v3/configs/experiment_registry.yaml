@@ -111,6 +111,70 @@ experiments:
     imbalance_strategy: class_weights
     description: "QI sprint: QGA K=15 + QIFA formule normalisee."
 
+  - name: exp_bench30_normal_fedavg_28f
+    architecture: flat_34
+    fl_strategy: fedavg
+    fl_config: fedavg_30rounds
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    description: "Reduced QI benchmark E1: normal_noniid + FedAvg + 28 features + 30 rounds."
+
+  - name: exp_bench30_normal_qifa_28f
+    architecture: flat_34
+    fl_strategy: qifa
+    fl_config: qifa_formula_30rounds
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    description: "Reduced QI benchmark E2: normal_noniid + QIFA + 28 features + 30 rounds."
+
+  - name: exp_bench30_normal_fedavg_qga15
+    architecture: flat_28_qga_k15
+    fl_strategy: fedavg
+    fl_config: fedavg_30rounds
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    description: "Reduced QI benchmark E3: normal_noniid + FedAvg + QGA-15 + 30 rounds."
+
+  - name: exp_bench30_normal_qifa_qga15
+    architecture: flat_28_qga_k15
+    fl_strategy: qifa
+    fl_config: qifa_formula_30rounds
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    description: "Reduced QI benchmark E4: normal_noniid + QIFA + QGA-15 + 30 rounds."
+
+  - name: exp_bench30_absent_fedavg_28f
+    architecture: flat_34
+    fl_strategy: fedavg
+    fl_config: fedavg_30rounds
+    data_scenario: absent_local
+    imbalance_strategy: class_weights
+    description: "Reduced QI benchmark E5: absent_local + FedAvg + 28 features + 30 rounds."
+
+  - name: exp_bench30_absent_qifa_28f
+    architecture: flat_34
+    fl_strategy: qifa
+    fl_config: qifa_formula_30rounds
+    data_scenario: absent_local
+    imbalance_strategy: class_weights
+    description: "Reduced QI benchmark E6: absent_local + QIFA + 28 features + 30 rounds."
+
+  - name: exp_bench30_absent_fedavg_qga15
+    architecture: flat_28_qga_k15
+    fl_strategy: fedavg
+    fl_config: fedavg_30rounds
+    data_scenario: absent_local
+    imbalance_strategy: class_weights
+    description: "Reduced QI benchmark E7: absent_local + FedAvg + QGA-15 + 30 rounds."
+
+  - name: exp_bench30_absent_qifa_qga15
+    architecture: flat_28_qga_k15
+    fl_strategy: qifa
+    fl_config: qifa_formula_30rounds
+    data_scenario: absent_local
+    imbalance_strategy: class_weights
+    description: "Reduced QI benchmark E8: absent_local + QIFA + QGA-15 + 30 rounds."
+
   - name: exp_v3_scaffold_absentlocal_classweights
     architecture: flat_34
     fl_strategy: scaffold

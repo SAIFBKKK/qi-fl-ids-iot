@@ -1,0 +1,10 @@
+experiment_id,exists,rounds_completed,status,reusable_for_final_benchmark,notes
+E1,yes,3,success,no,Found exp_qi_baseline_fedavg_28f 3-round run; 30-round rerun required.
+E2,yes,3,success,no,Found exp_qi_qifa_28f 3-round run; 30-round rerun required.
+E3,yes,3,success,no,Found exp_qi_qga15_fedavg 3-round run; 30-round rerun required.
+E4,yes,3,success,no,Found exp_qi_qga15_qifa 3-round run; 30-round rerun required.
+E5,yes,10,success,no,Found exp_v3_fedavg_absentlocal_classweights 10-round run; 30-round rerun required.
+E6,no,0,missing,no,No reusable absent_local QIFA 28-feature run found.
+E7,no,0,missing,no,No reusable absent_local FedAvg QGA-15 run found.
+E8,no,0,missing,no,No reusable absent_local QIFA QGA-15 run found.
+R,yes,30,completed,yes,Centralized reference found in outputs/model_factory_30rounds; validation macro_f1=0.7743827343488107.

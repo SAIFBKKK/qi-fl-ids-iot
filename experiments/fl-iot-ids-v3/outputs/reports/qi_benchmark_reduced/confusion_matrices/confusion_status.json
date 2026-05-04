@@ -1,0 +1,25 @@
+{
+  "completed": [],
+  "failures": [
+    {
+      "experiment_id": "E1",
+      "experiment_name": "exp_bench30_normal_fedavg_28f",
+      "error": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\fl-iot-ids-v3\\outputs\\reports\\baselines\\exp_bench30_normal_fedavg_28f\\resolved_config.json"
+    },
+    {
+      "experiment_id": "E2",
+      "experiment_name": "exp_bench30_normal_qifa_28f",
+      "error": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\fl-iot-ids-v3\\outputs\\reports\\baselines\\exp_bench30_normal_qifa_28f\\resolved_config.json"
+    },
+    {
+      "experiment_id": "E5",
+      "experiment_name": "exp_bench30_absent_fedavg_28f",
+      "error": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\fl-iot-ids-v3\\outputs\\reports\\baselines\\exp_bench30_absent_fedavg_28f\\resolved_config.json"
+    },
+    {
+      "experiment_id": "E6",
+      "experiment_name": "exp_bench30_absent_qifa_28f",
+      "error": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\fl-iot-ids-v3\\outputs\\reports\\baselines\\exp_bench30_absent_qifa_28f\\resolved_config.json"
+    }
+  ]
+}
