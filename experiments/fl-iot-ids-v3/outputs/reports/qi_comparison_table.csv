@@ -1,5 +1,5 @@
 experiment,strategy,features,status,macro_f1,accuracy,benign_recall,false_positive_rate,rare_class_recall,rare_macro_f1,convergence_speed,update_size_bytes,round_latency_sec,stability_last_3_rounds,notes
-exp_v3_fedavg_normal_classweights,fedavg,all_features,pending_full_run,,,,,,,,,,Baseline already configured before sprint
-exp_v3_qifa_normal_classweights,qifa,all_features,validated_1_round,0.4817664681837707,0.5710170805196131,0.7389534552590419,0.2610465447409581,0.16933259388492114,0.1622240159759835,1 round completed,536472.0,,not_available,Validation smoke only; not a final benchmark
-exp_v3_qga_fedavg_normal_classweights,fedavg,qga_k16,pending_full_run,,,,,,,,,,Requires selected_features artifact
-exp_v3_qga_qifa_normal_classweights,qifa,qga_k16,pending_full_run,,,,,,,,,,Requires selected_features artifact
+exp_qi_baseline_fedavg_28f,fedavg,28,pending_full_run,,,,,,,,,,QI sprint baseline configured
+exp_qi_qifa_28f,qifa,28,validated_1_round,0.5149508829847733,0.5900285278076987,0.7904741094249078,0.20952589057509213,0.07689141387920316,0.12792261316656184,1 round completed,536472.0,,not_available,QIFA formula path validated; full 10-round run pending
+exp_qi_qga15_fedavg,fedavg,15,pending_full_run,,,,,,,,,,Requires K=15 selected_features artifact
+exp_qi_qga15_qifa,qifa,15,pending_full_run,,,,,,,,,,Requires K=15 selected_features artifact

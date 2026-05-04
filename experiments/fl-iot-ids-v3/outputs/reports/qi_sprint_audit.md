@@ -2,6 +2,8 @@
 
 Date: 2026-05-03
 
+Hardening update: 2026-05-04
+
 ## Scope
 
 Audited the scientific FL layer in `experiments/fl-iot-ids-v3`. Microservices
@@ -39,7 +41,11 @@ and dashboard code were intentionally left out of the QI integration path.
 
 - QIFA belongs in `src/fl/qifa_strategy.py` and should be selected from
   `src/fl/server_app.py`.
+- QIFA hardening keeps a single QIFA module. No competing `qifa.py` exists.
 - QGA feature selection belongs in `src/qi/feature_selection.py`.
+- The current QI selector implementation is `src/qi/qi_feature_selector.py`.
+  The older `feature_selection.py` is retained only as compatibility for
+  previously added tests and artifacts.
 - Runtime feature reduction belongs in the dataset/dataloader/client path, not
   in raw CSV generation and not in scaler fitting.
 - Reduced-feature experiments should use a separate model config such as
@@ -68,6 +74,8 @@ and dashboard code were intentionally left out of the QI integration path.
 - QIFA one/two/three-client aggregation tests.
 - QIFA perturbation disablement and deterministic seed tests.
 - QGA exact-K mask repair, deterministic selection and artifact writing tests.
+- QI theta-vector tests for `p_i = sin(theta_i)^2`, exact-K repair,
+  deterministic smoke selection and artifact writing.
 
 ## Git Hygiene
 
