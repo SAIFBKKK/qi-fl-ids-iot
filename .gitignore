@@ -109,6 +109,9 @@ experiments/**/outputs/reports/**
 !experiments/**/outputs/reports/*.csv
 !experiments/**/outputs/reports/*.json
 !experiments/**/outputs/reports/.gitkeep
+!experiments/fl-iot-ids-v3/outputs/reports/qi_benchmark_reduced/
+!experiments/fl-iot-ids-v3/outputs/reports/qi_benchmark_reduced/**
+experiments/fl-iot-ids-v3/outputs/reports/qi_benchmark_reduced/logs/*.log
 
 # --- Tests / coverage ---
 .tox/

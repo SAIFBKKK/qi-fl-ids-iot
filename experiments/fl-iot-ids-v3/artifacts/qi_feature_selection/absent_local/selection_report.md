@@ -1,31 +1,31 @@
 # QGA Feature Selection Report
 
-- Scenario: normal_noniid
+- Scenario: absent_local
 - Input features: 28
 - Selected features: 15
 - Mode: full
 - Generations: 20
 - Population size: 15
 - Mini-MLP epochs: 2
-- Best validation Macro-F1: 0.040070
-- Best fitness: 0.040070
+- Best validation Macro-F1: 0.026518
+- Best fitness: 0.026518
 
 ## Selected Features
 
-1. `1` - `Header_Length`
-2. `2` - `Protocol Type`
-3. `3` - `Duration`
+1. `0` - `flow_duration`
+2. `3` - `Duration`
+3. `6` - `syn_flag_number`
 4. `7` - `rst_flag_number`
-5. `11` - `syn_count`
-6. `12` - `fin_count`
-7. `15` - `HTTP`
-8. `17` - `DNS`
-9. `19` - `TCP`
-10. `20` - `UDP`
-11. `22` - `ICMP`
-12. `23` - `Tot sum`
-13. `25` - `Std`
-14. `26` - `IAT`
+5. `12` - `fin_count`
+6. `13` - `urg_count`
+7. `14` - `rst_count`
+8. `15` - `HTTP`
+9. `16` - `HTTPS`
+10. `17` - `DNS`
+11. `18` - `SSH`
+12. `19` - `TCP`
+13. `20` - `UDP`
+14. `21` - `ARP`
 15. `27` - `Number`
 
 This selector is quantum-inspired: it maintains a theta vector of
