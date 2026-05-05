@@ -12,6 +12,7 @@ import numpy as np
 import torch
 from flwr.client import ClientApp
 from flwr.common import Context
+from torch.utils.data import ConcatDataset, DataLoader
 try:
     from flwr.common.constant import PARTITION_ID_KEY
 except ImportError:  # Flower <= 1.18 does not export the constant.
@@ -22,6 +23,7 @@ from src.common.paths import ARTIFACTS_DIR, DATA_DIR, get_processed_path
 from src.common.schemas import NodeProfile
 from src.common.utils import get_expected_node_ids, resolve_node_id_from_partition
 from src.data.dataloader import create_dataloaders_for_node
+from src.data.dataset import IoTLocalDataset
 from src.model.evaluate import evaluate_model
 from src.model.network import MLPClassifier
 from src.model.supernet import SuperNet
@@ -139,6 +141,29 @@ def resolve_selected_feature_indices(
     return [int(index) for index in indices]
 
 
+def create_global_validation_loader(
+    scenario: str,
+    batch_size: int,
+    selected_feature_indices: list[int] | None = None,
+) -> DataLoader:
+    datasets = []
+    for node_id in ("node1", "node2", "node3"):
+        path = DATA_DIR / "processed" / scenario / node_id / "val_preprocessed.npz"
+        datasets.append(
+            IoTLocalDataset(
+                path,
+                selected_feature_indices=selected_feature_indices,
+            )
+        )
+    return DataLoader(
+        ConcatDataset(datasets),
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=0,
+        drop_last=False,
+    )
+
+
 class FlowerClient(fl.client.NumPyClient):
     def __init__(
         self,
@@ -162,6 +187,7 @@ class FlowerClient(fl.client.NumPyClient):
         model_width: float = 1.0,
         multitier_enabled: bool = False,
         selected_feature_indices: list[int] | None = None,
+        common_global_validation: bool = False,
     ):
         self.node_id = node_id
         self.scenario = scenario
@@ -181,6 +207,8 @@ class FlowerClient(fl.client.NumPyClient):
         self.enable_submodel_training = bool(enable_submodel_training)
         self.model_width = validate_width_compatibility(model_width)
         self.selected_feature_indices = selected_feature_indices
+        self.common_global_validation = bool(common_global_validation)
+        self.global_eval_loader = None
         self.scaffold_state_dir = (
             Path(scaffold_state_dir) if scaffold_state_dir is not None else None
         )
@@ -194,6 +222,12 @@ class FlowerClient(fl.client.NumPyClient):
             num_workers=0,
             selected_feature_indices=selected_feature_indices,
         )
+        if self.common_global_validation:
+            self.global_eval_loader = create_global_validation_loader(
+                scenario=scenario,
+                batch_size=batch_size,
+                selected_feature_indices=selected_feature_indices,
+            )
 
         sample_batch = next(iter(self.train_loader))
         X_sample, _ = sample_batch
@@ -464,6 +498,26 @@ class FlowerClient(fl.client.NumPyClient):
             weight_decay=self.weight_decay,
         )
 
+    def _ensure_global_eval_loader(self):
+        if self.global_eval_loader is None:
+            self.global_eval_loader = create_global_validation_loader(
+                scenario=self.scenario,
+                batch_size=self.batch_size,
+                selected_feature_indices=self.selected_feature_indices,
+            )
+        return self.global_eval_loader
+
+    def _evaluate_current_model(self, loader):
+        return evaluate_model(
+            model=self.model,
+            loader=loader,
+            criterion=self.criterion,
+            device=self.device,
+            benign_class_id=self.benign_class_id,
+            rare_class_ids=self.rare_class_ids,
+            num_classes=self.num_classes,
+        )
+
     def get_node_profile(self) -> NodeProfile:
         profiles = {
             "node1": {
@@ -598,6 +652,20 @@ class FlowerClient(fl.client.NumPyClient):
             "update_size_bytes": int(update_size_bytes),
             "bytes_received": float(bytes_before),
         }
+        if self.common_global_validation:
+            local_val_metrics = self._evaluate_current_model(self.eval_loader)
+            global_val_metrics = self._evaluate_current_model(
+                self._ensure_global_eval_loader()
+            )
+            metrics.update(
+                {
+                    "local_val_macro_f1": float(local_val_metrics["macro_f1"]),
+                    "local_rare_recall": float(local_val_metrics["rare_class_recall"]),
+                    "global_val_macro_f1": float(global_val_metrics["macro_f1"]),
+                    "global_val_loss": float(global_val_metrics["loss"]),
+                    "global_rare_recall": float(global_val_metrics["rare_class_recall"]),
+                }
+            )
         if self.fl_strategy == "scaffold":
             metrics["scaffold_delta_c"] = pickle.dumps(
                 [dc.astype(np.float32) for dc in delta_c]
@@ -617,15 +685,7 @@ class FlowerClient(fl.client.NumPyClient):
             self._apply_received_width(self._infer_received_width(parameters))
         set_model_parameters(self.model, parameters)
 
-        metrics = evaluate_model(
-            model=self.model,
-            loader=self.eval_loader,
-            criterion=self.criterion,
-            device=self.device,
-            benign_class_id=self.benign_class_id,
-            rare_class_ids=self.rare_class_ids,
-            num_classes=self.num_classes,
-        )
+        metrics = self._evaluate_current_model(self.eval_loader)
 
         logger.info(
             "[%s] evaluate() done | loss=%.4f | acc=%.4f | macro_f1=%.4f",
@@ -636,13 +696,25 @@ class FlowerClient(fl.client.NumPyClient):
         )
 
         metric_payload = {
+            "node_id": self.node_id,
             "accuracy": float(metrics["accuracy"]),
             "macro_f1": float(metrics["macro_f1"]),
             "recall_macro": float(metrics["recall_macro"]),
             "benign_recall": float(metrics["benign_recall"]),
             "false_positive_rate": float(metrics["false_positive_rate"]),
             "rare_class_recall": float(metrics["rare_class_recall"]),
+            "local_val_macro_f1": float(metrics["macro_f1"]),
+            "local_rare_recall": float(metrics["rare_class_recall"]),
         }
+        if bool(config.get("common_global_validation", self.common_global_validation)):
+            global_metrics = self._evaluate_current_model(self._ensure_global_eval_loader())
+            metric_payload.update(
+                {
+                    "global_val_macro_f1": float(global_metrics["macro_f1"]),
+                    "global_val_loss": float(global_metrics["loss"]),
+                    "global_rare_recall": float(global_metrics["rare_class_recall"]),
+                }
+            )
         metric_payload.update(
             {
                 key: float(value)
@@ -667,6 +739,7 @@ def make_client_fn(config: Mapping[str, object]):
     experiment_cfg = dict(config.get("experiment", {}))
     runtime_cfg = dict(config.get("runtime", {}))
     strategy_cfg = dict(config.get("strategy", {}))
+    evaluation_cfg = dict(config.get("evaluation", {}))
 
     scenario = str(scenario_cfg.get("name", "normal_noniid"))
     batch_size = int(train_cfg.get("batch_size", 256))
@@ -709,6 +782,7 @@ def make_client_fn(config: Mapping[str, object]):
     node_ids = list(scenario_cfg.get("node_ids", get_expected_node_ids(num_clients)))
     scaffold_state_dir = runtime_cfg.get("scaffold_state_dir")
     selected_feature_indices = resolve_selected_feature_indices(config, scenario)
+    common_global_validation = bool(evaluation_cfg.get("common_global_validation", False))
 
     assert len(node_ids) == num_clients, (
         f"node_ids length mismatch: node_ids={node_ids}, num_clients={num_clients}"
@@ -748,6 +822,7 @@ def make_client_fn(config: Mapping[str, object]):
             model_width=model_width,
             multitier_enabled=multitier_enabled,
             selected_feature_indices=selected_feature_indices,
+            common_global_validation=common_global_validation,
         ).to_client()
 
     return configured_client_fn

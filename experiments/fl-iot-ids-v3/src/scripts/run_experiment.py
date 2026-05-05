@@ -77,6 +77,8 @@ def load_experiment_config(experiment_name: str) -> tuple[dict[str, Any], dict[s
     config["strategy"]["name"] = str(experiment["fl_strategy"])
     if "expert_factor" in experiment:
         config["strategy"]["expert_factor"] = float(experiment["expert_factor"])
+    if "rounds_override" in experiment:
+        config["strategy"]["num_rounds"] = int(experiment["rounds_override"])
 
     config.setdefault("scenario", {})
     config["scenario"]["name"] = str(experiment["data_scenario"])

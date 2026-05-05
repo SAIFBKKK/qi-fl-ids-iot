@@ -1,0 +1,3 @@
+scenario,best_classical,best_classical_macro_f1,best_qi,best_qi_macro_f1,best_overall,best_overall_macro_f1,full_qi_experiment,full_qi_gain_vs_classical,verdict
+normal_noniid,E1,0.7697173983054993,E2,0.7672502633986508,E1,0.7697173983054993,E4,-0.07615792744482996,Classical remains best on Macro-F1; inspect QI trade-offs
+absent_local,E5,0.49375834494747295,E6,0.47598388838086303,E5,0.49375834494747295,E8,-0.21791892017079467,Classical remains best on Macro-F1; inspect QI trade-offs

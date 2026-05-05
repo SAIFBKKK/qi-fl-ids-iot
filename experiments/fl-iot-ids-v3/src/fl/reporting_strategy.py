@@ -1,15 +1,18 @@
 from __future__ import annotations
 
+import csv
 import json
 import math
+import os
 import pickle
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Mapping
 
 import numpy as np
 import torch
 from flwr.common import (
+    EvaluateIns,
     EvaluateRes,
     FitIns,
     FitRes,
@@ -29,12 +32,33 @@ from src.model.supernet import SuperNet, extract_submodel_state
 from src.tracking.artifact_logger import BaselineArtifactTracker, build_mlflow_round_metrics
 
 
+DIAGNOSTIC_COLUMNS = (
+    "experiment_id",
+    "round",
+    "client_id",
+    "n_samples",
+    "raw_weight",
+    "update_norm",
+    "cosine_similarity_to_avg_update",
+    "qifa_epsilon",
+    "effective_weight",
+    "local_val_macro_f1",
+    "global_val_macro_f1",
+    "local_rare_recall",
+    "global_rare_recall",
+    "global_val_loss",
+)
+
+
 class ReportingFedAvg(FedAvg):
     def __init__(
         self,
         *,
         tracker: BaselineArtifactTracker | None = None,
         monitor_metric: str = "macro_f1",
+        experiment_id: str = "unknown",
+        scenario: str = "normal_noniid",
+        common_global_validation: bool = False,
         expert_node_id: str | None = None,
         expert_factor: float = 1.0,
         round_metric_logger: Callable[[int, dict[str, float]], None] | None = None,
@@ -49,6 +73,9 @@ class ReportingFedAvg(FedAvg):
         self.logger = get_logger("reporting_strategy")
         self.tracker = tracker
         self.monitor_metric = monitor_metric
+        self.experiment_id = experiment_id
+        self.scenario = scenario
+        self.common_global_validation = bool(common_global_validation)
         self.expert_node_id = expert_node_id
         self.expert_factor = expert_factor
         self.round_metric_logger = round_metric_logger
@@ -62,6 +89,223 @@ class ReportingFedAvg(FedAvg):
         self._best_round: int = 0
         self._best_params: Parameters | None = None
         self._latest_params: Parameters | None = None
+        self._pending_diag_rows: dict[tuple[int, str], dict[str, Any]] = {}
+
+    # Optional diagnostics
+
+    def _diagnostics_enabled(self) -> bool:
+        return bool(os.environ.get("QI_FL_DIAG_LOG_PATH"))
+
+    def _diagnostic_log_path(self) -> Path | None:
+        raw_path = os.environ.get("QI_FL_DIAG_LOG_PATH")
+        if not raw_path:
+            return None
+        path = Path(raw_path)
+        return path if path.is_absolute() else Path.cwd() / path
+
+    @staticmethod
+    def _diag_csv_value(value: Any) -> Any:
+        if isinstance(value, float) and math.isnan(value):
+            return "NaN"
+        return value
+
+    @staticmethod
+    def _arrays_norm(arrays: list[np.ndarray]) -> float:
+        return float(np.sqrt(sum(float(np.sum(np.square(np.asarray(array)))) for array in arrays)))
+
+    @staticmethod
+    def _subtract_arrays(left: list[np.ndarray], right: list[np.ndarray]) -> list[np.ndarray]:
+        return [np.asarray(a) - np.asarray(b) for a, b in zip(left, right)]
+
+    @staticmethod
+    def _weighted_average_arrays(arrays_by_client: list[list[np.ndarray]], weights: np.ndarray) -> list[np.ndarray]:
+        return [
+            sum(float(weight) * np.asarray(arrays[layer_idx]) for weight, arrays in zip(weights, arrays_by_client))
+            for layer_idx in range(len(arrays_by_client[0]))
+        ]
+
+    @staticmethod
+    def _cosine_arrays(left: list[np.ndarray], right: list[np.ndarray]) -> float:
+        numerator = 0.0
+        left_norm_sq = 0.0
+        right_norm_sq = 0.0
+        for left_array, right_array in zip(left, right):
+            left_flat = np.asarray(left_array, dtype=np.float64).ravel()
+            right_flat = np.asarray(right_array, dtype=np.float64).ravel()
+            numerator += float(np.dot(left_flat, right_flat))
+            left_norm_sq += float(np.dot(left_flat, left_flat))
+            right_norm_sq += float(np.dot(right_flat, right_flat))
+        denominator = math.sqrt(left_norm_sq) * math.sqrt(right_norm_sq)
+        if denominator <= 0.0:
+            return float("nan")
+        return float(numerator / denominator)
+
+    @staticmethod
+    def _numeric_metric(metrics: Mapping[str, Any], *keys: str) -> float:
+        for key in keys:
+            value = metrics.get(key)
+            if isinstance(value, (int, float)) and math.isfinite(float(value)):
+                return float(value)
+        return float("nan")
+
+    def _client_id_from_metrics(
+        self,
+        client_proxy: ClientProxy,
+        metrics: Mapping[str, Any],
+    ) -> str:
+        return str(metrics.get("node_id") or metrics.get("client_id") or client_proxy.cid)
+
+    def _empty_diag_row(self, server_round: int, client_id: str) -> dict[str, Any]:
+        return {
+            "experiment_id": self.experiment_id,
+            "round": int(server_round),
+            "client_id": client_id,
+            "n_samples": float("nan"),
+            "raw_weight": float("nan"),
+            "update_norm": float("nan"),
+            "cosine_similarity_to_avg_update": float("nan"),
+            "qifa_epsilon": float("nan"),
+            "effective_weight": float("nan"),
+            "local_val_macro_f1": float("nan"),
+            "global_val_macro_f1": float("nan"),
+            "local_rare_recall": float("nan"),
+            "global_rare_recall": float("nan"),
+            "global_val_loss": float("nan"),
+        }
+
+    def _cache_fit_diagnostics(
+        self,
+        server_round: int,
+        results: list[tuple[ClientProxy, FitRes]],
+        aggregated_parameters: Parameters,
+        *,
+        effective_weights: np.ndarray | None = None,
+        qifa_epsilons: np.ndarray | None = None,
+    ) -> None:
+        if not self._diagnostics_enabled() or not results:
+            return
+
+        arrays_by_client = [parameters_to_ndarrays(fit_res.parameters) for _, fit_res in results]
+        samples = np.asarray([fit_res.num_examples for _, fit_res in results], dtype=np.float64)
+        sample_sum = float(samples.sum())
+        if sample_sum <= 0.0:
+            return
+
+        raw_weights = samples / sample_sum
+        if effective_weights is None:
+            effective_weights = raw_weights
+        else:
+            effective_weights = np.asarray(effective_weights, dtype=np.float64)
+
+        raw_average = self._weighted_average_arrays(arrays_by_client, raw_weights)
+        raw_average_norm = self._arrays_norm(raw_average)
+        aggregated_arrays = parameters_to_ndarrays(aggregated_parameters)
+        previous_arrays = (
+            parameters_to_ndarrays(self._latest_params)
+            if self._latest_params is not None
+            else None
+        )
+        use_previous = previous_arrays is not None and [
+            array.shape for array in previous_arrays
+        ] == [array.shape for array in aggregated_arrays]
+
+        avg_update = (
+            self._subtract_arrays(aggregated_arrays, previous_arrays)
+            if use_previous and previous_arrays is not None
+            else None
+        )
+
+        for idx, (client_proxy, fit_res) in enumerate(results):
+            metrics = fit_res.metrics or {}
+            client_id = self._client_id_from_metrics(client_proxy, metrics)
+            client_arrays = arrays_by_client[idx]
+            if use_previous and previous_arrays is not None and avg_update is not None:
+                client_update = self._subtract_arrays(client_arrays, previous_arrays)
+                update_norm = self._arrays_norm(client_update)
+                cosine = self._cosine_arrays(client_update, avg_update)
+            else:
+                delta_to_average = self._subtract_arrays(client_arrays, raw_average)
+                update_norm = self._arrays_norm(delta_to_average)
+                cosine = self._cosine_arrays(client_arrays, raw_average)
+
+            epsilon = (
+                float(qifa_epsilons[idx])
+                if qifa_epsilons is not None
+                else self._arrays_norm(self._subtract_arrays(client_arrays, raw_average)) / (raw_average_norm + 1e-8)
+            )
+            row = self._empty_diag_row(server_round, client_id)
+            row.update(
+                {
+                    "n_samples": int(fit_res.num_examples),
+                    "raw_weight": float(raw_weights[idx]),
+                    "update_norm": float(update_norm),
+                    "cosine_similarity_to_avg_update": float(cosine),
+                    "qifa_epsilon": float(epsilon),
+                    "effective_weight": float(effective_weights[idx]),
+                    "local_val_macro_f1": self._numeric_metric(metrics, "local_val_macro_f1"),
+                    "global_val_macro_f1": self._numeric_metric(metrics, "global_val_macro_f1"),
+                    "local_rare_recall": self._numeric_metric(metrics, "local_rare_recall"),
+                    "global_rare_recall": self._numeric_metric(metrics, "global_rare_recall"),
+                    "global_val_loss": self._numeric_metric(metrics, "global_val_loss"),
+                }
+            )
+            self._pending_diag_rows[(int(server_round), client_id)] = row
+
+    def _append_diagnostic_rows(self, rows: list[dict[str, Any]]) -> None:
+        if not rows:
+            return
+        path = self._diagnostic_log_path()
+        if path is None:
+            return
+        path.parent.mkdir(parents=True, exist_ok=True)
+        write_header = not path.exists() or path.stat().st_size == 0
+        with path.open("a", newline="", encoding="utf-8") as handle:
+            writer = csv.DictWriter(handle, fieldnames=list(DIAGNOSTIC_COLUMNS))
+            if write_header:
+                writer.writeheader()
+            for row in rows:
+                writer.writerow(
+                    {
+                        key: self._diag_csv_value(row.get(key, float("nan")))
+                        for key in DIAGNOSTIC_COLUMNS
+                    }
+                )
+
+    def _flush_diagnostics_for_evaluate(
+        self,
+        server_round: int,
+        results: list[tuple[ClientProxy, EvaluateRes]],
+    ) -> None:
+        if not self._diagnostics_enabled() or not results:
+            return
+
+        rows: list[dict[str, Any]] = []
+        for client_proxy, evaluate_res in results:
+            metrics = evaluate_res.metrics or {}
+            client_id = self._client_id_from_metrics(client_proxy, metrics)
+            key = (int(server_round), client_id)
+            row = self._pending_diag_rows.pop(
+                key,
+                self._empty_diag_row(server_round, client_id),
+            )
+            if math.isnan(float(row["n_samples"])):
+                row["n_samples"] = int(evaluate_res.num_examples)
+            row["local_val_macro_f1"] = self._numeric_metric(
+                metrics,
+                "local_val_macro_f1",
+                "macro_f1",
+            )
+            row["global_val_macro_f1"] = self._numeric_metric(metrics, "global_val_macro_f1")
+            row["local_rare_recall"] = self._numeric_metric(
+                metrics,
+                "local_rare_recall",
+                "rare_class_recall",
+            )
+            row["global_rare_recall"] = self._numeric_metric(metrics, "global_rare_recall")
+            row["global_val_loss"] = self._numeric_metric(metrics, "global_val_loss")
+            rows.append(row)
+
+        self._append_diagnostic_rows(rows)
 
     # ── Multi-tier helpers ──────────────────────────────────────────────────
 
@@ -332,6 +576,25 @@ class ReportingFedAvg(FedAvg):
             updated.append((client_proxy, FitIns(parameters=sub_params, config=config)))
         return updated
 
+    def configure_evaluate(self, server_round, parameters, client_manager):
+        configured = super().configure_evaluate(server_round, parameters, client_manager)
+        if not self.common_global_validation:
+            return configured
+
+        updated: list[tuple[ClientProxy, EvaluateIns]] = []
+        for client_proxy, evaluate_ins in configured:
+            config = dict(evaluate_ins.config)
+            config["common_global_validation"] = True
+            config["scenario"] = self.scenario
+            config["server_round"] = int(server_round)
+            updated.append(
+                (
+                    client_proxy,
+                    EvaluateIns(parameters=evaluate_ins.parameters, config=config),
+                )
+            )
+        return updated
+
     def aggregate_fit(
         self,
         server_round: int,
@@ -349,6 +612,12 @@ class ReportingFedAvg(FedAvg):
                 results=adjusted_results,
                 failures=failures,
             )
+            if parameters_aggregated is not None:
+                self._cache_fit_diagnostics(
+                    server_round,
+                    adjusted_results,
+                    parameters_aggregated,
+                )
             aggregation_fn = getattr(self, "fit_metrics_aggregation_fn", None)
             if aggregation_fn is not None:
                 metrics_aggregated = aggregation_fn(
@@ -415,6 +684,11 @@ class ReportingFedAvg(FedAvg):
 
         new_global = aggregate_masked(client_updates, current_global)
         parameters_aggregated = self._state_dict_to_parameters(new_global)
+        self._cache_fit_diagnostics(
+            server_round,
+            adjusted_results,
+            parameters_aggregated,
+        )
 
         # Metrics: aggregate over real (non-inflated) num_examples
         aggregation_fn = getattr(self, "fit_metrics_aggregation_fn", None)
@@ -447,6 +721,7 @@ class ReportingFedAvg(FedAvg):
             results=results,
             failures=failures,
         )
+        self._flush_diagnostics_for_evaluate(server_round, results)
         if self.tracker is not None:
             self.tracker.record_evaluate_round(
                 server_round=server_round,

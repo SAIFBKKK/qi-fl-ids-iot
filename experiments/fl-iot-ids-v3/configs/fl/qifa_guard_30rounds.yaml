@@ -1,0 +1,35 @@
+strategy:
+  name: qifa_guard
+  num_rounds: 30
+  fraction_train: 1.0
+  fraction_evaluate: 1.0
+  min_train_nodes: 3
+  min_evaluate_nodes: 3
+  min_available_nodes: 3
+  expert_factor: 1.0
+  expert_node_id: node3
+  multitier_enabled: false
+  qifa:
+    lambda_qifa: 0.15
+    beta_loss: 1.0
+    rho_rare: 0.5
+    min_client_weight: 0.05
+    max_client_weight: 0.6
+    use_global_val_quality: true
+    use_rare_bonus: true
+    perturbation_enabled: false
+    random_seed: 42
+
+train:
+  local_epochs: 1
+  batch_size: 256
+  learning_rate: 0.0005
+  optimizer: adam
+  weight_decay: 0.0001
+  proximal_mu: 0.0
+
+evaluation:
+  centralized_eval: false
+  federated_eval: true
+  common_global_validation: true
+  best_round_monitor: macro_f1

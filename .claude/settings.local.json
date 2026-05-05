@@ -43,7 +43,10 @@
       "Bash(curl -s http://localhost:8000/metrics)",
       "Bash(curl -si http://localhost:8080/docs)",
       "Bash(git add *)",
-      "Bash(curl -s 'http://localhost:9090/api/v1/query?query=ids_node_assigned_tier_info')"
+      "Bash(curl -s 'http://localhost:9090/api/v1/query?query=ids_node_assigned_tier_info')",
+      "Bash(xargs wc *)",
+      "Bash(grep -r \"C:\\\\\\\\\\\\\\\\\" --include=\"*.py\" --exclude-dir=\".venv\")",
+      "Bash(xargs grep *)"
     ]
   }
 }

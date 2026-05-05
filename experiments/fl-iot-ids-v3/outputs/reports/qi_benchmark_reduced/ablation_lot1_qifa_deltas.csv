@@ -1,0 +1,3 @@
+scenario,comparison,delta_macro_f1,delta_accuracy,delta_fpr,delta_rare_recall,delta_rare_macro_f1,interpretation
+normal_noniid,E2 - E1,-0.002467134906848578,-0.00222095684096546,0.01910214557762248,-0.0020484995385492977,-0.006810054464186921,Macro-F1 decreases; FPR worsens (higher); rare recall decreases
+absent_local,E6 - E5,-0.01777445656660992,-0.012020414267692958,-0.0029526606236371794,0.01671818515048018,0.01966178522153242,Macro-F1 decreases; FPR improves (lower); rare recall improves

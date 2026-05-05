@@ -1,0 +1,18 @@
+{
+  "rare_class_ids": [
+    0,
+    3,
+    30,
+    31,
+    33
+  ],
+  "dominant_class_ids": [
+    16,
+    17,
+    5,
+    6,
+    7
+  ],
+  "scenario": "normal_noniid",
+  "experiment_name": "exp_bench30_normal_fedavg_28f"
+}

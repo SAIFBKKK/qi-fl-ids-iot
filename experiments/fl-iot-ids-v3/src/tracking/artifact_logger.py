@@ -24,9 +24,41 @@ FIT_METRIC_KEYS = (
     "qifa/diversity_mean",
     "qifa/perturbation_applied",
     "qifa/weight_norm_delta",
+    "local_val_macro_f1",
+    "global_val_macro_f1",
+    "local_rare_recall",
+    "global_rare_recall",
+    "global_val_loss",
+    "qifa_guard_lambda",
+    "qifa_guard_beta_loss",
+    "qifa_guard_rho_rare",
+    "qifa_guard_effective_clients",
+    "qifa_guard_diversity_mean",
+    "qifa_guard_weight_norm_delta",
+)
+
+FIT_REQUIRED_METRIC_KEYS = (
+    "train_loss_last",
+    "train_time_sec",
+    "update_size_bytes",
 )
 
 EVALUATE_METRIC_KEYS = (
+    "accuracy",
+    "macro_f1",
+    "recall_macro",
+    "benign_recall",
+    "false_positive_rate",
+    "rare_class_recall",
+    "rare_macro_f1",
+    "local_val_macro_f1",
+    "global_val_macro_f1",
+    "local_rare_recall",
+    "global_rare_recall",
+    "global_val_loss",
+)
+
+EVALUATE_REQUIRED_METRIC_KEYS = (
     "accuracy",
     "macro_f1",
     "recall_macro",
@@ -38,10 +70,8 @@ EVALUATE_METRIC_KEYS = (
 
 ROUND_REQUIRED_KEYS = (
     "distributed_loss",
-    "train_loss_last",
-    "train_time_sec",
-    "update_size_bytes",
-    *EVALUATE_METRIC_KEYS,
+    *FIT_REQUIRED_METRIC_KEYS,
+    *EVALUATE_REQUIRED_METRIC_KEYS,
 )
 
 MLFLOW_ROUND_METRIC_ALIASES = {
@@ -58,6 +88,17 @@ MLFLOW_ROUND_METRIC_ALIASES = {
     "qifa/diversity_mean": "qifa/diversity_mean",
     "qifa/perturbation_applied": "qifa/perturbation_applied",
     "qifa/weight_norm_delta": "qifa/weight_norm_delta",
+    "local_val_macro_f1": "validation/local_macro_f1",
+    "global_val_macro_f1": "validation/global_macro_f1",
+    "local_rare_recall": "validation/local_rare_recall",
+    "global_rare_recall": "validation/global_rare_recall",
+    "global_val_loss": "validation/global_loss",
+    "qifa_guard_lambda": "qifa_guard/lambda",
+    "qifa_guard_beta_loss": "qifa_guard/beta_loss",
+    "qifa_guard_rho_rare": "qifa_guard/rho_rare",
+    "qifa_guard_effective_clients": "qifa_guard/effective_clients",
+    "qifa_guard_diversity_mean": "qifa_guard/diversity_mean",
+    "qifa_guard_weight_norm_delta": "qifa_guard/weight_norm_delta",
     "accuracy": "validation/accuracy",
     "macro_f1": "validation/macro_f1",
     "rare_macro_f1": "validation/rare_macro_f1",

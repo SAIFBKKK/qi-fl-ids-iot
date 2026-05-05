@@ -21,6 +21,7 @@ from src.common.logger import get_logger
 from src.common.paths import CONFIGS_DIR
 from src.fl.aggregation_hooks import aggregate_evaluate_metrics, aggregate_fit_metrics
 from src.fl.node_profiler import NodeProfiler
+from src.fl.qifa_guard_strategy import ReportingQIFAGuard
 from src.fl.qifa_strategy import ReportingQIFA
 from src.fl.reporting_strategy import ReportingFedAvg, ReportingScaffold
 from src.tracking.artifact_logger import BaselineArtifactTracker
@@ -73,10 +74,10 @@ def build_server_components(
             config.get("strategy", {}).get("name", "fedavg"),
         )
     ).lower()
-    if strategy_name not in {"fedavg", "fedprox", "scaffold", "qifa"}:
+    if strategy_name not in {"fedavg", "fedprox", "scaffold", "qifa", "qifa_guard"}:
         raise ValueError(
             f"Unsupported FL strategy {strategy_name!r}. "
-            "Supported strategies: fedavg, fedprox, scaffold, qifa."
+            "Supported strategies: fedavg, fedprox, scaffold, qifa, qifa_guard."
         )
 
     strategy_cfg = dict(config.get("strategy", {}))
@@ -85,6 +86,8 @@ def build_server_components(
         strategy_cls = ReportingScaffold
     elif strategy_name == "qifa":
         strategy_cls = ReportingQIFA
+    elif strategy_name == "qifa_guard":
+        strategy_cls = ReportingQIFAGuard
     else:
         strategy_cls = ReportingFedAvg
     model_cfg = dict(config.get("model", {}))
@@ -110,6 +113,9 @@ def build_server_components(
     strategy_kwargs: dict[str, Any] = {
         "tracker": tracker,
         "monitor_metric": str(config.get("evaluation", {}).get("best_round_monitor", "macro_f1")),
+        "experiment_id": str(config.get("experiment", {}).get("name", "unknown")),
+        "scenario": str(config.get("scenario", {}).get("name", "normal_noniid")),
+        "common_global_validation": bool(config.get("evaluation", {}).get("common_global_validation", False)),
         "expert_node_id": str(strategy_cfg.get("expert_node_id", "node3")),
         "expert_factor": float(strategy_cfg.get("expert_factor", 1.0)),
         "fraction_fit": float(strategy_cfg.get("fraction_train", 1.0)),
@@ -126,18 +132,33 @@ def build_server_components(
         "supernet_config": model_config,
         "multitier_enabled": bool(strategy_cfg.get("multitier_enabled", False)),
     }
-    if strategy_name == "qifa":
+    if strategy_name in {"qifa", "qifa_guard"}:
         qifa_cfg = dict(strategy_cfg.get("qifa", {}))
-        strategy_kwargs.update(
-            {
-                "lambda_qifa": float(qifa_cfg.get("lambda_qifa", 0.0)),
-                "perturbation_enabled": bool(qifa_cfg.get("perturbation_enabled", False)),
-                "delta_perturbation": float(qifa_cfg.get("delta_perturbation", 0.0)),
-                "sigma_noise": float(qifa_cfg.get("sigma_noise", 0.0)),
-                "perturbation_frequency": int(qifa_cfg.get("perturbation_frequency", 1)),
-                "random_seed": int(qifa_cfg.get("random_seed", config.get("project", {}).get("seed", 42))),
-            }
-        )
+        if strategy_name == "qifa_guard":
+            strategy_kwargs.update(
+                {
+                    "lambda_qifa": float(qifa_cfg.get("lambda_qifa", 0.0)),
+                    "beta_loss": float(qifa_cfg.get("beta_loss", 0.0)),
+                    "rho_rare": float(qifa_cfg.get("rho_rare", 0.0)),
+                    "min_client_weight": qifa_cfg.get("min_client_weight"),
+                    "max_client_weight": qifa_cfg.get("max_client_weight"),
+                    "use_global_val_quality": bool(qifa_cfg.get("use_global_val_quality", True)),
+                    "use_rare_bonus": bool(qifa_cfg.get("use_rare_bonus", True)),
+                    "perturbation_enabled": bool(qifa_cfg.get("perturbation_enabled", False)),
+                    "random_seed": int(qifa_cfg.get("random_seed", config.get("project", {}).get("seed", 42))),
+                }
+            )
+        else:
+            strategy_kwargs.update(
+                {
+                    "lambda_qifa": float(qifa_cfg.get("lambda_qifa", 0.0)),
+                    "perturbation_enabled": bool(qifa_cfg.get("perturbation_enabled", False)),
+                    "delta_perturbation": float(qifa_cfg.get("delta_perturbation", 0.0)),
+                    "sigma_noise": float(qifa_cfg.get("sigma_noise", 0.0)),
+                    "perturbation_frequency": int(qifa_cfg.get("perturbation_frequency", 1)),
+                    "random_seed": int(qifa_cfg.get("random_seed", config.get("project", {}).get("seed", 42))),
+                }
+            )
     strategy = strategy_cls(**strategy_kwargs)
     if tracker is not None:
         tracker.strategy = strategy

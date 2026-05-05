@@ -1,0 +1,27 @@
+{
+  "completed": [
+    "E1",
+    "E2",
+    "E3",
+    "E4",
+    "E5",
+    "E6",
+    "E7",
+    "E8"
+  ],
+  "failures": [],
+  "data_sources": {
+    "normal_noniid": "concatenated:C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\fl-iot-ids-v3\\data\\processed\\normal_noniid\\node1\\val_preprocessed.npz|C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\fl-iot-ids-v3\\data\\processed\\normal_noniid\\node2\\val_preprocessed.npz|C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\fl-iot-ids-v3\\data\\processed\\normal_noniid\\node3\\val_preprocessed.npz",
+    "absent_local": "concatenated:C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\fl-iot-ids-v3\\data\\processed\\absent_local\\node1\\val_preprocessed.npz|C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\fl-iot-ids-v3\\data\\processed\\absent_local\\node2\\val_preprocessed.npz|C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\fl-iot-ids-v3\\data\\processed\\absent_local\\node3\\val_preprocessed.npz"
+  },
+  "checkpoints": {
+    "E1": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\fl-iot-ids-v3\\outputs\\reports\\baselines\\exp_bench30_normal_fedavg_28f\\best_checkpoint.pth",
+    "E2": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\fl-iot-ids-v3\\outputs\\reports\\baselines\\exp_bench30_normal_qifa_28f\\best_checkpoint.pth",
+    "E3": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\fl-iot-ids-v3\\outputs\\reports\\baselines\\exp_bench30_normal_fedavg_qga15\\best_checkpoint.pth",
+    "E4": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\fl-iot-ids-v3\\outputs\\reports\\baselines\\exp_bench30_normal_qifa_qga15\\best_checkpoint.pth",
+    "E5": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\fl-iot-ids-v3\\outputs\\reports\\baselines\\exp_bench30_absent_fedavg_28f\\best_checkpoint.pth",
+    "E6": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\fl-iot-ids-v3\\outputs\\reports\\baselines\\exp_bench30_absent_qifa_28f\\best_checkpoint.pth",
+    "E7": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\fl-iot-ids-v3\\outputs\\reports\\baselines\\exp_bench30_absent_fedavg_qga15\\best_checkpoint.pth",
+    "E8": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\fl-iot-ids-v3\\outputs\\reports\\baselines\\exp_bench30_absent_qifa_qga15\\best_checkpoint.pth"
+  }
+}

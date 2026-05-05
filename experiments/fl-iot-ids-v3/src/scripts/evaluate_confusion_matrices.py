@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import csv
 import json
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
@@ -60,6 +61,36 @@ def _build_model(config: dict[str, Any], input_dim: int) -> MLPClassifier:
     )
 
 
+def load_trusted_local_checkpoint(checkpoint_path: Path) -> Any:
+    try:
+        with torch.serialization.safe_globals([torch.torch_version.TorchVersion]):
+            return torch.load(checkpoint_path, map_location="cpu", weights_only=True)
+    except Exception:
+        # Fallback is allowed here only because these checkpoints are local artifacts
+        # produced by this repository's trusted training pipeline.
+        return torch.load(checkpoint_path, map_location="cpu", weights_only=False)
+
+
+def extract_state_dict(checkpoint: Any) -> dict[str, torch.Tensor]:
+    if isinstance(checkpoint, torch.nn.Module):
+        return checkpoint.state_dict()
+    if not isinstance(checkpoint, Mapping):
+        raise TypeError(f"Unsupported checkpoint type: {type(checkpoint).__name__}")
+
+    for key in ("model_state_dict", "state_dict", "model"):
+        if key in checkpoint:
+            candidate = checkpoint[key]
+            if isinstance(candidate, torch.nn.Module):
+                return candidate.state_dict()
+            if isinstance(candidate, Mapping):
+                return dict(candidate)
+            raise TypeError(f"Checkpoint key '{key}' has unsupported type: {type(candidate).__name__}")
+
+    if all(isinstance(value, torch.Tensor) for value in checkpoint.values()):
+        return dict(checkpoint)
+    raise KeyError("Checkpoint does not contain a supported model state dict")
+
+
 def _load_checkpoint_model(experiment_name: str, scenario: str) -> tuple[MLPClassifier, dict[str, Any], list[int] | None]:
     run_dir = BASELINE_DIR / experiment_name
     resolved = _load_json(run_dir / "resolved_config.json")
@@ -72,8 +103,9 @@ def _load_checkpoint_model(experiment_name: str, scenario: str) -> tuple[MLPClas
     checkpoint_path = run_dir / "best_checkpoint.pth"
     if not checkpoint_path.exists():
         raise FileNotFoundError(checkpoint_path)
-    checkpoint = torch.load(checkpoint_path, map_location="cpu")
-    model.load_state_dict(checkpoint["state_dict"], strict=True)
+    checkpoint = load_trusted_local_checkpoint(checkpoint_path)
+    state_dict = extract_state_dict(checkpoint)
+    model.load_state_dict(state_dict, strict=True)
     model.eval()
     return model, config, indices
 

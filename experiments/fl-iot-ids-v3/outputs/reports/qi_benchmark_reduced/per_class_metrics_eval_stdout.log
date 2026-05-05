@@ -1,0 +1,9 @@
+Evaluating E1: exp_bench30_normal_fedavg_28f
+Evaluating E2: exp_bench30_normal_qifa_28f
+Evaluating E3: exp_bench30_normal_fedavg_qga15
+Evaluating E4: exp_bench30_normal_qifa_qga15
+Evaluating E5: exp_bench30_absent_fedavg_28f
+Evaluating E6: exp_bench30_absent_qifa_28f
+Evaluating E7: exp_bench30_absent_fedavg_qga15
+Evaluating E8: exp_bench30_absent_qifa_qga15
+Per-class metrics written to C:\Users\saifb\dev\qi-fl-ids-iot\experiments\fl-iot-ids-v3\outputs\reports\qi_benchmark_reduced\per_class_metrics

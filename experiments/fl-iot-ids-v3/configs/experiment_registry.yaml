@@ -260,3 +260,57 @@ experiments:
     data_scenario: normal_noniid
     imbalance_strategy: class_weights
     description: "Controle homogene FedAvg avec MLPClassifier et local_epochs=2."
+
+  - name: exp_diag_normal_qifa_guard_5r
+    architecture: flat_34
+    fl_strategy: qifa_guard
+    fl_config: qifa_guard_30rounds
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    rounds_override: 5
+    description: "Diagnostic only: QIFA-Guard on normal_noniid for 5 rounds."
+
+  - name: exp_diag_absent_qifa_guard_5r
+    architecture: flat_34
+    fl_strategy: qifa_guard
+    fl_config: qifa_guard_30rounds
+    data_scenario: absent_local
+    imbalance_strategy: class_weights
+    rounds_override: 5
+    description: "Diagnostic only: QIFA-Guard on absent_local for 5 rounds."
+
+  - name: exp_diag_normal_fedprox_5r
+    architecture: flat_34
+    fl_strategy: fedprox
+    fl_config: fedprox
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    rounds_override: 5
+    description: "Diagnostic only: FedProx on normal_noniid for 5 rounds."
+
+  - name: exp_diag_absent_fedprox_5r
+    architecture: flat_34
+    fl_strategy: fedprox
+    fl_config: fedprox
+    data_scenario: absent_local
+    imbalance_strategy: class_weights
+    rounds_override: 5
+    description: "Diagnostic only: FedProx on absent_local for 5 rounds."
+
+  - name: exp_diag_normal_scaffold_5r
+    architecture: flat_34
+    fl_strategy: scaffold
+    fl_config: scaffold
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    rounds_override: 5
+    description: "Diagnostic only: SCAFFOLD on normal_noniid for 5 rounds."
+
+  - name: exp_diag_absent_scaffold_5r
+    architecture: flat_34
+    fl_strategy: scaffold
+    fl_config: scaffold
+    data_scenario: absent_local
+    imbalance_strategy: class_weights
+    rounds_override: 5
+    description: "Diagnostic only: SCAFFOLD on absent_local for 5 rounds."

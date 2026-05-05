@@ -70,6 +70,36 @@ def _subtract_arrays(left: NDArrayList, right: NDArrayList) -> NDArrayList:
     return [np.asarray(a) - np.asarray(b) for a, b in zip(left, right)]
 
 
+def compute_qifa_client_weights(
+    updates: list[QIFAClientUpdate],
+    *,
+    config: QIFAConfig,
+) -> tuple[NDArrayList, np.ndarray, np.ndarray, np.ndarray]:
+    """Return FedAvg arrays, raw weights, QIFA epsilons, and effective weights."""
+
+    _validate_updates(updates)
+    examples = np.asarray([update.num_examples for update in updates], dtype=np.float64)
+    raw_weights = examples / float(examples.sum())
+    fedavg = _weighted_average(updates, raw_weights)
+
+    avg_norm = _update_norm(fedavg)
+    epsilons: list[float] = []
+    for update in updates:
+        delta = _subtract_arrays(update.parameters, fedavg)
+        epsilons.append(_update_norm(delta) / (avg_norm + 1e-8))
+
+    effective_weights = raw_weights * (
+        1.0 + float(config.lambda_qifa) * np.asarray(epsilons, dtype=np.float64)
+    )
+    effective_weight_sum = float(effective_weights.sum())
+    if not np.isfinite(effective_weight_sum) or effective_weight_sum <= 0.0:
+        effective_weights = raw_weights
+    else:
+        effective_weights = effective_weights / effective_weight_sum
+
+    return fedavg, raw_weights, np.asarray(epsilons, dtype=np.float64), effective_weights
+
+
 def aggregate_qifa_ndarrays(
     updates: list[QIFAClientUpdate],
     *,
@@ -85,23 +115,10 @@ def aggregate_qifa_ndarrays(
 
     _validate_updates(updates)
 
-    examples = np.asarray([update.num_examples for update in updates], dtype=np.float64)
-    weights = examples / float(examples.sum())
-    fedavg = _weighted_average(updates, weights)
-
-    avg_norm = _update_norm(fedavg)
-    epsilons: list[float] = []
-    for update in updates:
-        delta = _subtract_arrays(update.parameters, fedavg)
-        epsilons.append(_update_norm(delta) / (avg_norm + 1e-8))
-
-    effective_weights = weights * (1.0 + float(config.lambda_qifa) * np.asarray(epsilons))
-    effective_weight_sum = float(effective_weights.sum())
-    if not np.isfinite(effective_weight_sum) or effective_weight_sum <= 0.0:
-        effective_weights = weights
-    else:
-        effective_weights = effective_weights / effective_weight_sum
-
+    fedavg, _, epsilons, effective_weights = compute_qifa_client_weights(
+        updates,
+        config=config,
+    )
     aggregated = _weighted_average(updates, effective_weights)
     pre_noise_weight_norm_delta = _update_norm(_subtract_arrays(aggregated, fedavg))
 
@@ -204,12 +221,25 @@ class ReportingQIFA(ReportingFedAvg):
             return None, {}
 
         adjusted_results = self._apply_expert_weighting(results)
+        updates = self._fit_results_to_qifa_updates(adjusted_results)
         aggregated_arrays, qifa_metrics = aggregate_qifa_ndarrays(
-            self._fit_results_to_qifa_updates(adjusted_results),
+            updates,
             config=self.qifa_config,
             server_round=server_round,
         )
         parameters_aggregated = ndarrays_to_parameters(aggregated_arrays)
+        if self._diagnostics_enabled():
+            _, _, epsilons, effective_weights = compute_qifa_client_weights(
+                updates,
+                config=self.qifa_config,
+            )
+            self._cache_fit_diagnostics(
+                server_round,
+                adjusted_results,
+                parameters_aggregated,
+                effective_weights=effective_weights,
+                qifa_epsilons=epsilons,
+            )
 
         aggregation_fn = getattr(self, "fit_metrics_aggregation_fn", None)
         if aggregation_fn is not None:

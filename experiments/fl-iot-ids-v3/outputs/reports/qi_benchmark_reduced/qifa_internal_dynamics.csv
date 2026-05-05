@@ -1,0 +1,5 @@
+experiment_id,scenario,features,diversity_round_1,diversity_round_30,average_diversity,trend,weight_norm_delta_final,perturbation_status,qifa_lambda,status
+E2,normal_noniid,28,0.6767157004287897,0.22825732615424885,0.26024790927704994,decreasing,0.02492892725539885,disabled_or_not_applied,0.15,success
+E4,normal_noniid,QGA-15,0.6700154790542944,0.2390587361906773,0.26769585308167126,decreasing,0.014882954310141451,disabled_or_not_applied,0.15,success
+E6,absent_local,28,0.7833892071003805,0.29334982777104557,0.332733850835413,decreasing,0.011727995395065978,disabled_or_not_applied,0.15,success
+E8,absent_local,QGA-15,0.7525598337571612,0.3250287728781737,0.3551623209731451,decreasing,0.033034979257299514,disabled_or_not_applied,0.15,success
