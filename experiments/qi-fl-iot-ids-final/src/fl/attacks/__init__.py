@@ -1,0 +1,1 @@
+"""Attacks package placeholder."""

@@ -1,0 +1,5 @@
+# Placeholder P1/P2.
+# Contiendra les chemins relatifs vers le dataset source valide,
+# la liste canonique des 28 features, la colonne label_id,
+# les chemins de sortie des validations et les contraintes anti-duplication.
+# Aucun parametre executable n'est defini en P0.
