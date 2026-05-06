@@ -89,14 +89,14 @@ Le mapping `label_mapping.json` contient :
 | --- | --- | --- | --- | --- |
 | P1 - Data validation | `validate_data_pipeline.py`, `preflight.py`, `test_preprocessor.py` | `experiments/fl-iot-ids-v3/src/scripts/validate_data_pipeline.py`; `experiments/fl-iot-ids-v3/src/common/preflight.py`; `experiments/fl-iot-ids-v3/tests/test_preprocessor.py` | à adapter | Reprendre les controles de schema, classes, artefacts et invariants, puis les appliquer au parquet final `9 401 350 x 29`. |
 | P2 - Preprocessing train-only | `generate_scenarios.py`, `fit_global_scaler.py`, `preprocess_node_data.py`, `preprocessor.py` | `experiments/fl-iot-ids-v3/src/scripts/generate_scenarios.py`; `experiments/fl-iot-ids-v3/src/scripts/fit_global_scaler.py`; `experiments/fl-iot-ids-v3/src/scripts/preprocess_node_data.py`; `experiments/fl-iot-ids-v3/src/data/preprocessor.py` | à adapter | Extraire uniquement le split + scaler train-only, retirer les scenarios v3 historiques et rebrancher les chemins finaux. |
-| P3 - Dirichlet split | `prepare_partitions.py`, `generate_scenarios.py` | `experiments/fl-iot-ids-v3/src/scripts/prepare_partitions.py`; `experiments/fl-iot-ids-v3/src/scripts/generate_scenarios.py` | à étendre | Generaliser vers `alpha in {0.1, 0.5, 5.0}` et `K in {3, 4, 5}` avec manifests anti-leakage. |
+| P3 - Dirichlet α∈{0.1,0.5,5.0} × K∈{3,4,5} | `prepare_partitions.py`, `generate_scenarios.py` | `experiments/fl-iot-ids-v3/src/scripts/prepare_partitions.py`; `experiments/fl-iot-ids-v3/src/scripts/generate_scenarios.py` | à étendre | Generaliser les splits Dirichlet sur toute la grille alpha/K avec manifests anti-leakage. |
 | P4 - Centralized L1 baseline | `network.py`, `train.py`, `evaluate.py`, scripts baseline historiques | `experiments/fl-iot-ids-v3/src/model/network.py`; `experiments/fl-iot-ids-v3/src/model/train.py`; `experiments/fl-iot-ids-v3/src/model/evaluate.py`; `experiments/baseline-CIC_IOT_2023/src/training/train_hierarchical_level1_binary_v4.py` | à adapter | Reprendre MLP + boucle train/eval, reconstruire une baseline binaire L1 propre sur le dataset final. |
 | P5 - FL L1 baseline | `reporting_strategy.py`, `server_app.py`, `client_app.py`, `strategy.py`, `aggregation_hooks.py`, configs FedAvg | `experiments/fl-iot-ids-v3/src/fl/reporting_strategy.py`; `experiments/fl-iot-ids-v3/src/fl/server_app.py`; `experiments/fl-iot-ids-v3/src/fl/client_app.py`; `experiments/fl-iot-ids-v3/src/fl/strategy.py`; `experiments/fl-iot-ids-v3/src/fl/aggregation_hooks.py`; `experiments/fl-iot-ids-v3/configs/fl/fedavg_30rounds.yaml` | à adapter | Garder le squelette Flower/FedAvg et remplacer les scenarios par les splits Dirichlet finaux. |
 | P6 - Hierarchical L2/L3 experimental | Scripts hierarchical historiques | `experiments/baseline-CIC_IOT_2023/src/training/build_level2_family_dataset.py`; `experiments/baseline-CIC_IOT_2023/src/training/build_level3_subtype_datasets.py`; `experiments/baseline-CIC_IOT_2023/src/training/train_hierarchical_level2_family_v4.py`; `experiments/baseline-CIC_IOT_2023/src/training/train_hierarchical_level3_submodel_v4.py` | à adapter | Les sources L2/L3 ne sont pas dans `fl-iot-ids-v3/src`; les reprendre comme reference experimentale seulement. |
 | P7 - Multi-tier HeteroFL | `supernet.py`, `node_profiler.py`, `multitier.yaml`, `tier_profiles.yaml`, model factory | `experiments/fl-iot-ids-v3/src/model/supernet.py`; `experiments/fl-iot-ids-v3/src/fl/node_profiler.py`; `experiments/fl-iot-ids-v3/configs/fl/multitier.yaml`; `experiments/fl-iot-ids-v3/configs/nodes/tier_profiles.yaml`; `experiments/fl-iot-ids-v3/scripts/run_model_factory.py` | à adapter | Reutiliser supernet et profils, revalider shared weights weak/medium/powerful dans la structure finale. |
 | P8 - QGA feature selection | `qi_feature_selector.py`, `feature_selection.py`, `run_qi_feature_selection.py`, config QGA | `experiments/fl-iot-ids-v3/src/qi/qi_feature_selector.py`; `experiments/fl-iot-ids-v3/src/qi/feature_selection.py`; `experiments/fl-iot-ids-v3/src/scripts/run_qi_feature_selection.py`; `experiments/fl-iot-ids-v3/configs/qi/qga_feature_selection.yaml` | à adapter | Reprendre la logique QGA/QI FS, verrouiller l'usage sur tier powerful et documenter les masques. |
 | P9 - QIFA aggregation | `qifa_strategy.py`, `qifa_guard_strategy.py`, configs QIFA | `experiments/fl-iot-ids-v3/src/fl/qifa_strategy.py`; `experiments/fl-iot-ids-v3/src/fl/qifa_guard_strategy.py`; `experiments/fl-iot-ids-v3/configs/fl/qifa_formula_30rounds.yaml`; `experiments/fl-iot-ids-v3/configs/fl/qifa_guard_30rounds.yaml` | à adapter | Conserver les formules testees, rebrancher sur les metrics finales et garder le cas `lambda_qifa=0` comme controle. |
-| P10 - Robustness and attacks | Tests de strategies et aggregation | `experiments/fl-iot-ids-v3/tests/test_qifa_guard_strategy.py`; `experiments/fl-iot-ids-v3/tests/test_masked_aggregation.py`; `experiments/fl-iot-ids-v3/src/fl/masked_aggregation.py` | à étendre | Ajouter les attaques et scenarios robustesse dans le nouveau dossier, a partir des invariants d'agregation deja testes. |
+| P10 - Robustness and poisoning attacks | Tests de strategies et aggregation | `experiments/fl-iot-ids-v3/tests/test_qifa_guard_strategy.py`; `experiments/fl-iot-ids-v3/tests/test_masked_aggregation.py`; `experiments/fl-iot-ids-v3/src/fl/masked_aggregation.py` | à étendre | Ajouter les attaques de poisoning et scenarios robustesse dans le nouveau dossier, a partir des invariants d'agregation deja testes. |
 | P11 - FedTN/MPS compression | Aucun module FedTN/MPS trouve | `experiments/fl-iot-ids-v3/src/model/supernet.py` comme point d'ancrage seulement | non applicable | Implementer plus tard un module dedie dans `src/fl/compression/`; PowerSGD n'est pas retenu. |
 | P12 - Ablation and evaluation reports | Scripts evaluation QI | `experiments/fl-iot-ids-v3/src/scripts/build_ablation_table.py`; `experiments/fl-iot-ids-v3/src/scripts/build_qi_benchmark_reduced_report.py`; `experiments/fl-iot-ids-v3/src/scripts/evaluate_confusion_matrices.py`; `experiments/fl-iot-ids-v3/src/scripts/evaluate_per_class_metrics.py` | à adapter | Reutiliser les generateurs de tableaux, confusion matrices et analyses per-class avec chemins finaux. |
 | P13 - Dashboard L1 final | Dashboard et APIs services | `services/dashboard/main.py`; `services/dashboard/api/metrics.py`; `services/dashboard/api/nodes.py`; `services/dashboard/api/models.py`; `services/dashboard/api/qi.py`; `services/dashboard/static/app.js`; `services/dashboard/templates/tab_iot.html`; `services/dashboard/templates/tab_fl.html` | à adapter | Garder la structure UI/API, retirer les metriques QI attendues/fictives et brancher uniquement les mesures L1 finales. |
@@ -109,7 +109,7 @@ Le mapping `label_mapping.json` contient :
 | Fichier | Role | Decision | Justification |
 | --- | --- | --- | --- |
 | `experiments/fl-iot-ids-v3/src/common/__init__.py` | Package marker. | ignorer | Placeholder sans logique. |
-| `experiments/fl-iot-ids-v3/src/common/config.py` | Chargement YAML, merge profond et bundles d'experiment. | adapter | Utile, mais les chemins/configs doivent pointer vers `qi-fl-iot-ids-final`. |
+| `experiments/fl-iot-ids-v3/src/common/config.py` | Chargement YAML, merge profond et bundles d'experiment. | adapter | Utile, mais les chemins/configs doivent pointer vers `qi-fl-ids-iot-final`. |
 | `experiments/fl-iot-ids-v3/src/common/logger.py` | Creation de logger applicatif. | reutiliser | Peu couple au domaine, reutilisable avec noms de logger finaux. |
 | `experiments/fl-iot-ids-v3/src/common/paths.py` | Resolution des chemins raw/processed et creation de dossiers runtime. | adapter | Chemins v3 a remplacer, risque de sorties hors dossier final. |
 | `experiments/fl-iot-ids-v3/src/common/preflight.py` | Validation des artefacts requis avant run. | adapter | Bon modele pour P1/P5, mais la liste d'artefacts finaux change. |
@@ -276,13 +276,12 @@ Fichiers notables dans `outputs/reports/qi_benchmark_reduced/` :
 
 - Dataset : `balancing_v3_fixed300k_balanced.parquet` (`9 401 350 x 29`).
 - 28 features + 1 `label_id`.
-- Dirichlet alpha dans `{0.1, 0.5, 5.0}`.
-- K clients dans `{3, 4, 5}`.
+- Dirichlet α∈{0.1, 0.5, 5.0} × K∈{3, 4, 5}.
 - L1 binaire = production et dashboard final.
 - L2/L3 experimentaux = rapport seulement.
 - Multi-tier weak/medium/powerful avec shared weights (HeteroFL).
 - QI : QGA + QIFA + FedTN/MPS sur tier powerful uniquement.
-- QIARM : reporte en perspective.
+- QIARM : future work uniquement.
 - PowerSGD : non retenu, FedTN/MPS direct.
 
 ## Section 5 - Risques identifies
@@ -346,6 +345,8 @@ git status --short
 
 ## Section 6 - Prochaine etape
 
-P0 se termine ici. Le dossier `experiments/qi-fl-iot-ids-final/` contient uniquement le skeleton, les placeholders et ce rapport d'audit.
+Tags de suivi : utiliser uniquement le préfixe `final-v`, par exemple `final-v0.1.1-skeleton-cleanup` si un tag P0.1 est créé après revue.
+
+P0 se termine ici. Le dossier `experiments/qi-fl-ids-iot-final/` contient uniquement le skeleton, les placeholders et ce rapport d'audit.
 
 P1 (Data Validation) doit etre validee explicitement par l'utilisateur avant toute implementation. Aucune logique de validation, preprocessing, training, FL, QI, dashboard ou Docker final n'a ete codee pendant P0.
