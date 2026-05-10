@@ -1,0 +1,12 @@
+{
+  "architecture": "28 -> 128 -> 64 -> 34",
+  "best_val_f1_macro": 0.8110840586599894,
+  "enabled": true,
+  "name": "TorchMLP Kaggle 34-class baseline",
+  "not_used_for_p4_l1": true,
+  "p4_difference": "P4 trains a new binary normal-vs-attack model with output_dim=2 on the L1 preprocessed dataset.",
+  "role": "Historical multiclass L3/34-class reference only",
+  "source_note": "Historical centralized 34-class Kaggle baseline; kept as L3/multiclass reference, not used as P4 L1 baseline.",
+  "test_accuracy": 0.8418915574566215,
+  "test_f1_macro": 0.8109757023708111
+}

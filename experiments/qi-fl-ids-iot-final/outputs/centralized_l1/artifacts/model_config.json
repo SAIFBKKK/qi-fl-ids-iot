@@ -1,0 +1,45 @@
+{
+  "architecture": "28 -> 128 -> 64 -> 2",
+  "best_checkpoint_selection": {
+    "best_epoch": 30,
+    "metric": "val_macro_f1",
+    "split": "validation",
+    "test_used_for_model_selection": false
+  },
+  "data_usage": {
+    "centralized_l1_p2_only": true,
+    "dirichlet_partitions_used": false,
+    "test_usage": "final_holdout_only_after_model_and_threshold_selection"
+  },
+  "model": {
+    "activation": "relu",
+    "dropout": 0.2,
+    "hidden_layers": [
+      128,
+      64
+    ],
+    "input_dim": 28,
+    "name": "CentralizedL1MLP",
+    "output_dim": 2
+  },
+  "num_parameters": 12098,
+  "threshold_selection": {
+    "primary_threshold": 0.5,
+    "split": "validation",
+    "test_used_for_threshold": false
+  },
+  "training": {
+    "batch_size": 512,
+    "best_metric": "val_macro_f1",
+    "device": "auto",
+    "early_stopping_patience": 5,
+    "learning_rate": 0.001,
+    "loss": "cross_entropy",
+    "max_epochs": 30,
+    "optimizer": "adam",
+    "scheduler": "reduce_on_plateau",
+    "seed": 42,
+    "use_class_weights": false,
+    "weight_decay": 0.0001
+  }
+}

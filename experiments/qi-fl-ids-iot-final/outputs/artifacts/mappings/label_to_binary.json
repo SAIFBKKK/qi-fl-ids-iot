@@ -1,0 +1,172 @@
+{
+  "Backdoor_Malware": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 0
+  },
+  "BenignTraffic": {
+    "binary_label": 0,
+    "binary_name": "normal",
+    "label_id": 1
+  },
+  "BrowserHijacking": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 2
+  },
+  "CommandInjection": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 3
+  },
+  "DDoS-ACK_Fragmentation": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 4
+  },
+  "DDoS-HTTP_Flood": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 5
+  },
+  "DDoS-ICMP_Flood": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 6
+  },
+  "DDoS-ICMP_Fragmentation": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 7
+  },
+  "DDoS-PSHACK_Flood": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 8
+  },
+  "DDoS-RSTFINFlood": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 9
+  },
+  "DDoS-SYN_Flood": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 10
+  },
+  "DDoS-SlowLoris": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 11
+  },
+  "DDoS-SynonymousIP_Flood": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 12
+  },
+  "DDoS-TCP_Flood": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 13
+  },
+  "DDoS-UDP_Flood": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 14
+  },
+  "DDoS-UDP_Fragmentation": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 15
+  },
+  "DNS_Spoofing": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 16
+  },
+  "DictionaryBruteForce": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 17
+  },
+  "DoS-HTTP_Flood": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 18
+  },
+  "DoS-SYN_Flood": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 19
+  },
+  "DoS-TCP_Flood": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 20
+  },
+  "DoS-UDP_Flood": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 21
+  },
+  "MITM-ArpSpoofing": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 22
+  },
+  "Mirai-greeth_flood": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 23
+  },
+  "Mirai-greip_flood": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 24
+  },
+  "Mirai-udpplain": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 25
+  },
+  "Recon-HostDiscovery": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 26
+  },
+  "Recon-OSScan": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 27
+  },
+  "Recon-PingSweep": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 28
+  },
+  "Recon-PortScan": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 29
+  },
+  "SqlInjection": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 30
+  },
+  "Uploading_Attack": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 31
+  },
+  "VulnerabilityScan": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 32
+  },
+  "XSS": {
+    "binary_label": 1,
+    "binary_name": "attack",
+    "label_id": 33
+  }
+}
