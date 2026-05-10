@@ -1,0 +1,57 @@
+project_root: "."
+final_experiment_dir: "experiments/qi-fl-ids-iot-final"
+
+inputs:
+  l1:
+    train_npz: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/train_scaled.npz"
+    val_npz: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/val_scaled.npz"
+    test_npz: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/test_scaled.npz"
+    manifest: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/manifest.json"
+    sampling_report: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/sampling_report.json"
+  l2:
+    train_npz: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/train_scaled.npz"
+    val_npz: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/val_scaled.npz"
+    test_npz: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/test_scaled.npz"
+    manifest: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/manifest.json"
+    distribution_report: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/distribution_report.json"
+    family_mapping: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/family_mapping.json"
+
+dirichlet:
+  alphas: [0.1, 0.5, 5.0]
+  clients: [3, 4, 5]
+  seed: 42
+  min_train_samples_per_client: 1000
+  max_resampling_attempts: 10
+
+partitioning:
+  partition_train: true
+  partition_val: true
+  partition_test: false
+  keep_global_test_holdout: true
+
+storage:
+  l1_mode: "materialized_npz"
+  l2_mode: "index_only"
+  save_client_distribution_csv: true
+
+labels:
+  l1_target_key: "y_binary"
+  l2_target_key: "y_family"
+  row_id_key: "row_id"
+  l1_class_names:
+    0: "normal"
+    1: "attack"
+  l2_family_names:
+    0: "BruteForce"
+    1: "DDoS"
+    2: "DoS"
+    3: "Malware"
+    4: "Mirai"
+    5: "Recon"
+    6: "Spoofing"
+    7: "Web-based"
+
+outputs:
+  partitions_dir: "experiments/qi-fl-ids-iot-final/outputs/partitions"
+  reports_dir: "experiments/qi-fl-ids-iot-final/outputs/reports"
+  figures_dir: "experiments/qi-fl-ids-iot-final/outputs/figures/dirichlet_split"

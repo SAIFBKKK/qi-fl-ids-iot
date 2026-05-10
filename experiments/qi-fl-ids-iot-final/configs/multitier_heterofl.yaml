@@ -1,0 +1,86 @@
+project_root: "."
+final_experiment_dir: "experiments/qi-fl-ids-iot-final"
+
+inputs:
+  l1_partitions_root: "experiments/qi-fl-ids-iot-final/outputs/partitions/l1_binary"
+  l2_partitions_root: "experiments/qi-fl-ids-iot-final/outputs/partitions/l2_family"
+  l1_test_npz: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/test_scaled.npz"
+  l2_train_npz: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/train_scaled.npz"
+  l2_val_npz: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/val_scaled.npz"
+  l2_test_npz: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/test_scaled.npz"
+  l2_family_mapping: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/family_mapping.json"
+  p4_l1_metrics: "experiments/qi-fl-ids-iot-final/outputs/centralized_l1/artifacts/metrics_test.json"
+  p5_grid_summary: "experiments/qi-fl-ids-iot-final/outputs/reports/p5_grid_summary.csv"
+  p6_hierarchical_summary: "experiments/qi-fl-ids-iot-final/outputs/reports/hierarchical_flower_summary.json"
+
+tasks:
+  run_l1: true
+  run_l2: true
+  run_l3: false
+
+scenario:
+  default_alpha: 0.5
+  default_k: 3
+  alphas: [0.1, 0.5, 5.0]
+  clients: [3, 4, 5]
+  rounds: 30
+
+tiers:
+  weak:
+    hidden_layers: [64]
+  medium:
+    hidden_layers: [128, 64]
+  powerful:
+    hidden_layers: [256, 128]
+
+tier_mapping:
+  k3:
+    client_1: weak
+    client_2: medium
+    client_3: powerful
+  k4:
+    client_1: weak
+    client_2: weak
+    client_3: medium
+    client_4: powerful
+  k5:
+    client_1: weak
+    client_2: weak
+    client_3: medium
+    client_4: medium
+    client_5: powerful
+
+supernet:
+  hidden_layers: [256, 128]
+  slicing_strategy: "prefix_neurons"
+  aggregation: "slice_weighted_average"
+
+training:
+  seed: 42
+  batch_size: 512
+  local_epochs: 1
+  optimizer: "adam"
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  loss: "cross_entropy"
+  device: "auto"
+
+execution:
+  mode: "verify"
+  smoke_rounds: 1
+  smoke_max_samples_per_client: 1000
+  full_rounds: 30
+  run_grid: false
+
+monitoring:
+  track_round_metrics: true
+  track_client_metrics: true
+  track_tier_metrics: true
+  track_bandwidth_by_tier: true
+  track_model_size_by_tier: true
+  track_slices_updated: true
+
+outputs:
+  run_dir: "experiments/qi-fl-ids-iot-final/outputs/multitier_heterofl"
+  reports_dir: "experiments/qi-fl-ids-iot-final/outputs/reports"
+  figures_dir: "experiments/qi-fl-ids-iot-final/outputs/figures/multitier"

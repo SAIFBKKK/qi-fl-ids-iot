@@ -1,5 +1,32 @@
-# Placeholder P1/P2.
-# Contiendra les chemins relatifs vers le dataset source valide,
-# la liste canonique des 28 features, la colonne label_id,
-# les chemins de sortie des validations et les contraintes anti-duplication.
-# Aucun parametre executable n'est defini en P0.
+project_root: "."
+final_experiment_dir: "experiments/qi-fl-ids-iot-final"
+
+dataset:
+  parquet_path: "data/balancing_v3_fixed300k_outputs/balancing_v3_fixed300k_balanced.parquet"
+  csv_path: "data/balancing_v3_fixed300k_outputs/balancing_v3_fixed300k_balanced.csv"
+  label_mapping_path: "data/balancing_v3_fixed300k_outputs/label_mapping.json"
+  source_priority: "parquet"
+
+schema:
+  expected_rows: 9401350
+  expected_columns: 29
+  label_column: "label_id"
+  expected_num_features: 28
+  expected_num_classes: 34
+  benign_label_name: "BenignTraffic"
+  benign_label_id: 1
+
+validation:
+  check_missing_values: true
+  check_infinite_values: true
+  check_numeric_features: true
+  check_label_mapping: true
+  check_class_distribution: true
+  check_binary_distribution: true
+  check_family_distribution: true
+
+outputs:
+  docs_dir: "experiments/qi-fl-ids-iot-final/docs"
+  reports_dir: "experiments/qi-fl-ids-iot-final/outputs/reports"
+  figures_dir: "experiments/qi-fl-ids-iot-final/outputs/figures/data_validation"
+  artifacts_dir: "experiments/qi-fl-ids-iot-final/outputs/artifacts"

@@ -165,3 +165,19 @@ desktop.ini
 !experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights/
 !experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights/**
 tmp/
+
+# PFE generated heavy artifacts
+experiments/qi-fl-ids-iot-final/**/__pycache__/
+experiments/qi-fl-ids-iot-final/**/.pytest_cache/
+experiments/qi-fl-ids-iot-final/**/checkpoints/*.pth
+experiments/qi-fl-ids-iot-final/**/runs/*/checkpoints/*.pth
+experiments/qi-fl-ids-iot-final/**/logs/*.log
+experiments/qi-fl-ids-iot-final/outputs/preprocessed/**/*.npz
+experiments/qi-fl-ids-iot-final/outputs/partitions/
+experiments/qi-fl-ids-iot-final/outputs/fl_l1_fedavg/
+experiments/qi-fl-ids-iot-final/outputs/fl_l1_flower/
+experiments/qi-fl-ids-iot-final/outputs/hierarchical_flower/
+experiments/qi-fl-ids-iot-final/outputs/multitier/
+experiments/qi-fl-ids-iot-final/outputs/qga_feature_selection/calibration/
+experiments/qi-fl-ids-iot-final/outputs/qga_l2_feature_selection/calibration/
+experiments/qi-fl-ids-iot-final/outputs/qifa_l1/

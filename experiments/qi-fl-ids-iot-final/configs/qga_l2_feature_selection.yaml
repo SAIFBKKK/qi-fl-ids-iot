@@ -1,0 +1,118 @@
+project_root: "."
+final_experiment_dir: "experiments/qi-fl-ids-iot-final"
+
+inputs:
+  l2_train_npz: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/train_scaled.npz"
+  l2_val_npz: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/val_scaled.npz"
+  l2_test_npz: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/test_scaled.npz"
+  l2_family_mapping: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/family_mapping.json"
+  l2_partitions_root: "experiments/qi-fl-ids-iot-final/outputs/partitions/l2_family"
+  feature_names: "experiments/qi-fl-ids-iot-final/outputs/artifacts/features/feature_names.json"
+  p6_hierarchical_summary: "experiments/qi-fl-ids-iot-final/outputs/reports/hierarchical_flower_summary.json"
+
+scenario:
+  default_alpha: 0.5
+  default_k: 3
+  rounds: 30
+
+qga_l2:
+  seed: 42
+  population_size: 20
+  generations: 20
+  calibration_generations: 10
+  mutation_rate: 0.05
+  max_samples_for_fitness: 100000
+  stratified_sampling: true
+
+qga_l2_profiles:
+  balanced_l2:
+    macro_f1_weight: 0.60
+    macro_recall_weight: 0.25
+    macro_fpr_penalty: 0.10
+    feature_penalty: 0.05
+    min_features: 10
+    max_features: 24
+  conservative_l2:
+    macro_f1_weight: 0.70
+    macro_recall_weight: 0.20
+    macro_fpr_penalty: 0.05
+    feature_penalty: 0.05
+    min_features: 14
+    max_features: 24
+  fpr_aware_l2:
+    macro_f1_weight: 0.55
+    macro_recall_weight: 0.25
+    macro_fpr_penalty: 0.15
+    feature_penalty: 0.05
+    min_features: 12
+    max_features: 24
+  compression_l2:
+    macro_f1_weight: 0.55
+    macro_recall_weight: 0.20
+    macro_fpr_penalty: 0.05
+    feature_penalty: 0.20
+    min_features: 8
+    max_features: 18
+
+calibration:
+  seeds: [42, 123, 2026]
+  short_validation_rounds: 5
+  short_validation_scenarios:
+    - {alpha: 0.1, clients: 3}
+    - {alpha: 0.5, clients: 3}
+    - {alpha: 5.0, clients: 3}
+  engineering_score:
+    mean_macro_f1: 0.45
+    mean_macro_recall: 0.25
+    mean_macro_fpr: -0.15
+    std_macro_f1: -0.10
+    feature_ratio: -0.05
+
+flower:
+  strategy: "FedAvg"
+  address: "127.0.0.1:8084"
+  fraction_fit: 1.0
+  fraction_evaluate: 1.0
+  min_fit_clients: 3
+  min_evaluate_clients: 3
+  min_available_clients: 3
+
+model:
+  name: "QGAL2FedAvgFlowerMLP"
+  input_dim: "auto"
+  hidden_layers: [128, 64]
+  output_dim: 8
+  dropout: 0.2
+  activation: "relu"
+
+models:
+  l2:
+    name: "QGAL2FedAvgFlowerMLP"
+    input_dim: "auto"
+    hidden_layers: [128, 64]
+    output_dim: 8
+    dropout: 0.2
+    activation: "relu"
+
+training:
+  seed: 42
+  batch_size: 512
+  local_epochs: 1
+  optimizer: "adam"
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  loss: "cross_entropy"
+  use_class_weights: true
+  device: "auto"
+
+execution:
+  smoke_rounds: 1
+  smoke_max_samples_per_client: 1000
+  full_rounds: 30
+  skip_full_by_default: true
+
+outputs:
+  qga_l2_dir: "experiments/qi-fl-ids-iot-final/outputs/qga_l2_feature_selection"
+  qga_l2_flower_dir: "experiments/qi-fl-ids-iot-final/outputs/qga_l2_fedavg_flower"
+  figures_dir: "experiments/qi-fl-ids-iot-final/outputs/figures/qga_l2"
+  reports_dir: "experiments/qi-fl-ids-iot-final/outputs/reports"

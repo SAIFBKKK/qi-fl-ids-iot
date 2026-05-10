@@ -1,0 +1,115 @@
+project_root: "."
+final_experiment_dir: "experiments/qi-fl-ids-iot-final"
+
+inputs:
+  train_npz: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/train_scaled.npz"
+  val_npz: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/val_scaled.npz"
+  test_npz: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/test_scaled.npz"
+  l1_partitions_root: "experiments/qi-fl-ids-iot-final/outputs/partitions/l1_binary"
+  feature_names: "experiments/qi-fl-ids-iot-final/outputs/artifacts/features/feature_names.json"
+  p5_grid_summary: "experiments/qi-fl-ids-iot-final/outputs/reports/p5_grid_summary.csv"
+  p7_multitier_summary: "experiments/qi-fl-ids-iot-final/outputs/reports/p7_multitier_summary.csv"
+
+qga:
+  seed: 42
+  population_size: 20
+  generations: 20
+  mutation_rate: 0.05
+  min_features: 8
+  max_features: 24
+  fitness_eval_mode: "fast_mlp"
+  max_samples_for_fitness: 100000
+  weights:
+    alpha_macro_f1: 0.6
+    beta_attack_recall: 0.3
+    lambda_feature_penalty: 0.1
+  objective_name: "balanced_ids_edge_fitness"
+
+qga_calibration:
+  seeds: [42, 123, 2026]
+  population_size: 20
+  generations: 10
+  mutation_rate: 0.05
+  max_samples_for_fitness: 100000
+  short_validation_rounds: 5
+  primary_scenarios:
+    - {alpha: 0.1, clients: 3}
+    - {alpha: 0.5, clients: 3}
+    - {alpha: 5.0, clients: 3}
+  best_mask_extra_scenarios:
+    - {alpha: 0.5, clients: 4}
+    - {alpha: 0.5, clients: 5}
+  engineering_score:
+    mean_macro_f1: 0.40
+    mean_attack_recall: 0.25
+    mean_fpr: -0.20
+    std_macro_f1: -0.10
+    feature_ratio: -0.05
+
+qga_profiles:
+  balanced_current:
+    alpha_macro_f1: 0.6
+    beta_attack_recall: 0.3
+    lambda_feature_penalty: 0.1
+    fpr_penalty: 0.0
+    min_features: 8
+    max_features: 24
+
+  conservative:
+    alpha_macro_f1: 0.7
+    beta_attack_recall: 0.2
+    lambda_feature_penalty: 0.1
+    fpr_penalty: 0.0
+    min_features: 12
+    max_features: 24
+
+  fpr_aware:
+    alpha_macro_f1: 0.55
+    beta_attack_recall: 0.25
+    lambda_feature_penalty: 0.10
+    fpr_penalty: 0.10
+    min_features: 10
+    max_features: 24
+
+  compression:
+    alpha_macro_f1: 0.5
+    beta_attack_recall: 0.2
+    lambda_feature_penalty: 0.3
+    fpr_penalty: 0.0
+    min_features: 8
+    max_features: 18
+
+smoke:
+  population_size: 5
+  generations: 3
+  max_samples_for_fitness: 5000
+
+fedavg_eval:
+  enabled: true
+  alpha: 0.5
+  clients: 3
+  rounds: 30
+
+heterofl_eval:
+  enabled: true
+  alpha: 0.5
+  clients: 3
+  rounds: 30
+
+outputs:
+  qga_dir: "experiments/qi-fl-ids-iot-final/outputs/qga_feature_selection"
+  qga_fedavg_dir: "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_l1"
+  qga_fedavg_flower_dir: "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1"
+  qga_heterofl_dir: "experiments/qi-fl-ids-iot-final/outputs/qga_heterofl_l1"
+  figures_dir: "experiments/qi-fl-ids-iot-final/outputs/figures/qga"
+  reports_dir: "experiments/qi-fl-ids-iot-final/outputs/reports"
+
+flower:
+  address: "127.0.0.1:8083"
+  strategy: "FedAvg"
+  fraction_fit: 1.0
+  fraction_evaluate: 1.0
+  min_fit_clients: 3
+  min_evaluate_clients: 3
+  min_available_clients: 3
+  true_runtime_required: true
