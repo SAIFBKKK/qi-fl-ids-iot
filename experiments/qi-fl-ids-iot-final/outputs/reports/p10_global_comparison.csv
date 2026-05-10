@@ -1,0 +1,10 @@
+phase,method,task,features_count,macro_f1,weighted_f1,attack_recall,fpr,accuracy,model_size_bytes,bandwidth_total_bytes,runtime,true_flower_runtime,best_use_case,accepted,source
+P4,P4 Centralized L1,L1 binary,28,0.9611,0.9612,0.9526,0.0293,0.9612,48392,0,centralized,False,Upper bound — no federation,True,outputs/centralized_l1/artifacts/metrics_test.json
+P5,P5 FedAvg L1,L1 binary,28,0.9407,0.9409,0.9474,0.0663,0.9409,48392,8710560,in_process,False,Reference FL baseline,True,outputs/reports/p5_grid_summary.csv
+P8,P8 FedAvg + QGA L1,L1 binary,12,0.948,,0.955,0.0594,0.9481,40200,7236000,manual,True,Production L1 — best macro_f1 + 57% fewer features,True,outputs/reports/p8_qga_ablation_summary.csv
+P9,P9 QIFA L1,L1 binary,28,0.9454,0.9455,0.9436,0.0524,0.9455,48392,8710560,true_flower,True,Low FPR — quantum-inspired aggregation,True,outputs/reports/p9_qifa_ablation_summary.csv
+P9,P9 QIFA + QGA L1,L1 binary,12,0.9471,0.9472,0.9592,0.0658,0.9473,40200,7236000,true_flower,True,Best attack recall + QGA compression,True,outputs/reports/p9_qifa_ablation_summary.csv
+P6,P6 L2 Flower baseline,L2 family,28,0.6355,0.7077,0.7294,0.0439,0.6841,49952,8991360,true_flower,True,L2 family classification baseline,True,outputs/reports/p8b_qga_l2_ablation_summary.csv
+P8-b,P8-b L2 FedAvg + QGA Flower,L2 family,19,0.6466,0.7762,0.7172,0.0332,0.7555,45344,8161920,true_flower,True,L2 family + QGA feature compression,True,outputs/reports/p8b_qga_l2_ablation_summary.csv
+P7,P7 Multi-tier L1 best,L1 binary,28,0.949,,,,0.949,,13118880,true_flower,True,Hierarchical multi-tier (experimental),True,outputs/reports/p7_multitier_summary.csv
+P7,P7 Multi-tier L2 best,L2 family,28,0.7085,,,,0.8194,,13491840,true_flower,True,Hierarchical L2 multi-tier (experimental),True,outputs/reports/p7_multitier_summary.csv

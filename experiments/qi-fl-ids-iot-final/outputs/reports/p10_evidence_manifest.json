@@ -1,0 +1,45 @@
+{
+  "accepted": true,
+  "phase": "P10",
+  "method_count": 9,
+  "methods": [
+    "P4 Centralized L1",
+    "P5 FedAvg L1",
+    "P8 FedAvg + QGA L1",
+    "P9 QIFA L1",
+    "P9 QIFA + QGA L1",
+    "P6 L2 Flower baseline",
+    "P8-b L2 FedAvg + QGA Flower",
+    "P7 Multi-tier L1 best",
+    "P7 Multi-tier L2 best"
+  ],
+  "l1_methods": [
+    "P4 Centralized L1",
+    "P5 FedAvg L1",
+    "P8 FedAvg + QGA L1",
+    "P9 QIFA L1",
+    "P9 QIFA + QGA L1",
+    "P7 Multi-tier L1 best"
+  ],
+  "l2_methods": [
+    "P6 L2 Flower baseline",
+    "P8-b L2 FedAvg + QGA Flower",
+    "P7 Multi-tier L2 best"
+  ],
+  "figures_generated": [
+    "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\figures\\p10\\p10_l1_macro_f1_comparison.png",
+    "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\figures\\p10\\p10_l1_attack_recall_fpr_tradeoff.png",
+    "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\figures\\p10\\p10_l1_bandwidth_comparison.png",
+    "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\figures\\p10\\p10_l1_features_vs_macro_f1.png",
+    "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\figures\\p10\\p10_l2_p6_vs_p8b.png",
+    "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\figures\\p10\\p10_method_ranking_table.png",
+    "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\figures\\p10\\p10_final_architecture_summary.png"
+  ],
+  "reports_generated": [
+    "outputs/reports/p10_global_comparison.csv",
+    "outputs/reports/p10_global_comparison.json",
+    "outputs/reports/p10_global_comparison_table.md"
+  ],
+  "warnings": [],
+  "errors": []
+}
