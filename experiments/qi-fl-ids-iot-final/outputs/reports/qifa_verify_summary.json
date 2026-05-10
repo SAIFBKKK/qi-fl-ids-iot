@@ -1,0 +1,70 @@
+{
+  "accepted": true,
+  "architecture": "legacy Flower runtime with real server/client processes",
+  "artifacts_expected": [
+    "runs/{run_id}/artifacts/run_summary.json",
+    "runs/{run_id}/artifacts/run_manifest.json",
+    "runs/{run_id}/artifacts/model_config.json",
+    "runs/{run_id}/artifacts/metrics_rounds.csv",
+    "runs/{run_id}/artifacts/metrics_clients.csv",
+    "runs/{run_id}/artifacts/aggregation_weights.csv",
+    "runs/{run_id}/artifacts/qifa_scores.csv",
+    "runs/{run_id}/artifacts/qifa_probabilities.csv",
+    "runs/{run_id}/artifacts/qifa_amplitudes.csv",
+    "runs/{run_id}/artifacts/qifa_entropy.csv",
+    "runs/{run_id}/artifacts/bandwidth_rounds.csv",
+    "runs/{run_id}/artifacts/metrics_val.json",
+    "runs/{run_id}/artifacts/metrics_test.json",
+    "runs/{run_id}/artifacts/threshold.json",
+    "runs/{run_id}/artifacts/threshold_sweep.csv",
+    "runs/{run_id}/artifacts/classification_report.json",
+    "runs/{run_id}/artifacts/confusion_matrix.csv",
+    "runs/{run_id}/artifacts/comparison_with_p5.json",
+    "runs/{run_id}/checkpoints/best_global_model.pth",
+    "runs/{run_id}/checkpoints/last_global_model.pth",
+    "runs/{run_id}/logs/flower_server.log",
+    "runs/{run_id}/logs/flower_clients.log",
+    "runs/{run_id}/logs/run_console.log"
+  ],
+  "checks": {
+    "client_count_matches_minimums": true,
+    "flower_version_detected": true,
+    "global_test_exists": true,
+    "p3_partitions_root_exists": true,
+    "p5_grid_summary_exists": true,
+    "p8_ablation_summary_exists": true,
+    "qga_final_mask_ready": true,
+    "true_runtime_required": true
+  },
+  "criteria": {
+    "qga_mask_optional": true,
+    "qifa_weights_logged": true,
+    "test_sent_to_clients_false": true,
+    "true_flower_runtime": true
+  },
+  "errors": [],
+  "figures_expected": [
+    "qifa_weights_by_round.png",
+    "qifa_scores_by_client.png",
+    "qifa_probabilities_by_round.png",
+    "qifa_vs_fedavg_macro_f1.png",
+    "qifa_vs_fedavg_fpr.png",
+    "qifa_convergence_loss.png",
+    "qifa_client_contribution_heatmap.png",
+    "qifa_alpha_robustness_heatmap.png",
+    "qifa_gamma_sensitivity.png",
+    "p9_ablation_summary.png"
+  ],
+  "flower_version": "1.29.0",
+  "global_test_holdout": {
+    "path": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\preprocessed\\l1_binary\\test_scaled.npz",
+    "test_sent_to_clients": false
+  },
+  "mode": "verify",
+  "scenario": {
+    "alpha": 0.5,
+    "clients": 3,
+    "rounds": 30
+  },
+  "warnings": []
+}

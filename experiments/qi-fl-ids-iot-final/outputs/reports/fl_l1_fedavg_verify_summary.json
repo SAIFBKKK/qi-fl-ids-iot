@@ -1,0 +1,116 @@
+{
+  "accepted": true,
+  "checks": {
+    "bandwidth_tracking_ready": true,
+    "config_loads": true,
+    "default_scenario_loads": true,
+    "fedavg_aggregation_ready": true,
+    "full_mode_does_not_use_smoke_sampling": true,
+    "full_uses_all_client_samples": true,
+    "global_test_holdout_exists": true,
+    "global_test_not_partitioned": true,
+    "logging_configured": true,
+    "model_architecture_matches_p4": true,
+    "p3_l1_partitions_exist": true,
+    "p4_metrics_exist": true,
+    "p4_model_config_exist": true,
+    "p4_threshold_exist": true,
+    "verify_runs_without_training": true
+  },
+  "dataset_level": "l1_binary",
+  "full_training_launched": false,
+  "global_test_holdout": {
+    "partitioned_by_p5": false,
+    "path": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/test_scaled.npz",
+    "usage": "final global evaluation only after validation threshold selection"
+  },
+  "grid_launched": false,
+  "mode": "verify",
+  "p4_comparison_ready": true,
+  "runtime_logging": {
+    "flower_like_logs": true,
+    "run_console_log": "outputs/fl_l1_fedavg/alpha_{alpha}/k{k}/logs/run_console.log",
+    "verbose_clients": false,
+    "verbose_rounds": true
+  },
+  "sample_policy": {
+    "full_mode_does_not_use_smoke_sampling": true,
+    "full_uses_all_client_samples": true,
+    "smoke_may_use_max_samples_per_client": true
+  },
+  "scenario_checks": {
+    "default_clients": [
+      "client_1",
+      "client_2",
+      "client_3"
+    ],
+    "default_scenario_dir": "experiments/qi-fl-ids-iot-final/outputs/partitions/l1_binary/alpha_0.5/k3",
+    "expected_scenarios": [
+      {
+        "alpha": 0.1,
+        "client_count": 3,
+        "num_clients": 3,
+        "ok": true,
+        "test_partitioned": false
+      },
+      {
+        "alpha": 0.1,
+        "client_count": 4,
+        "num_clients": 4,
+        "ok": true,
+        "test_partitioned": false
+      },
+      {
+        "alpha": 0.1,
+        "client_count": 5,
+        "num_clients": 5,
+        "ok": true,
+        "test_partitioned": false
+      },
+      {
+        "alpha": 0.5,
+        "client_count": 3,
+        "num_clients": 3,
+        "ok": true,
+        "test_partitioned": false
+      },
+      {
+        "alpha": 0.5,
+        "client_count": 4,
+        "num_clients": 4,
+        "ok": true,
+        "test_partitioned": false
+      },
+      {
+        "alpha": 0.5,
+        "client_count": 5,
+        "num_clients": 5,
+        "ok": true,
+        "test_partitioned": false
+      },
+      {
+        "alpha": 5.0,
+        "client_count": 3,
+        "num_clients": 3,
+        "ok": true,
+        "test_partitioned": false
+      },
+      {
+        "alpha": 5.0,
+        "client_count": 4,
+        "num_clients": 4,
+        "ok": true,
+        "test_partitioned": false
+      },
+      {
+        "alpha": 5.0,
+        "client_count": 5,
+        "num_clients": 5,
+        "ok": true,
+        "test_partitioned": false
+      }
+    ]
+  },
+  "strategy": "FedAvg",
+  "warnings": []
+}

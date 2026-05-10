@@ -1,0 +1,3 @@
+accepted,accuracy,bandwidth_reduction_ratio,bandwidth_total_bytes,feature_reduction_ratio,features_count,gap_macro_f1_vs_p6,macro_f1,macro_fpr,macro_precision,macro_recall,method,model_size_bytes,source,true_flower_runtime,weighted_f1
+True,0.6841468381282211,,8991360,,28,,0.6355288381246096,0.04394011161971505,0.671992061496633,0.7294272787434922,P6 L2 Flower baseline,49952,C:\Users\saifb\dev\qi-fl-ids-iot\experiments\qi-fl-ids-iot-final\outputs\hierarchical_flower\l2_family\alpha_0.5\k3\latest_run_summary.json,True,0.7076571003455178
+True,0.7555178566719699,0.09224855861627157,8161920,0.3214285714285714,19,0.011028510031281469,0.646557348155891,0.03316218834949124,0.666992881923026,0.7172291523344254,P8-b L2 FedAvg + QGA Flower,45344,,True,0.7762249172562404

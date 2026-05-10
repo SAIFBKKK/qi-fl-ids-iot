@@ -1,0 +1,225 @@
+{
+  "accepted": true,
+  "criteria": {
+    "benign_label_id": true,
+    "binary_distribution_generated": true,
+    "class_distribution_generated": true,
+    "classes_count_34": true,
+    "dataset_label_ids_known": true,
+    "family_distribution_generated": true,
+    "features_count_28": true,
+    "infinite_values_computed": true,
+    "label_excluded_from_features": true,
+    "label_id_present": true,
+    "label_mapping_found": true,
+    "missing_values_computed": true,
+    "numeric_features": true,
+    "parquet_found": true,
+    "shape_matches": true
+  },
+  "dataset": {
+    "columns": 29,
+    "csv_path": "data/balancing_v3_fixed300k_outputs/balancing_v3_fixed300k_balanced.csv",
+    "csv_size_bytes": 2396801931,
+    "label_mapping_path": "data/balancing_v3_fixed300k_outputs/label_mapping.json",
+    "parquet_path": "data/balancing_v3_fixed300k_outputs/balancing_v3_fixed300k_balanced.parquet",
+    "parquet_size_bytes": 975147066,
+    "row_groups": 9,
+    "rows": 9401350,
+    "source_priority": "parquet"
+  },
+  "distributions": {
+    "binary": {
+      "attack": {
+        "binary_label": 1,
+        "count": 9101350,
+        "ratio": 0.9680896892467571
+      },
+      "normal": {
+        "binary_label": 0,
+        "count": 300000,
+        "ratio": 0.03191031075324288
+      }
+    },
+    "bottom_10_classes": [
+      {
+        "count": 62600,
+        "label_id": 31,
+        "label_name": "Uploading_Attack",
+        "ratio": 0.006658618177176682
+      },
+      {
+        "count": 113100,
+        "label_id": 28,
+        "label_name": "Recon-PingSweep",
+        "ratio": 0.012030187153972569
+      },
+      {
+        "count": 150000,
+        "label_id": 0,
+        "label_name": "Backdoor_Malware",
+        "ratio": 0.01595515537662144
+      },
+      {
+        "count": 150000,
+        "label_id": 33,
+        "label_name": "XSS",
+        "ratio": 0.01595515537662144
+      },
+      {
+        "count": 262250,
+        "label_id": 30,
+        "label_name": "SqlInjection",
+        "ratio": 0.027894929983459823
+      },
+      {
+        "count": 270450,
+        "label_id": 3,
+        "label_name": "CommandInjection",
+        "ratio": 0.02876714514404846
+      },
+      {
+        "count": 292950,
+        "label_id": 2,
+        "label_name": "BrowserHijacking",
+        "ratio": 0.03116041845054168
+      },
+      {
+        "count": 300000,
+        "label_id": 1,
+        "label_name": "BenignTraffic",
+        "ratio": 0.03191031075324288
+      },
+      {
+        "count": 300000,
+        "label_id": 4,
+        "label_name": "DDoS-ACK_Fragmentation",
+        "ratio": 0.03191031075324288
+      },
+      {
+        "count": 300000,
+        "label_id": 5,
+        "label_name": "DDoS-HTTP_Flood",
+        "ratio": 0.03191031075324288
+      }
+    ],
+    "family": {
+      "Benign": {
+        "count": 300000,
+        "ratio": 0.03191031075324288
+      },
+      "BruteForce": {
+        "count": 300000,
+        "ratio": 0.03191031075324288
+      },
+      "DDoS": {
+        "count": 3600000,
+        "ratio": 0.38292372903891464
+      },
+      "DoS": {
+        "count": 1200000,
+        "ratio": 0.12764124301297153
+      },
+      "Malware": {
+        "count": 150000,
+        "ratio": 0.01595515537662144
+      },
+      "Mirai": {
+        "count": 900000,
+        "ratio": 0.09573093225972866
+      },
+      "Recon": {
+        "count": 1313100,
+        "ratio": 0.1396714301669441
+      },
+      "Spoofing": {
+        "count": 600000,
+        "ratio": 0.06382062150648576
+      },
+      "Web-based": {
+        "count": 1038250,
+        "ratio": 0.11043626713184808
+      }
+    },
+    "imbalance_ratio": 4.792332268370607,
+    "top_10_classes": [
+      {
+        "count": 300000,
+        "label_id": 1,
+        "label_name": "BenignTraffic",
+        "ratio": 0.03191031075324288
+      },
+      {
+        "count": 300000,
+        "label_id": 4,
+        "label_name": "DDoS-ACK_Fragmentation",
+        "ratio": 0.03191031075324288
+      },
+      {
+        "count": 300000,
+        "label_id": 5,
+        "label_name": "DDoS-HTTP_Flood",
+        "ratio": 0.03191031075324288
+      },
+      {
+        "count": 300000,
+        "label_id": 6,
+        "label_name": "DDoS-ICMP_Flood",
+        "ratio": 0.03191031075324288
+      },
+      {
+        "count": 300000,
+        "label_id": 7,
+        "label_name": "DDoS-ICMP_Fragmentation",
+        "ratio": 0.03191031075324288
+      },
+      {
+        "count": 300000,
+        "label_id": 8,
+        "label_name": "DDoS-PSHACK_Flood",
+        "ratio": 0.03191031075324288
+      },
+      {
+        "count": 300000,
+        "label_id": 9,
+        "label_name": "DDoS-RSTFINFlood",
+        "ratio": 0.03191031075324288
+      },
+      {
+        "count": 300000,
+        "label_id": 10,
+        "label_name": "DDoS-SYN_Flood",
+        "ratio": 0.03191031075324288
+      },
+      {
+        "count": 300000,
+        "label_id": 11,
+        "label_name": "DDoS-SlowLoris",
+        "ratio": 0.03191031075324288
+      },
+      {
+        "count": 300000,
+        "label_id": 12,
+        "label_name": "DDoS-SynonymousIP_Flood",
+        "ratio": 0.03191031075324288
+      }
+    ]
+  },
+  "errors": [],
+  "label_mapping": {
+    "benign_label_id": 1,
+    "benign_label_name": "BenignTraffic",
+    "unknown_label_ids": []
+  },
+  "quality": {
+    "total_infinite_values": 0,
+    "total_missing_values": 0
+  },
+  "schema": {
+    "label_column": "label_id",
+    "num_classes": 34,
+    "num_families": 9,
+    "num_features": 28
+  },
+  "warnings": []
+}

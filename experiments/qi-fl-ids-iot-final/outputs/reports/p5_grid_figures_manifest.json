@@ -1,0 +1,17 @@
+{
+  "complete_grid": true,
+  "figures": [
+    "experiments/qi-fl-ids-iot-final/outputs/figures/fl_l1_grid/heatmap_macro_f1_alpha_k.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/fl_l1_grid/heatmap_attack_recall_alpha_k.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/fl_l1_grid/heatmap_fpr_alpha_k.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/fl_l1_grid/barplot_bandwidth_total_by_scenario.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/fl_l1_grid/macro_f1_by_round_grouped_by_alpha.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/fl_l1_grid/fpr_by_round_grouped_by_alpha.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/fl_l1_grid/p4_vs_all_p5_scenarios.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/fl_l1_grid/scenario_ranking_table.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/fl_l1_grid/heatmap_gap_macro_f1_vs_p4.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/fl_l1_grid/heatmap_bandwidth_alpha_k.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/fl_l1_grid/best_round_alpha_k.png"
+  ],
+  "scenario_count": 9
+}

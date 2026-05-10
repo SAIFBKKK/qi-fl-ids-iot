@@ -1,0 +1,142 @@
+[
+  {
+    "feature": "flow_duration",
+    "selected_count": 12,
+    "selection_frequency": 1.0
+  },
+  {
+    "feature": "Header_Length",
+    "selected_count": 2,
+    "selection_frequency": 0.16666666666666666
+  },
+  {
+    "feature": "Protocol Type",
+    "selected_count": 6,
+    "selection_frequency": 0.5
+  },
+  {
+    "feature": "Duration",
+    "selected_count": 3,
+    "selection_frequency": 0.25
+  },
+  {
+    "feature": "Rate",
+    "selected_count": 6,
+    "selection_frequency": 0.5
+  },
+  {
+    "feature": "fin_flag_number",
+    "selected_count": 1,
+    "selection_frequency": 0.08333333333333333
+  },
+  {
+    "feature": "syn_flag_number",
+    "selected_count": 4,
+    "selection_frequency": 0.3333333333333333
+  },
+  {
+    "feature": "rst_flag_number",
+    "selected_count": 6,
+    "selection_frequency": 0.5
+  },
+  {
+    "feature": "psh_flag_number",
+    "selected_count": 4,
+    "selection_frequency": 0.3333333333333333
+  },
+  {
+    "feature": "ack_flag_number",
+    "selected_count": 2,
+    "selection_frequency": 0.16666666666666666
+  },
+  {
+    "feature": "ack_count",
+    "selected_count": 0,
+    "selection_frequency": 0.0
+  },
+  {
+    "feature": "syn_count",
+    "selected_count": 3,
+    "selection_frequency": 0.25
+  },
+  {
+    "feature": "fin_count",
+    "selected_count": 2,
+    "selection_frequency": 0.16666666666666666
+  },
+  {
+    "feature": "urg_count",
+    "selected_count": 8,
+    "selection_frequency": 0.6666666666666666
+  },
+  {
+    "feature": "rst_count",
+    "selected_count": 11,
+    "selection_frequency": 0.9166666666666666
+  },
+  {
+    "feature": "HTTP",
+    "selected_count": 7,
+    "selection_frequency": 0.5833333333333334
+  },
+  {
+    "feature": "HTTPS",
+    "selected_count": 2,
+    "selection_frequency": 0.16666666666666666
+  },
+  {
+    "feature": "DNS",
+    "selected_count": 3,
+    "selection_frequency": 0.25
+  },
+  {
+    "feature": "SSH",
+    "selected_count": 4,
+    "selection_frequency": 0.3333333333333333
+  },
+  {
+    "feature": "TCP",
+    "selected_count": 3,
+    "selection_frequency": 0.25
+  },
+  {
+    "feature": "UDP",
+    "selected_count": 3,
+    "selection_frequency": 0.25
+  },
+  {
+    "feature": "ARP",
+    "selected_count": 3,
+    "selection_frequency": 0.25
+  },
+  {
+    "feature": "ICMP",
+    "selected_count": 6,
+    "selection_frequency": 0.5
+  },
+  {
+    "feature": "Tot sum",
+    "selected_count": 2,
+    "selection_frequency": 0.16666666666666666
+  },
+  {
+    "feature": "Min",
+    "selected_count": 2,
+    "selection_frequency": 0.16666666666666666
+  },
+  {
+    "feature": "Std",
+    "selected_count": 5,
+    "selection_frequency": 0.4166666666666667
+  },
+  {
+    "feature": "IAT",
+    "selected_count": 6,
+    "selection_frequency": 0.5
+  },
+  {
+    "feature": "Number",
+    "selected_count": 5,
+    "selection_frequency": 0.4166666666666667
+  }
+]

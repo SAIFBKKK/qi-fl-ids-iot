@@ -1,0 +1,59 @@
+{
+  "accepted": true,
+  "architecture": "QGA theta-vector feature selection + fast L1 MLP fitness",
+  "artifacts_expected": [
+    "selected_features.json",
+    "feature_mask.json",
+    "feature_ranking.csv",
+    "qga_history.csv",
+    "fitness_best.json",
+    "fitness_weights.json",
+    "validation_metrics_best_mask.json",
+    "run_summary.json"
+  ],
+  "checks": {
+    "alpha_0_5_k3_partitions_exist": true,
+    "client_1_train_exists": true,
+    "client_1_val_exists": true,
+    "client_2_train_exists": true,
+    "client_2_val_exists": true,
+    "client_3_train_exists": true,
+    "client_3_val_exists": true,
+    "feature_count_is_28": true,
+    "feature_names_exists": true,
+    "l1_partitions_root_exists": true,
+    "p5_grid_summary_exists": true,
+    "p7_multitier_summary_exists": true,
+    "test_npz_holdout_reference_exists": true,
+    "train_npz_exists": true,
+    "val_npz_exists": true
+  },
+  "criteria": {
+    "fedavg_adapter_configured": true,
+    "fedtn_not_used": true,
+    "heterofl_adapter_configured": true,
+    "qga_mask_bounds_configured": true,
+    "qifa_not_used": true,
+    "test_not_used_for_selection": true
+  },
+  "errors": [],
+  "figures_expected": [
+    "qga_fitness_evolution.png",
+    "qga_num_features_evolution.png",
+    "qga_selected_features_barplot.png",
+    "qga_feature_mask.png",
+    "qga_feature_importance_ranking.png"
+  ],
+  "global_test_holdout": {
+    "path": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/test_scaled.npz",
+    "used_for_selection": false
+  },
+  "mode": "verify",
+  "phase": "P8",
+  "scenario": {
+    "alpha": 0.5,
+    "clients": 3,
+    "task": "l1_binary"
+  },
+  "warnings": []
+}

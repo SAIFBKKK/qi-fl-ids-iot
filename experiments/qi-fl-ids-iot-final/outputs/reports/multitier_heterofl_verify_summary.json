@@ -1,0 +1,171 @@
+{
+  "accepted": true,
+  "artifacts_expected": [
+    "runs/{run_id}/checkpoints/best_global_supernet.pth",
+    "runs/{run_id}/checkpoints/last_global_supernet.pth",
+    "runs/{run_id}/artifacts/tier_mapping.json",
+    "runs/{run_id}/artifacts/tier_model_configs.json",
+    "runs/{run_id}/artifacts/model_config.json",
+    "runs/{run_id}/artifacts/metrics_rounds.csv",
+    "runs/{run_id}/artifacts/metrics_clients.csv",
+    "runs/{run_id}/artifacts/metrics_tiers.csv",
+    "runs/{run_id}/artifacts/bandwidth_by_tier.csv",
+    "runs/{run_id}/artifacts/slices_updated.csv",
+    "runs/{run_id}/artifacts/metrics_val.json",
+    "runs/{run_id}/artifacts/metrics_test.json",
+    "runs/{run_id}/artifacts/confusion_matrix.csv",
+    "runs/{run_id}/artifacts/classification_report.json",
+    "runs/{run_id}/artifacts/comparison_with_p4_p5_p6.json",
+    "runs/{run_id}/artifacts/run_manifest.json",
+    "runs/{run_id}/artifacts/run_summary.json",
+    "runs/{run_id}/logs/run_console.log",
+    "latest_run.json",
+    "latest_run_summary.json"
+  ],
+  "checks": {
+    "config_loads": true,
+    "l1_output_dim_is_2": true,
+    "l1_partitions_exist": true,
+    "l1_test_holdout_exists": true,
+    "l2_output_dim_is_8": true,
+    "l2_partitions_exist": true,
+    "l2_test_holdout_exists": true,
+    "p4_metrics_exist": true,
+    "p5_grid_summary_exists": true,
+    "p6_summary_exists": true,
+    "run_l3_false": true,
+    "supernet_builds": true,
+    "tier_mapping_k3_k4_k5": true
+  },
+  "errors": [],
+  "figures_expected": [
+    "outputs/figures/multitier/{task}/alpha_{alpha}/k{k}/{run_id}/multitier_architecture.png",
+    "outputs/figures/multitier/{task}/alpha_{alpha}/k{k}/{run_id}/supernet_slicing.png",
+    "outputs/figures/multitier/{task}/alpha_{alpha}/k{k}/{run_id}/tier_parameter_comparison.png",
+    "outputs/figures/multitier/{task}/alpha_{alpha}/k{k}/{run_id}/tier_model_size_comparison.png",
+    "outputs/figures/multitier/{task}/alpha_{alpha}/k{k}/{run_id}/tier_bandwidth_comparison.png",
+    "outputs/figures/multitier/{task}/alpha_{alpha}/k{k}/{run_id}/tier_latency_comparison.png",
+    "outputs/figures/multitier/{task}/alpha_{alpha}/k{k}/{run_id}/l1_p4_p5_p7_comparison.png",
+    "outputs/figures/multitier/{task}/alpha_{alpha}/k{k}/{run_id}/l1_macro_f1_p5_vs_p7_by_round.png",
+    "outputs/figures/multitier/{task}/alpha_{alpha}/k{k}/{run_id}/l1_fpr_p5_vs_p7_by_round.png",
+    "outputs/figures/multitier/{task}/alpha_{alpha}/k{k}/{run_id}/l1_multitier_confusion_matrix.png",
+    "outputs/figures/multitier/{task}/alpha_{alpha}/k{k}/{run_id}/l2_p6_vs_p7_comparison.png",
+    "outputs/figures/multitier/{task}/alpha_{alpha}/k{k}/{run_id}/l2_macro_f1_by_round.png",
+    "outputs/figures/multitier/{task}/alpha_{alpha}/k{k}/{run_id}/l2_family_confusion_matrix.png",
+    "outputs/figures/multitier/{task}/alpha_{alpha}/k{k}/{run_id}/l2_per_family_f1.png",
+    "outputs/figures/multitier/{task}/alpha_{alpha}/k{k}/{run_id}/heatmap_p7_l1_macro_f1_alpha_k.png",
+    "outputs/figures/multitier/{task}/alpha_{alpha}/k{k}/{run_id}/heatmap_p7_l1_fpr_alpha_k.png",
+    "outputs/figures/multitier/{task}/alpha_{alpha}/k{k}/{run_id}/heatmap_p7_l2_macro_f1_alpha_k.png",
+    "outputs/figures/multitier/{task}/alpha_{alpha}/k{k}/{run_id}/barplot_p7_bandwidth_by_scenario.png",
+    "outputs/figures/multitier/{task}/alpha_{alpha}/k{k}/{run_id}/p7_scenario_ranking_table.png"
+  ],
+  "implementation": "shared_supernet_prefix_slicing",
+  "method": "HeteroFL",
+  "mode": "verify",
+  "models": {
+    "l1": {
+      "medium": {
+        "architecture": "28 -> 128 -> 64 -> 2",
+        "model_size_bytes": 48392,
+        "num_parameters": 12098
+      },
+      "powerful": {
+        "architecture": "28 -> 256 -> 128 -> 2",
+        "model_size_bytes": 162312,
+        "num_parameters": 40578
+      },
+      "supernet": {
+        "architecture": "28 -> 256 -> 128 -> 2",
+        "model_size_bytes": 162312,
+        "num_parameters": 40578
+      },
+      "weak": {
+        "architecture": "28 -> 64 -> 2",
+        "model_size_bytes": 7944,
+        "num_parameters": 1986
+      }
+    },
+    "l2": {
+      "medium": {
+        "architecture": "28 -> 128 -> 64 -> 8",
+        "model_size_bytes": 49952,
+        "num_parameters": 12488
+      },
+      "powerful": {
+        "architecture": "28 -> 256 -> 128 -> 8",
+        "model_size_bytes": 165408,
+        "num_parameters": 41352
+      },
+      "supernet": {
+        "architecture": "28 -> 256 -> 128 -> 8",
+        "model_size_bytes": 165408,
+        "num_parameters": 41352
+      },
+      "weak": {
+        "architecture": "28 -> 64 -> 8",
+        "model_size_bytes": 9504,
+        "num_parameters": 2376
+      }
+    }
+  },
+  "phase": "P7",
+  "scenarios": [
+    {
+      "alpha": 0.1,
+      "clients": 3
+    },
+    {
+      "alpha": 0.1,
+      "clients": 4
+    },
+    {
+      "alpha": 0.1,
+      "clients": 5
+    },
+    {
+      "alpha": 0.5,
+      "clients": 3
+    },
+    {
+      "alpha": 0.5,
+      "clients": 4
+    },
+    {
+      "alpha": 0.5,
+      "clients": 5
+    },
+    {
+      "alpha": 5.0,
+      "clients": 3
+    },
+    {
+      "alpha": 5.0,
+      "clients": 4
+    },
+    {
+      "alpha": 5.0,
+      "clients": 5
+    }
+  ],
+  "tier_mapping": {
+    "k3": {
+      "client_1": "weak",
+      "client_2": "medium",
+      "client_3": "powerful"
+    },
+    "k4": {
+      "client_1": "weak",
+      "client_2": "weak",
+      "client_3": "medium",
+      "client_4": "powerful"
+    },
+    "k5": {
+      "client_1": "weak",
+      "client_2": "weak",
+      "client_3": "medium",
+      "client_4": "medium",
+      "client_5": "powerful"
+    }
+  },
+  "warnings": []
+}

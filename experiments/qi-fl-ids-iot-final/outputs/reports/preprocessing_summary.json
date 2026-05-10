@@ -1,0 +1,156 @@
+{
+  "accepted": true,
+  "created_at": "2026-05-06T14:47:09+00:00",
+  "criteria": {
+    "features_28_confirmed": true,
+    "figures_9_generated": true,
+    "l1_anti_leakage_valid": true,
+    "l1_attack_330000": true,
+    "l1_attack_sampling_10000_each": true,
+    "l1_normal_300000": true,
+    "l1_npz_generated": true,
+    "l1_split_generated": true,
+    "l1_total_630000": true,
+    "l2_anti_leakage_valid": true,
+    "l2_attack_only_no_sampling": true,
+    "l2_eight_families": true,
+    "l2_excludes_benign": true,
+    "l2_npz_generated": true,
+    "l2_split_generated": true,
+    "manifests_generated": true,
+    "p1_validated_detected": true,
+    "parquet_source_found": true,
+    "reports_generated": true,
+    "scaling_status_check_executed": true
+  },
+  "errors": [],
+  "figures": [
+    "experiments/qi-fl-ids-iot-final/outputs/figures/preprocessing/01_scaling_status_check.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/preprocessing/02_l1_binary_distribution_before_after.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/preprocessing/03_l1_attack_sampling_per_class.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/preprocessing/04_l1_train_val_test_distribution.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/preprocessing/05_l2_family_distribution_full_attack_only.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/preprocessing/06_l2_train_val_test_distribution.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/preprocessing/07_feature_scaling_before_after_l1.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/preprocessing/08_feature_scaling_before_after_l2.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/preprocessing/09_preprocessing_pipeline_l1_l2.png"
+  ],
+  "generated_artifacts": [
+    "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/manifest.json",
+    "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/sampling_report.json",
+    "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/manifest.json",
+    "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/distribution_report.json",
+    "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/family_mapping.json",
+    "experiments/qi-fl-ids-iot-final/outputs/artifacts/scalers/l1_binary_robust_scaler.pkl",
+    "experiments/qi-fl-ids-iot-final/outputs/artifacts/scalers/l2_family_robust_scaler.pkl"
+  ],
+  "inputs": {
+    "p1_artifacts_dir": "experiments/qi-fl-ids-iot-final/outputs/artifacts",
+    "parquet_path": "data/balancing_v3_fixed300k_outputs/balancing_v3_fixed300k_balanced.parquet"
+  },
+  "l1_binary": {
+    "anti_leakage_result": {
+      "anti_leakage_id": "row_id",
+      "anti_leakage_valid": true,
+      "overlap_counts": {
+        "train_test": 0,
+        "train_val": 0,
+        "val_test": 0
+      },
+      "split_counts": {
+        "test": 94500,
+        "train": 441000,
+        "val": 94500
+      },
+      "total_assigned": 630000
+    },
+    "attack_count": 330000,
+    "attack_samples_per_class": 10000,
+    "normal_count": 300000,
+    "npz_files": {
+      "test": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/test_scaled.npz",
+      "train": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/train_scaled.npz",
+      "val": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/val_scaled.npz"
+    },
+    "scaler_path": "experiments/qi-fl-ids-iot-final/outputs/artifacts/scalers/l1_binary_robust_scaler.pkl",
+    "split_counts": {
+      "test": 94500,
+      "train": 441000,
+      "val": 94500
+    },
+    "total_count": 630000
+  },
+  "l2_family": {
+    "anti_leakage_result": {
+      "anti_leakage_id": "row_id",
+      "anti_leakage_valid": true,
+      "overlap_counts": {
+        "train_test": 0,
+        "train_val": 0,
+        "val_test": 0
+      },
+      "split_counts": {
+        "test": 1365204,
+        "train": 6370944,
+        "val": 1365202
+      },
+      "total_assigned": 9101350
+    },
+    "families": [
+      "BruteForce",
+      "DDoS",
+      "DoS",
+      "Malware",
+      "Mirai",
+      "Recon",
+      "Spoofing",
+      "Web-based"
+    ],
+    "npz_files": {
+      "test": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/test_scaled.npz",
+      "train": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/train_scaled.npz",
+      "val": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/val_scaled.npz"
+    },
+    "sampling": false,
+    "scaler_path": "experiments/qi-fl-ids-iot-final/outputs/artifacts/scalers/l2_family_robust_scaler.pkl",
+    "split_counts": {
+      "test": 1365204,
+      "train": 6370944,
+      "val": 1365202
+    },
+    "total_count": 9101350
+  },
+  "scaling": {
+    "applied": true,
+    "indicators": {
+      "centered_bounded_features": 15,
+      "centered_bounded_ratio": 0.5357142857142857,
+      "features_inspected": 28,
+      "raw_indicator_count": 12,
+      "raw_indicator_features": [
+        "flow_duration",
+        "Header_Length",
+        "Protocol Type",
+        "Duration",
+        "Rate",
+        "fin_count",
+        "urg_count",
+        "rst_count",
+        "Tot sum",
+        "Min",
+        "Std",
+        "IAT"
+      ],
+      "raw_indicator_ratio": 0.42857142857142855
+    },
+    "justification": "12/28 features have large ranges, means or standard deviations; RobustScaler train-only is required.",
+    "status": "raw_unscaled",
+    "train_only": true
+  },
+  "schema": {
+    "feature_count": 28,
+    "label_column": "label_id",
+    "num_classes": 34
+  },
+  "warnings": []
+}

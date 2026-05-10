@@ -1,0 +1,90 @@
+{
+  "accepted": true,
+  "architecture": "ClientApp/ServerApp with flwr.simulation.run_simulation",
+  "artifacts_expected": [
+    "runs/{run_id}/manifest.json",
+    "runs/{run_id}/checkpoints/best_global_model.pth",
+    "runs/{run_id}/checkpoints/last_global_model.pth",
+    "runs/{run_id}/artifacts/model_config.json",
+    "runs/{run_id}/artifacts/metrics_rounds.csv",
+    "runs/{run_id}/artifacts/metrics_clients.csv",
+    "runs/{run_id}/artifacts/bandwidth_rounds.csv",
+    "runs/{run_id}/artifacts/aggregation_weights.csv",
+    "runs/{run_id}/artifacts/metrics_val.json",
+    "runs/{run_id}/artifacts/metrics_test.json",
+    "runs/{run_id}/artifacts/threshold.json",
+    "runs/{run_id}/artifacts/threshold_sweep.csv",
+    "runs/{run_id}/artifacts/confusion_matrix.csv",
+    "runs/{run_id}/artifacts/classification_report.json",
+    "runs/{run_id}/artifacts/comparison_with_p4.json",
+    "runs/{run_id}/artifacts/run_summary.json",
+    "runs/{run_id}/artifacts/run_manifest.json",
+    "runs/{run_id}/logs/flower_server.log",
+    "runs/{run_id}/logs/flower_clients.log",
+    "runs/{run_id}/logs/run_console.log",
+    "latest_run.json",
+    "latest_run_summary.json"
+  ],
+  "checks": {
+    "clientapp_available": true,
+    "clients_detected": true,
+    "flower_version_detected": true,
+    "global_test_holdout_exists": true,
+    "initial_parameters_build": true,
+    "legacy_runtime_fallback_available": true,
+    "legacy_start_client_available": true,
+    "legacy_start_server_available": true,
+    "no_test_used_by_clients": true,
+    "p3_partitions_exist": true,
+    "p4_metrics_exist": true,
+    "run_simulation_available": true,
+    "server_client_modules_importable": true,
+    "serverapp_available": true,
+    "strategy_is_fedavg": true
+  },
+  "criteria": {
+    "flower_runtime_available": true,
+    "flower_version_detected": true,
+    "global_test_holdout_exists": true,
+    "global_test_holdout_protected": true,
+    "initial_parameters_build": true,
+    "p3_partitions_ready": true,
+    "p4_metrics_ready": true,
+    "server_client_modules_importable": true
+  },
+  "errors": [],
+  "figures_expected": [
+    "outputs/figures/fl_l1_flower/alpha_{alpha}/k{k}/{run_id}/fl_l1_flower_loss_by_round.png",
+    "outputs/figures/fl_l1_flower/alpha_{alpha}/k{k}/{run_id}/fl_l1_flower_macro_f1_by_round.png",
+    "outputs/figures/fl_l1_flower/alpha_{alpha}/k{k}/{run_id}/fl_l1_flower_attack_recall_by_round.png",
+    "outputs/figures/fl_l1_flower/alpha_{alpha}/k{k}/{run_id}/fl_l1_flower_fpr_by_round.png",
+    "outputs/figures/fl_l1_flower/alpha_{alpha}/k{k}/{run_id}/fl_l1_flower_bandwidth_by_round.png",
+    "outputs/figures/fl_l1_flower/alpha_{alpha}/k{k}/{run_id}/fl_l1_flower_round_time_by_round.png",
+    "outputs/figures/fl_l1_flower/alpha_{alpha}/k{k}/{run_id}/fl_l1_flower_confusion_matrix.png",
+    "outputs/figures/fl_l1_flower/alpha_{alpha}/k{k}/{run_id}/fl_l1_flower_threshold_sweep.png",
+    "outputs/figures/fl_l1_flower/alpha_{alpha}/k{k}/{run_id}/fl_l1_flower_tp_tn_fp_fn.png",
+    "outputs/figures/fl_l1_flower/alpha_{alpha}/k{k}/{run_id}/fl_l1_flower_roc_curve.png",
+    "outputs/figures/fl_l1_flower/alpha_{alpha}/k{k}/{run_id}/fl_l1_flower_pr_curve.png",
+    "outputs/figures/fl_l1_flower/alpha_{alpha}/k{k}/{run_id}/fl_l1_flower_vs_p4.png",
+    "outputs/figures/fl_l1_flower/alpha_{alpha}/k{k}/{run_id}/fl_l1_flower_client_metrics_heatmap.png",
+    "outputs/figures/fl_l1_flower/alpha_{alpha}/k{k}/{run_id}/fl_l1_flower_architecture.png"
+  ],
+  "flower_version": "1.8.0",
+  "global_test_holdout": {
+    "path": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/test_scaled.npz",
+    "sent_to_clients": false,
+    "usage": "server final evaluation only"
+  },
+  "mode": "verify",
+  "ray_available": true,
+  "scenario": {
+    "alpha": 0.5,
+    "client_ids": [
+      "client_1",
+      "client_2",
+      "client_3"
+    ],
+    "clients": 3
+  },
+  "warnings": []
+}

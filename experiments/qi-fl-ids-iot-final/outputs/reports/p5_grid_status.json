@@ -1,0 +1,65 @@
+[
+  {
+    "K": 3,
+    "alpha": 0.1,
+    "missing_files": [],
+    "output_dir": "experiments/qi-fl-ids-iot-final/outputs/fl_l1_fedavg/alpha_0.1/k3",
+    "status": "ready"
+  },
+  {
+    "K": 4,
+    "alpha": 0.1,
+    "missing_files": [],
+    "output_dir": "experiments/qi-fl-ids-iot-final/outputs/fl_l1_fedavg/alpha_0.1/k4",
+    "status": "ready"
+  },
+  {
+    "K": 5,
+    "alpha": 0.1,
+    "missing_files": [],
+    "output_dir": "experiments/qi-fl-ids-iot-final/outputs/fl_l1_fedavg/alpha_0.1/k5",
+    "status": "ready"
+  },
+  {
+    "K": 3,
+    "alpha": 0.5,
+    "missing_files": [],
+    "output_dir": "experiments/qi-fl-ids-iot-final/outputs/fl_l1_fedavg/alpha_0.5/k3",
+    "status": "ready"
+  },
+  {
+    "K": 4,
+    "alpha": 0.5,
+    "missing_files": [],
+    "output_dir": "experiments/qi-fl-ids-iot-final/outputs/fl_l1_fedavg/alpha_0.5/k4",
+    "status": "ready"
+  },
+  {
+    "K": 5,
+    "alpha": 0.5,
+    "missing_files": [],
+    "output_dir": "experiments/qi-fl-ids-iot-final/outputs/fl_l1_fedavg/alpha_0.5/k5",
+    "status": "ready"
+  },
+  {
+    "K": 3,
+    "alpha": 5.0,
+    "missing_files": [],
+    "output_dir": "experiments/qi-fl-ids-iot-final/outputs/fl_l1_fedavg/alpha_5.0/k3",
+    "status": "ready"
+  },
+  {
+    "K": 4,
+    "alpha": 5.0,
+    "missing_files": [],
+    "output_dir": "experiments/qi-fl-ids-iot-final/outputs/fl_l1_fedavg/alpha_5.0/k4",
+    "status": "ready"
+  },
+  {
+    "K": 5,
+    "alpha": 5.0,
+    "missing_files": [],
+    "output_dir": "experiments/qi-fl-ids-iot-final/outputs/fl_l1_fedavg/alpha_5.0/k5",
+    "status": "ready"
+  }
+]

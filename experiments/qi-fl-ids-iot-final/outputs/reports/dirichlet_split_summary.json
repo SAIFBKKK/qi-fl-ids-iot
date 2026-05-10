@@ -1,0 +1,277 @@
+{
+  "accepted": true,
+  "alphas": [
+    0.1,
+    0.5,
+    5.0
+  ],
+  "anti_leakage": {
+    "total_scenarios": 18,
+    "valid_scenarios": 18
+  },
+  "clients": [
+    3,
+    4,
+    5
+  ],
+  "created_at": "2026-05-06T15:36:01+00:00",
+  "criteria": {
+    "alphas_processed": true,
+    "anti_leakage_valid": true,
+    "client_counts_processed": true,
+    "client_distribution_csv_generated": true,
+    "distribution_reports_generated": true,
+    "figures_p3_generated": true,
+    "l1_9_scenarios_generated": true,
+    "l1_client_npz_generated": true,
+    "l1_global_test_references": true,
+    "l1_test_global_not_partitioned": true,
+    "l1_train_val_partitioned": true,
+    "l2_9_scenarios_generated": true,
+    "l2_global_test_references": true,
+    "l2_row_id_indexes_generated": true,
+    "l2_test_global_not_partitioned": true,
+    "l2_train_val_index_only": true,
+    "manifests_generated": true,
+    "no_client_empty": true,
+    "p2_validated_detected": true
+  },
+  "errors": [],
+  "figures": [
+    "experiments/qi-fl-ids-iot-final/outputs/figures/dirichlet_split/01_l1_samples_per_client_alpha_k.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/dirichlet_split/02_l1_binary_heatmaps.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/dirichlet_split/03_l1_alpha_comparison.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/dirichlet_split/04_l2_samples_per_client_alpha_k.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/dirichlet_split/05_l2_family_heatmaps.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/dirichlet_split/06_l2_alpha_comparison.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/dirichlet_split/07_global_test_holdout_explanation.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/dirichlet_split/08_dirichlet_pipeline_l1_l2.png"
+  ],
+  "generated_artifacts": [
+    "experiments/qi-fl-ids-iot-final/outputs/partitions/l1_binary/alpha_0.1/k3",
+    "experiments/qi-fl-ids-iot-final/outputs/partitions/l2_family/alpha_0.1/k3",
+    "experiments/qi-fl-ids-iot-final/outputs/partitions/l1_binary/alpha_0.1/k4",
+    "experiments/qi-fl-ids-iot-final/outputs/partitions/l2_family/alpha_0.1/k4",
+    "experiments/qi-fl-ids-iot-final/outputs/partitions/l1_binary/alpha_0.1/k5",
+    "experiments/qi-fl-ids-iot-final/outputs/partitions/l2_family/alpha_0.1/k5",
+    "experiments/qi-fl-ids-iot-final/outputs/partitions/l1_binary/alpha_0.5/k3",
+    "experiments/qi-fl-ids-iot-final/outputs/partitions/l2_family/alpha_0.5/k3",
+    "experiments/qi-fl-ids-iot-final/outputs/partitions/l1_binary/alpha_0.5/k4",
+    "experiments/qi-fl-ids-iot-final/outputs/partitions/l2_family/alpha_0.5/k4",
+    "experiments/qi-fl-ids-iot-final/outputs/partitions/l1_binary/alpha_0.5/k5",
+    "experiments/qi-fl-ids-iot-final/outputs/partitions/l2_family/alpha_0.5/k5",
+    "experiments/qi-fl-ids-iot-final/outputs/partitions/l1_binary/alpha_5.0/k3",
+    "experiments/qi-fl-ids-iot-final/outputs/partitions/l2_family/alpha_5.0/k3",
+    "experiments/qi-fl-ids-iot-final/outputs/partitions/l1_binary/alpha_5.0/k4",
+    "experiments/qi-fl-ids-iot-final/outputs/partitions/l2_family/alpha_5.0/k4",
+    "experiments/qi-fl-ids-iot-final/outputs/partitions/l1_binary/alpha_5.0/k5",
+    "experiments/qi-fl-ids-iot-final/outputs/partitions/l2_family/alpha_5.0/k5"
+  ],
+  "global_test_holdout": {
+    "keep_global_test_holdout": true,
+    "l1_test_path": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/test_scaled.npz",
+    "l2_test_path": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/test_scaled.npz",
+    "partition_test": false
+  },
+  "inputs": {
+    "l1_test_npz": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/test_scaled.npz",
+    "l1_train_npz": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/train_scaled.npz",
+    "l1_val_npz": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/val_scaled.npz",
+    "l2_test_npz": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/test_scaled.npz",
+    "l2_train_npz": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/train_scaled.npz",
+    "l2_val_npz": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/val_scaled.npz"
+  },
+  "l1": {
+    "global_test_holdout_path": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/test_scaled.npz",
+    "scenario_count": 9,
+    "storage_mode": "materialized_npz"
+  },
+  "l2": {
+    "global_test_holdout_path": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/test_scaled.npz",
+    "scenario_count": 9,
+    "storage_mode": "index_only"
+  },
+  "scenario_summary": [
+    {
+      "alpha": 0.1,
+      "anti_leakage_valid": true,
+      "dataset_level": "l1_binary",
+      "num_clients": 3,
+      "scenario_dir": "experiments/qi-fl-ids-iot-final/outputs/partitions/l1_binary/alpha_0.1/k3",
+      "train_total": 441000,
+      "val_total": 94500,
+      "warnings": []
+    },
+    {
+      "alpha": 0.1,
+      "anti_leakage_valid": true,
+      "dataset_level": "l2_family",
+      "num_clients": 3,
+      "scenario_dir": "experiments/qi-fl-ids-iot-final/outputs/partitions/l2_family/alpha_0.1/k3",
+      "train_total": 6370944,
+      "val_total": 1365202,
+      "warnings": []
+    },
+    {
+      "alpha": 0.1,
+      "anti_leakage_valid": true,
+      "dataset_level": "l1_binary",
+      "num_clients": 4,
+      "scenario_dir": "experiments/qi-fl-ids-iot-final/outputs/partitions/l1_binary/alpha_0.1/k4",
+      "train_total": 441000,
+      "val_total": 94500,
+      "warnings": []
+    },
+    {
+      "alpha": 0.1,
+      "anti_leakage_valid": true,
+      "dataset_level": "l2_family",
+      "num_clients": 4,
+      "scenario_dir": "experiments/qi-fl-ids-iot-final/outputs/partitions/l2_family/alpha_0.1/k4",
+      "train_total": 6370944,
+      "val_total": 1365202,
+      "warnings": []
+    },
+    {
+      "alpha": 0.1,
+      "anti_leakage_valid": true,
+      "dataset_level": "l1_binary",
+      "num_clients": 5,
+      "scenario_dir": "experiments/qi-fl-ids-iot-final/outputs/partitions/l1_binary/alpha_0.1/k5",
+      "train_total": 441000,
+      "val_total": 94500,
+      "warnings": []
+    },
+    {
+      "alpha": 0.1,
+      "anti_leakage_valid": true,
+      "dataset_level": "l2_family",
+      "num_clients": 5,
+      "scenario_dir": "experiments/qi-fl-ids-iot-final/outputs/partitions/l2_family/alpha_0.1/k5",
+      "train_total": 6370944,
+      "val_total": 1365202,
+      "warnings": []
+    },
+    {
+      "alpha": 0.5,
+      "anti_leakage_valid": true,
+      "dataset_level": "l1_binary",
+      "num_clients": 3,
+      "scenario_dir": "experiments/qi-fl-ids-iot-final/outputs/partitions/l1_binary/alpha_0.5/k3",
+      "train_total": 441000,
+      "val_total": 94500,
+      "warnings": []
+    },
+    {
+      "alpha": 0.5,
+      "anti_leakage_valid": true,
+      "dataset_level": "l2_family",
+      "num_clients": 3,
+      "scenario_dir": "experiments/qi-fl-ids-iot-final/outputs/partitions/l2_family/alpha_0.5/k3",
+      "train_total": 6370944,
+      "val_total": 1365202,
+      "warnings": []
+    },
+    {
+      "alpha": 0.5,
+      "anti_leakage_valid": true,
+      "dataset_level": "l1_binary",
+      "num_clients": 4,
+      "scenario_dir": "experiments/qi-fl-ids-iot-final/outputs/partitions/l1_binary/alpha_0.5/k4",
+      "train_total": 441000,
+      "val_total": 94500,
+      "warnings": []
+    },
+    {
+      "alpha": 0.5,
+      "anti_leakage_valid": true,
+      "dataset_level": "l2_family",
+      "num_clients": 4,
+      "scenario_dir": "experiments/qi-fl-ids-iot-final/outputs/partitions/l2_family/alpha_0.5/k4",
+      "train_total": 6370944,
+      "val_total": 1365202,
+      "warnings": []
+    },
+    {
+      "alpha": 0.5,
+      "anti_leakage_valid": true,
+      "dataset_level": "l1_binary",
+      "num_clients": 5,
+      "scenario_dir": "experiments/qi-fl-ids-iot-final/outputs/partitions/l1_binary/alpha_0.5/k5",
+      "train_total": 441000,
+      "val_total": 94500,
+      "warnings": []
+    },
+    {
+      "alpha": 0.5,
+      "anti_leakage_valid": true,
+      "dataset_level": "l2_family",
+      "num_clients": 5,
+      "scenario_dir": "experiments/qi-fl-ids-iot-final/outputs/partitions/l2_family/alpha_0.5/k5",
+      "train_total": 6370944,
+      "val_total": 1365202,
+      "warnings": []
+    },
+    {
+      "alpha": 5.0,
+      "anti_leakage_valid": true,
+      "dataset_level": "l1_binary",
+      "num_clients": 3,
+      "scenario_dir": "experiments/qi-fl-ids-iot-final/outputs/partitions/l1_binary/alpha_5.0/k3",
+      "train_total": 441000,
+      "val_total": 94500,
+      "warnings": []
+    },
+    {
+      "alpha": 5.0,
+      "anti_leakage_valid": true,
+      "dataset_level": "l2_family",
+      "num_clients": 3,
+      "scenario_dir": "experiments/qi-fl-ids-iot-final/outputs/partitions/l2_family/alpha_5.0/k3",
+      "train_total": 6370944,
+      "val_total": 1365202,
+      "warnings": []
+    },
+    {
+      "alpha": 5.0,
+      "anti_leakage_valid": true,
+      "dataset_level": "l1_binary",
+      "num_clients": 4,
+      "scenario_dir": "experiments/qi-fl-ids-iot-final/outputs/partitions/l1_binary/alpha_5.0/k4",
+      "train_total": 441000,
+      "val_total": 94500,
+      "warnings": []
+    },
+    {
+      "alpha": 5.0,
+      "anti_leakage_valid": true,
+      "dataset_level": "l2_family",
+      "num_clients": 4,
+      "scenario_dir": "experiments/qi-fl-ids-iot-final/outputs/partitions/l2_family/alpha_5.0/k4",
+      "train_total": 6370944,
+      "val_total": 1365202,
+      "warnings": []
+    },
+    {
+      "alpha": 5.0,
+      "anti_leakage_valid": true,
+      "dataset_level": "l1_binary",
+      "num_clients": 5,
+      "scenario_dir": "experiments/qi-fl-ids-iot-final/outputs/partitions/l1_binary/alpha_5.0/k5",
+      "train_total": 441000,
+      "val_total": 94500,
+      "warnings": []
+    },
+    {
+      "alpha": 5.0,
+      "anti_leakage_valid": true,
+      "dataset_level": "l2_family",
+      "num_clients": 5,
+      "scenario_dir": "experiments/qi-fl-ids-iot-final/outputs/partitions/l2_family/alpha_5.0/k5",
+      "train_total": 6370944,
+      "val_total": 1365202,
+      "warnings": []
+    }
+  ],
+  "warnings": []
+}

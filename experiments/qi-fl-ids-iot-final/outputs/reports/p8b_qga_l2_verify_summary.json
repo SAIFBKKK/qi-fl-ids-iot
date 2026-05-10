@@ -1,0 +1,19 @@
+{
+  "accepted": true,
+  "checks": {
+    "alpha_0.5_k3_exists": true,
+    "feature_names": true,
+    "global_test_not_partitioned": true,
+    "l2_family_mapping": true,
+    "l2_partitions_root": true,
+    "l2_test_npz": true,
+    "l2_train_npz": true,
+    "l2_val_npz": true
+  },
+  "errors": [],
+  "mode": "verify",
+  "phase": "P8-b",
+  "test_used_for_selection": false,
+  "true_flower_runtime_required_for_final_fl": true,
+  "warnings": []
+}

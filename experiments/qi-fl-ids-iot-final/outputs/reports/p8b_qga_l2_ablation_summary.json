@@ -1,0 +1,36 @@
+[
+  {
+    "accepted": true,
+    "accuracy": 0.6841468381282211,
+    "bandwidth_total_bytes": 8991360,
+    "feature_reduction_ratio": "",
+    "features_count": 28,
+    "gap_macro_f1_vs_p6": "",
+    "macro_f1": 0.6355288381246096,
+    "macro_fpr": 0.04394011161971505,
+    "macro_precision": 0.671992061496633,
+    "macro_recall": 0.7294272787434922,
+    "method": "P6 L2 Flower baseline",
+    "model_size_bytes": 49952,
+    "source": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\hierarchical_flower\\l2_family\\alpha_0.5\\k3\\latest_run_summary.json",
+    "true_flower_runtime": true,
+    "weighted_f1": 0.7076571003455178
+  },
+  {
+    "accepted": true,
+    "accuracy": 0.7555178566719699,
+    "bandwidth_reduction_ratio": 0.09224855861627157,
+    "bandwidth_total_bytes": 8161920,
+    "feature_reduction_ratio": 0.3214285714285714,
+    "features_count": 19,
+    "gap_macro_f1_vs_p6": 0.011028510031281469,
+    "macro_f1": 0.646557348155891,
+    "macro_fpr": 0.03316218834949124,
+    "macro_precision": 0.666992881923026,
+    "macro_recall": 0.7172291523344254,
+    "method": "P8-b L2 FedAvg + QGA Flower",
+    "model_size_bytes": 45344,
+    "true_flower_runtime": true,
+    "weighted_f1": 0.7762249172562404
+  }
+]
