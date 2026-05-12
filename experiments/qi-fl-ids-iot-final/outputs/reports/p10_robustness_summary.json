@@ -1,0 +1,21 @@
+{
+  "rows": [
+    {
+      "FNR": 0.4667931688804554,
+      "FPR": 0.5750528541226215,
+      "accepted": true,
+      "accuracy": 0.482,
+      "alpha": 0.5,
+      "attack_recall": 0.5332068311195446,
+      "attack_type": "label_flip",
+      "clients": 3,
+      "macro_f1": 0.4786634460547504,
+      "method": "fedavg",
+      "poison_rate": 0.2,
+      "poisoned_clients": 1,
+      "robustness_score": 0.2842832015387143,
+      "run_id": "run_20260512_205034"
+    }
+  ],
+  "warnings": []
+}

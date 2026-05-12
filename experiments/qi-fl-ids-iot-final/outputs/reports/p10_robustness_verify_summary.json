@@ -1,0 +1,37 @@
+{
+  "accepted": true,
+  "attack_types": [
+    "clean",
+    "label_flip",
+    "attack_to_normal",
+    "feature_noise"
+  ],
+  "checks": {
+    "docker_dashboard_untouched": true,
+    "l1_partitions_root_exists": true,
+    "l1_test_npz_exists": true,
+    "methods_declared": true,
+    "p5_grid_summary_exists": true,
+    "p8_qga_ablation_summary_exists": true,
+    "p9_qifa_ablation_summary_exists": true,
+    "qga_final_mask_dir_exists": true,
+    "task_l1_binary": true,
+    "test_sent_to_clients_false": true
+  },
+  "criteria": {
+    "defensive_experiment_only": true,
+    "full_training_not_auto_launched": true,
+    "global_test_holdout_protected": true,
+    "poisoning_train_only": true
+  },
+  "errors": [],
+  "methods": [
+    "fedavg",
+    "fedavg_qga",
+    "qifa",
+    "qifa_qga"
+  ],
+  "mode": "verify",
+  "phase": "P10",
+  "warnings": []
+}

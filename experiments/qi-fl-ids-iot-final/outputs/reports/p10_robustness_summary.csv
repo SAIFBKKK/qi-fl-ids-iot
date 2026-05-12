@@ -1,0 +1,2 @@
+method,alpha,clients,attack_type,poison_rate,poisoned_clients,run_id,macro_f1,attack_recall,FPR,FNR,accuracy,robustness_score,accepted
+fedavg,0.5,3,label_flip,0.2,1,run_20260512_205034,0.4786634460547504,0.5332068311195446,0.5750528541226215,0.4667931688804554,0.482,0.2842832015387143,True
