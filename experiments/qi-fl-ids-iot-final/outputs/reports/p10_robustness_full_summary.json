@@ -1,25 +1,11 @@
 {
+  "full_methods": [
+    "fedavg",
+    "fedavg_qga",
+    "qifa",
+    "qifa_qga"
+  ],
   "rows": [
-    {
-      "accepted": true,
-      "accuracy": 0.482,
-      "alpha": 0.5,
-      "attack_recall": 0.5332068311195446,
-      "attack_type": "label_flip",
-      "clients": 3,
-      "fnr": 0.4667931688804554,
-      "fpr": 0.5750528541226215,
-      "macro_f1": 0.4786634460547504,
-      "max_samples": "",
-      "method": "fedavg",
-      "poison_rate": 0.2,
-      "poisoned_clients": 1,
-      "robustness_score": 0.2842832015387143,
-      "rounds": 1,
-      "run_id": "run_20260512_205034",
-      "run_type": "smoke",
-      "scientific_use": "readiness_only"
-    },
     {
       "accepted": true,
       "accuracy": 0.9345185185185185,

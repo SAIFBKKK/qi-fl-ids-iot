@@ -1,0 +1,73 @@
+{
+  "rows": [
+    {
+      "accepted": true,
+      "clean_accuracy": 0.9408994708994709,
+      "clean_attack_recall": 0.9474141414141414,
+      "clean_fpr": 0.06626666666666667,
+      "clean_macro_f1": 0.9407415103639889,
+      "delta_accuracy": -0.006380952380952376,
+      "delta_attack_recall": -0.028888888888888853,
+      "delta_fpr": -0.018377777777777778,
+      "delta_macro_f1": -0.006273441096284249,
+      "method": "fedavg",
+      "poisoned_accuracy": 0.9345185185185185,
+      "poisoned_attack_recall": 0.9185252525252525,
+      "poisoned_fpr": 0.04788888888888889,
+      "poisoned_macro_f1": 0.9344680692677046,
+      "robustness_ratio_macro_f1": 0.9933313869674392
+    },
+    {
+      "accepted": true,
+      "clean_accuracy": 0.9481269841269842,
+      "clean_attack_recall": 0.955010101010101,
+      "clean_fpr": 0.059444444444444446,
+      "clean_macro_f1": 0.9479843808395867,
+      "delta_accuracy": -0.008931216931216901,
+      "delta_attack_recall": -0.018161616161616156,
+      "delta_fpr": -0.0012222222222222218,
+      "delta_macro_f1": -0.008897422134915733,
+      "method": "fedavg_qga",
+      "poisoned_accuracy": 0.9391957671957673,
+      "poisoned_attack_recall": 0.9368484848484848,
+      "poisoned_fpr": 0.058222222222222224,
+      "poisoned_macro_f1": 0.939086958704671,
+      "robustness_ratio_macro_f1": 0.9906143789763332
+    },
+    {
+      "accepted": true,
+      "clean_accuracy": 0.9455132275132275,
+      "clean_attack_recall": 0.9436161616161616,
+      "clean_fpr": 0.0524,
+      "clean_macro_f1": 0.9454121205767887,
+      "delta_accuracy": -0.007798941798941805,
+      "delta_attack_recall": -0.0010707070707069999,
+      "delta_fpr": 0.015199999999999991,
+      "delta_macro_f1": -0.007852156047311598,
+      "method": "qifa",
+      "poisoned_accuracy": 0.9377142857142857,
+      "poisoned_attack_recall": 0.9425454545454546,
+      "poisoned_fpr": 0.0676,
+      "poisoned_macro_f1": 0.9375599645294771,
+      "robustness_ratio_macro_f1": 0.9916944622599919
+    },
+    {
+      "accepted": true,
+      "clean_accuracy": 0.9472804232804233,
+      "clean_attack_recall": 0.9592121212121212,
+      "clean_fpr": 0.06584444444444444,
+      "clean_macro_f1": 0.9471048783725642,
+      "delta_accuracy": -0.0015767195767195652,
+      "delta_attack_recall": -0.002626262626262643,
+      "delta_fpr": 0.0004222222222222266,
+      "delta_macro_f1": -0.0015746489499665062,
+      "method": "qifa_qga",
+      "poisoned_accuracy": 0.9457037037037037,
+      "poisoned_attack_recall": 0.9565858585858585,
+      "poisoned_fpr": 0.06626666666666667,
+      "poisoned_macro_f1": 0.9455302294225977,
+      "robustness_ratio_macro_f1": 0.9983374080464328
+    }
+  ],
+  "warnings": []
+}
