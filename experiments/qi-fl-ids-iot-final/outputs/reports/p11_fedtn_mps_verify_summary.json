@@ -1,0 +1,84 @@
+{
+  "accepted": true,
+  "checks": {
+    "base_models_declared": true,
+    "input_dim_12": true,
+    "p10_robustness_full_summary_exists": true,
+    "p8_qga_ablation_summary_exists": true,
+    "p9_qifa_ablation_summary_exists": true,
+    "qga_config_exists": true,
+    "qga_final_mask_dir_exists": true,
+    "qifa_config_exists": true,
+    "selected_mask_id_matches": true
+  },
+  "criteria": {
+    "dashboard_not_modified": true,
+    "docker_not_modified": true,
+    "full_fl_not_auto_launched": true,
+    "l1_only": true,
+    "post_training_compression": true
+  },
+  "errors": [],
+  "estimates": [
+    {
+      "bandwidth_reduction_ratio": 0.835820895522388,
+      "compressed_bandwidth_total_bytes": 1188000,
+      "compressed_model_size_bytes": 6600,
+      "compressed_num_parameters": 1650,
+      "compression_ratio": 0.16417910447761194,
+      "dense_bandwidth_total_bytes": 7236000,
+      "dense_model_size_bytes": 40200,
+      "dense_num_parameters": 10050,
+      "parameter_reduction_ratio": 0.835820895522388,
+      "rank": 4,
+      "warnings": []
+    },
+    {
+      "bandwidth_reduction_ratio": 0.703681592039801,
+      "compressed_bandwidth_total_bytes": 2144160,
+      "compressed_model_size_bytes": 11912,
+      "compressed_num_parameters": 2978,
+      "compression_ratio": 0.296318407960199,
+      "dense_bandwidth_total_bytes": 7236000,
+      "dense_model_size_bytes": 40200,
+      "dense_num_parameters": 10050,
+      "parameter_reduction_ratio": 0.703681592039801,
+      "rank": 8,
+      "warnings": []
+    },
+    {
+      "bandwidth_reduction_ratio": 0.43940298507462683,
+      "compressed_bandwidth_total_bytes": 4056480,
+      "compressed_model_size_bytes": 22536,
+      "compressed_num_parameters": 5634,
+      "compression_ratio": 0.5605970149253732,
+      "dense_bandwidth_total_bytes": 7236000,
+      "dense_model_size_bytes": 40200,
+      "dense_num_parameters": 10050,
+      "parameter_reduction_ratio": 0.43940298507462683,
+      "rank": 16,
+      "warnings": []
+    },
+    {
+      "bandwidth_reduction_ratio": -0.08915422885572144,
+      "compressed_bandwidth_total_bytes": 7881120,
+      "compressed_model_size_bytes": 43784,
+      "compressed_num_parameters": 10946,
+      "compression_ratio": 1.0891542288557214,
+      "dense_bandwidth_total_bytes": 7236000,
+      "dense_model_size_bytes": 40200,
+      "dense_num_parameters": 10050,
+      "parameter_reduction_ratio": -0.08915422885572144,
+      "rank": 32,
+      "warnings": [
+        "rank_32_is_not_compressive_for_this_small_model"
+      ]
+    }
+  ],
+  "mode": "verify",
+  "phase": "P11",
+  "warnings": [
+    "fedavg_qga_checkpoint_checkpoint_not_available_metric_evaluation_will_be_skipped",
+    "qifa_qga_checkpoint_checkpoint_not_available_metric_evaluation_will_be_skipped"
+  ]
+}

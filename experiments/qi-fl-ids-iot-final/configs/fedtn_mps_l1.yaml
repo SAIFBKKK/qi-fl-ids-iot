@@ -1,0 +1,45 @@
+project_root: "."
+final_experiment_dir: "experiments/qi-fl-ids-iot-final"
+
+task: "l1_binary"
+base_models:
+  - fedavg_qga
+  - qifa_qga
+input_dim: 12
+hidden_layers: [128, 64]
+output_dim: 2
+selected_mask_id: "conservative_seed_42"
+
+inputs:
+  qga_config: "experiments/qi-fl-ids-iot-final/configs/qga_feature_selection.yaml"
+  qifa_config: "experiments/qi-fl-ids-iot-final/configs/qifa_l1.yaml"
+  p8_qga_ablation_summary: "experiments/qi-fl-ids-iot-final/outputs/reports/p8_qga_ablation_summary.csv"
+  p9_qifa_ablation_summary: "experiments/qi-fl-ids-iot-final/outputs/reports/p9_qifa_ablation_summary.csv"
+  p10_robustness_full_summary: "experiments/qi-fl-ids-iot-final/outputs/reports/p10_robustness_full_summary.csv"
+  qga_final_mask_dir: "experiments/qi-fl-ids-iot-final/outputs/qga_feature_selection/final_selected_mask"
+  l1_test_npz: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/test_scaled.npz"
+  fedavg_qga_checkpoint: "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/latest_run_summary.json"
+  qifa_qga_checkpoint: "experiments/qi-fl-ids-iot-final/outputs/qifa_l1/alpha_0.5/k3/variant_hybrid/gamma_0.5/latest_run_summary.json"
+
+compression:
+  method: "mps_low_rank"
+  ranks: [4, 8, 16, 32]
+  target_layers:
+    - fc1
+    - fc2
+
+evaluation:
+  alpha: 0.5
+  clients: 3
+  rounds: 30
+  test_holdout: "server_only"
+
+constraints:
+  max_macro_f1_drop: 0.01
+  max_attack_recall_drop: 0.015
+  prefer_lower_fpr: true
+
+outputs:
+  run_dir: "experiments/qi-fl-ids-iot-final/outputs/fedtn_mps_l1"
+  reports_dir: "experiments/qi-fl-ids-iot-final/outputs/reports"
+  figures_dir: "experiments/qi-fl-ids-iot-final/outputs/figures/fedtn_mps_l1"

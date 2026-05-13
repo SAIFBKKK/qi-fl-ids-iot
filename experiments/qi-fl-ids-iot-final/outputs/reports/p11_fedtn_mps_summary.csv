@@ -1,0 +1,2 @@
+base_model,rank,run_id,dry_run,dense_num_parameters,compressed_num_parameters,parameter_reduction_ratio,dense_model_size_bytes,compressed_model_size_bytes,compression_ratio,dense_bandwidth_total_bytes,compressed_bandwidth_total_bytes,bandwidth_reduction_ratio,macro_f1,attack_recall,fpr,accepted
+fedavg_qga,8,run_20260513_022321,True,10050,2978,0.703681592039801,40200,11912,0.296318407960199,7236000,2144160,0.703681592039801,,,,True
