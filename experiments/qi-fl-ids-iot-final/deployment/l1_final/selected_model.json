@@ -1,0 +1,39 @@
+{
+  "calibration_decision_used": true,
+  "checkpoint": {
+    "path": "experiments/qi-fl-ids-iot-final/deployment/l1_final/artifacts/model.pth",
+    "sha256": "2541ee55c38c471dda468ce9668f81e96de33052a3de4de04c8897ad0de7504b",
+    "size_bytes": 46349,
+    "source": "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/run_20260508_155659/checkpoints/last_global_model.pth",
+    "status": "packaged"
+  },
+  "features_count": 12,
+  "hidden_layers": [
+    128,
+    64
+  ],
+  "input_dim": 12,
+  "labels": {
+    "attack": 1,
+    "normal": 0
+  },
+  "method": "FedAvg + QGA",
+  "metrics_reference": {
+    "accuracy": "0.9432169312169312",
+    "attack_recall": "0.9332929292929293",
+    "fpr": "0.04586666666666667",
+    "macro_f1": "0.9431491918803714",
+    "metric_source": "recomputed_test",
+    "source": "experiments/qi-fl-ids-iot-final/outputs/reports/p13_dashboard_model_evaluation.csv",
+    "weighted_f1": "0.9432426397695556"
+  },
+  "model_id": "p8_fedavg_qga_l1",
+  "output_dim": 2,
+  "phase": "P8",
+  "selected_mask_id": "conservative_seed_42",
+  "selected_mask_source": "final_selected_mask",
+  "task": "l1_binary",
+  "test_scaled_npz_included": false,
+  "threshold": 0.4,
+  "true_flower_runtime": true
+}

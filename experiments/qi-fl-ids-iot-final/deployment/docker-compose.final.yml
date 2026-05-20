@@ -1,0 +1,90 @@
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2.0.18
+    container_name: p14-mosquitto
+    ports:
+      - "1883:1883"
+    volumes:
+      - ../../services/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ../../services/mosquitto/passwords:/mosquitto/config/passwords:ro
+    networks:
+      - p14-net
+
+  final-ids-api:
+    build:
+      context: ./final_ids_api
+    container_name: p14-final-ids-api
+    environment:
+      DEPLOYMENT_BUNDLE_DIR: /app/l1_final
+    ports:
+      - "8014:8014"
+    volumes:
+      - ./l1_final:/app/l1_final:ro
+    networks:
+      - p14-net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8014/health', timeout=3).read()"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  dashboard-p13:
+    build:
+      context: ../dashboard
+    container_name: p14-dashboard-p13
+    ports:
+      - "8013:8013"
+    depends_on:
+      - final-ids-api
+    networks:
+      - p14-net
+
+  traffic-generator:
+    profiles: ["demo"]
+    build:
+      context: ../../services/traffic-generator
+    container_name: p14-traffic-generator
+    environment:
+      MQTT_BROKER: mosquitto
+      MQTT_PORT: "1883"
+      MQTT_USERNAME: ids_user
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
+      NODE_ID: node1
+    depends_on:
+      - mosquitto
+    ports:
+      - "8010:8000"
+    networks:
+      - p14-net
+
+  prometheus:
+    image: prom/prometheus:v2.51.2
+    container_name: p14-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.final.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - p14-net
+
+  grafana:
+    image: grafana/grafana:10.4.3
+    container_name: p14-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-qi-lab-2026}
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../../services/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../../services/monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - p14-net
+    depends_on:
+      - prometheus
+
+networks:
+  p14-net:
+    driver: bridge

@@ -1,0 +1,46 @@
+{
+  "artifacts": {
+    "feature_names": {
+      "packaged": true,
+      "path": "experiments/qi-fl-ids-iot-final/deployment/l1_final/artifacts/feature_names.json",
+      "sha256": "b634c0da228642331a748587bbca46b5c1c55e3586461896360f7e1f775c9a7e",
+      "source": "experiments/qi-fl-ids-iot-final/outputs/artifacts/features/feature_names.json"
+    },
+    "model": {
+      "path": "experiments/qi-fl-ids-iot-final/deployment/l1_final/artifacts/model.pth",
+      "sha256": "2541ee55c38c471dda468ce9668f81e96de33052a3de4de04c8897ad0de7504b",
+      "size_bytes": 46349,
+      "source": "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/run_20260508_155659/checkpoints/last_global_model.pth",
+      "status": "packaged"
+    },
+    "qga_mask": {
+      "packaged": true,
+      "path": "experiments/qi-fl-ids-iot-final/deployment/l1_final/artifacts/qga_feature_mask.json",
+      "sha256": "533b225d0a42effa750efd7b7dc81a8b5d0965cf76e0f998f732ea89fac3d421",
+      "source": "experiments/qi-fl-ids-iot-final/outputs/qga_feature_selection/final_selected_mask/feature_mask.json"
+    },
+    "selected_features": {
+      "packaged": true,
+      "path": "experiments/qi-fl-ids-iot-final/deployment/l1_final/artifacts/selected_features.json",
+      "sha256": "003cea7edcd5fa19e8ace8c88525aeddb364cd8d7794aec5d872ac995c82b2ad",
+      "source": "experiments/qi-fl-ids-iot-final/outputs/qga_feature_selection/final_selected_mask/selected_features.json"
+    },
+    "selection_decision": {
+      "packaged": true,
+      "path": "experiments/qi-fl-ids-iot-final/deployment/l1_final/artifacts/selection_decision.json",
+      "sha256": "7b8c3e4969eaea80d1906c03e6d74fb97870576f286f4e5f5c23e48485685443",
+      "source": "experiments/qi-fl-ids-iot-final/outputs/qga_feature_selection/final_selected_mask/selection_decision.json"
+    }
+  },
+  "bundle": "l1_final",
+  "features_count": 12,
+  "input_dim": 12,
+  "output_dim": 2,
+  "phase": "P14",
+  "selected_mask_id": "conservative_seed_42",
+  "selected_model": "P8 FedAvg + QGA",
+  "selected_model_id": "p8_fedavg_qga_l1",
+  "status": "ready",
+  "test_scaled_npz_included": false,
+  "warnings": []
+}

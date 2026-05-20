@@ -1,0 +1,83 @@
+{
+  "accepted": true,
+  "engineering_score": 0.3468113475231663,
+  "filters": {
+    "minimum_scenario_count": 3,
+    "rounds_required": 5,
+    "test_sent_to_clients_required": false,
+    "true_flower_runtime_required": true
+  },
+  "phase": "P8.1.5",
+  "profile": "conservative",
+  "ranking": [
+    {
+      "engineering_score": 0.3468113475231663,
+      "feature_ratio": 0.42857142857142855,
+      "features_count": 12,
+      "mask_id": "conservative_seed_42",
+      "mean_attack_recall": 0.8931525834646356,
+      "mean_fpr": 0.5317196931861643,
+      "mean_macro_f1": 0.6572738168228859,
+      "profile": "conservative",
+      "scenario_count": 3,
+      "seed": 42,
+      "std_macro_f1": 0.11613815006342702
+    },
+    {
+      "engineering_score": 0.26548300416880727,
+      "feature_ratio": 0.32142857142857145,
+      "features_count": 9,
+      "mask_id": "balanced_current_seed_42",
+      "mean_attack_recall": 0.9601198162731945,
+      "mean_fpr": 0.7347032497606328,
+      "mean_macro_f1": 0.5258809862610899,
+      "profile": "balanced_current",
+      "scenario_count": 3,
+      "seed": 42,
+      "std_macro_f1": 0.21887265880372223
+    },
+    {
+      "engineering_score": 0.24292732119061833,
+      "feature_ratio": 0.35714285714285715,
+      "features_count": 10,
+      "mask_id": "balanced_current_seed_2026",
+      "mean_attack_recall": 0.9720902612826604,
+      "mean_fpr": 0.7993920972644376,
+      "mean_macro_f1": 0.4928285779008556,
+      "profile": "balanced_current",
+      "scenario_count": 3,
+      "seed": 2026,
+      "std_macro_f1": 0.19491112980358702
+    }
+  ],
+  "seed": 42,
+  "selected_mask_id": "conservative_seed_42",
+  "selection_reason": "Highest engineering score over validation-only short Flower scenarios.",
+  "test_used_for_selection": false,
+  "true_flower_short_validation": true,
+  "warnings": {
+    "ignored_incomplete_masks": {
+      "count": 0,
+      "masks": [],
+      "minimum_required_scenarios": 3
+    },
+    "ignored_invalid_runtime_rows": {
+      "count": 0,
+      "runs": []
+    },
+    "ignored_stale_short_runs": {
+      "count": 1,
+      "runs": [
+        {
+          "mask_id": "fpr_aware_seed_42",
+          "profile": "fpr_aware",
+          "reason": "rounds=1",
+          "rounds": 1,
+          "run_id": "run_20260508_120224",
+          "scenario": "alpha=0.1_k=3",
+          "seed": "42"
+        }
+      ]
+    }
+  }
+}
