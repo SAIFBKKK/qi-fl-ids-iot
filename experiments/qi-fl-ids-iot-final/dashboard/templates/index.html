@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QI-FL-IDS-IoT Final L1 Dashboard</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">P13 Dashboard L1 Final</p>
+      <h1>{{ summary.project.name if summary.project else "Quantum-Inspired FL IDS for IoT" }}</h1>
+      <p class="subtitle">Evidence, local test evaluation, robustness, and compression readiness for L1 binary IDS deployment.</p>
+    </div>
+    <div class="status-pill">Recommended: {{ summary.recommended_model.method if summary.recommended_model else "P8 FedAvg + QGA" }}</div>
+  </header>
+
+  <main>
+    <section class="band">
+      <div class="section-title">
+        <h2>Overview</h2>
+        <span>{{ summary.project.branch if summary.project else "" }}</span>
+      </div>
+      <div class="grid four">
+        <article class="metric">
+          <span>Task</span>
+          <strong>L1 Binary IDS</strong>
+        </article>
+        <article class="metric">
+          <span>Runtime Evidence</span>
+          <strong>Flower FL</strong>
+        </article>
+        <article class="metric">
+          <span>Feature Selection</span>
+          <strong>QGA</strong>
+        </article>
+        <article class="metric">
+          <span>Aggregation</span>
+          <strong>FedAvg / QIFA</strong>
+        </article>
+      </div>
+    </section>
+
+    <section class="band accent">
+      <div class="section-title">
+        <h2>Recommended Deployment Model</h2>
+        <span>{{ summary.recommended_model.selected_mask_id if summary.recommended_model else "conservative_seed_42" }}</span>
+      </div>
+      <div class="recommended-layout">
+        <div>
+          <h3>{{ summary.recommended_model.method if summary.recommended_model else "P8 FedAvg + QGA L1" }}</h3>
+          <p>{{ summary.recommended_model.recommended_use_case if summary.recommended_model else "" }}</p>
+          <p class="small">Selected features: {{ summary.recommended_model.features_count if summary.recommended_model else "12" }}</p>
+        </div>
+        <div class="grid four compact">
+          <article class="metric"><span>Macro-F1</span><strong>{{ summary.recommended_model.macro_f1 if summary.recommended_model else "" }}</strong></article>
+          <article class="metric"><span>Attack Recall</span><strong>{{ summary.recommended_model.attack_recall if summary.recommended_model else "" }}</strong></article>
+          <article class="metric"><span>FPR</span><strong>{{ summary.recommended_model.fpr if summary.recommended_model else "" }}</strong></article>
+          <article class="metric"><span>Accuracy</span><strong>{{ summary.recommended_model.accuracy if summary.recommended_model else "" }}</strong></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="band">
+      <div class="section-title">
+        <h2>Test Set Evaluation</h2>
+        <span>recomputed when checkpoints are compatible, otherwise reported</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Status</th>
+              <th>Source</th>
+              <th>Macro-F1</th>
+              <th>Attack Recall</th>
+              <th>FPR</th>
+              <th>Accuracy</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in evaluations %}
+            <tr>
+              <td>{{ row.method }}</td>
+              <td><span class="tag">{{ row.status }}</span></td>
+              <td>{{ row.metric_source }}</td>
+              <td>{{ row.macro_f1 }}</td>
+              <td>{{ row.attack_recall }}</td>
+              <td>{{ row.fpr }}</td>
+              <td>{{ row.accuracy }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="band">
+      <div class="section-title">
+        <h2>L1 Comparison</h2>
+        <span>P5 / P8 / P9</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Features</th>
+              <th>Macro-F1</th>
+              <th>Attack Recall</th>
+              <th>FPR</th>
+              <th>Bandwidth</th>
+              <th>Evidence</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in summary.l1_comparison %}
+            <tr>
+              <td>{{ row.method }}</td>
+              <td>{{ row.features_count }}</td>
+              <td>{{ row.macro_f1 }}</td>
+              <td>{{ row.attack_recall }}</td>
+              <td>{{ row.fpr }}</td>
+              <td>{{ row.bandwidth_total_bytes }}</td>
+              <td>{{ row.evidence_level }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="band two-column">
+      <div>
+        <div class="section-title">
+          <h2>Robustness</h2>
+          <span>P10 label flipping</span>
+        </div>
+        <p class="small">{{ summary.robustness.scenario if summary.robustness else "" }}</p>
+        <div class="grid two compact">
+          <article class="metric"><span>Best Method</span><strong>{{ summary.robustness.best_method if summary.robustness else "" }}</strong></article>
+          <article class="metric"><span>Robustness Score</span><strong>{{ summary.robustness.best_row.robustness_score if summary.robustness and summary.robustness.best_row else "" }}</strong></article>
+        </div>
+      </div>
+      <div>
+        <div class="section-title">
+          <h2>Compression</h2>
+          <span>P11 dry-run</span>
+        </div>
+        <p class="small">{{ summary.compression.warning if summary.compression else "" }}</p>
+        <div class="grid two compact">
+          <article class="metric"><span>Compressed Size</span><strong>{{ summary.compression.row.compressed_model_size_bytes if summary.compression and summary.compression.row else "" }}</strong></article>
+          <article class="metric"><span>Bandwidth Reduction</span><strong>{{ summary.compression.row.bandwidth_reduction_ratio if summary.compression and summary.compression.row else "" }}</strong></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="band">
+      <div class="section-title">
+        <h2>Evidence and Reproducibility</h2>
+        <span>reports, figures, and endpoints</span>
+      </div>
+      <div class="grid two">
+        <div>
+          <h3>Reports</h3>
+          <ul>
+            {% for key, path in summary.evidence_paths.items() %}
+            <li><code>{{ key }}</code>: {{ path }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div>
+          <h3>API</h3>
+          <ul>
+            <li><code>GET /api/summary</code></li>
+            <li><code>GET /api/models</code></li>
+            <li><code>GET /api/evaluations</code></li>
+            <li><code>GET /api/figures</code></li>
+            <li><code>POST /api/evaluate/{model_id}</code></li>
+          </ul>
+        </div>
+      </div>
+      {% if summary.warnings %}
+      <div class="warning">
+        <strong>Warnings</strong>
+        <ul>
+          {% for warning in summary.warnings %}
+          <li>{{ warning }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+    </section>
+  </main>
+</body>
+</html>

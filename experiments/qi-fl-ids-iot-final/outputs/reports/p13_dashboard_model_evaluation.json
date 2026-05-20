@@ -1,0 +1,149 @@
+{
+  "models": [
+    {
+      "FN": 3064,
+      "FP": 2863,
+      "TN": 42137,
+      "TP": 46436,
+      "accuracy": 0.9372804232804233,
+      "attack_recall": 0.9381010101010101,
+      "bandwidth_total_bytes": "8710560",
+      "checkpoint": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\fl_l1_fedavg\\alpha_0.5\\k3\\checkpoints\\last_global_model.pth",
+      "confusion_matrix": [
+        [
+          42137,
+          2863
+        ],
+        [
+          3064,
+          46436
+        ]
+      ],
+      "feature_count": 28,
+      "fnr": 0.0618989898989899,
+      "fpr": 0.06362222222222222,
+      "macro_f1": 0.9371503541886343,
+      "method": "FedAvg L1",
+      "metric_source": "recomputed_test",
+      "model_id": "p5_fedavg_l1",
+      "model_size_bytes": "48392",
+      "phase": "P5",
+      "recommended_use_case": "Reference FL baseline",
+      "selected_mask_id": "",
+      "status": "evaluable",
+      "task": "l1_binary",
+      "uses_qga_mask": false,
+      "warning": "",
+      "weighted_f1": 0.937286504668525
+    },
+    {
+      "FN": 3302,
+      "FP": 2064,
+      "TN": 42936,
+      "TP": 46198,
+      "accuracy": 0.9432169312169312,
+      "attack_recall": 0.9332929292929293,
+      "bandwidth_total_bytes": "7236000",
+      "checkpoint": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\qga_fedavg_flower_l1\\alpha_0.5\\k3\\runs\\run_20260508_155659\\checkpoints\\last_global_model.pth",
+      "confusion_matrix": [
+        [
+          42936,
+          2064
+        ],
+        [
+          3302,
+          46198
+        ]
+      ],
+      "feature_count": 12,
+      "fnr": 0.0667070707070707,
+      "fpr": 0.04586666666666667,
+      "macro_f1": 0.9431491918803714,
+      "method": "FedAvg + QGA L1",
+      "metric_source": "recomputed_test",
+      "model_id": "p8_fedavg_qga_l1",
+      "model_size_bytes": "40200",
+      "phase": "P8",
+      "recommended_use_case": "Recommended production L1",
+      "selected_mask_id": "conservative_seed_42",
+      "status": "evaluable",
+      "task": "l1_binary",
+      "uses_qga_mask": true,
+      "warning": "",
+      "weighted_f1": 0.9432426397695556
+    },
+    {
+      "FN": 3370,
+      "FP": 1761,
+      "TN": 43239,
+      "TP": 46130,
+      "accuracy": 0.9457037037037037,
+      "attack_recall": 0.9319191919191919,
+      "bandwidth_total_bytes": "8710560",
+      "checkpoint": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\qifa_l1\\full_features\\alpha_0.5\\k3\\variant_hybrid\\gamma_0.5\\runs\\run_20260510_014428\\checkpoints\\best_global_model.pth",
+      "confusion_matrix": [
+        [
+          43239,
+          1761
+        ],
+        [
+          3370,
+          46130
+        ]
+      ],
+      "feature_count": 28,
+      "fnr": 0.06808080808080808,
+      "fpr": 0.03913333333333333,
+      "macro_f1": 0.9456528398312053,
+      "method": "QIFA L1",
+      "metric_source": "recomputed_test",
+      "model_id": "p9_qifa_l1",
+      "model_size_bytes": "48392",
+      "phase": "P9",
+      "recommended_use_case": "Lowest FPR alternative",
+      "selected_mask_id": "",
+      "status": "evaluable",
+      "task": "l1_binary",
+      "uses_qga_mask": false,
+      "warning": "",
+      "weighted_f1": 0.9457320122373772
+    },
+    {
+      "FN": 3215,
+      "FP": 1800,
+      "TN": 43200,
+      "TP": 46285,
+      "accuracy": 0.946931216931217,
+      "attack_recall": 0.935050505050505,
+      "bandwidth_total_bytes": "7236000",
+      "checkpoint": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\qifa_l1\\qga_mask\\alpha_0.5\\k3\\variant_hybrid\\gamma_0.5\\runs\\run_20260510_020019\\checkpoints\\best_global_model.pth",
+      "confusion_matrix": [
+        [
+          43200,
+          1800
+        ],
+        [
+          3215,
+          46285
+        ]
+      ],
+      "feature_count": 12,
+      "fnr": 0.06494949494949495,
+      "fpr": 0.04,
+      "macro_f1": 0.9468745996597796,
+      "method": "QIFA + QGA L1",
+      "metric_source": "recomputed_test",
+      "model_id": "p9_qifa_qga_l1",
+      "model_size_bytes": "40200",
+      "phase": "P9",
+      "recommended_use_case": "Best attack recall / robustness alternative",
+      "selected_mask_id": "conservative_seed_42",
+      "status": "evaluable",
+      "task": "l1_binary",
+      "uses_qga_mask": true,
+      "warning": "",
+      "weighted_f1": 0.946957185631082
+    }
+  ],
+  "warnings": []
+}
