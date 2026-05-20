@@ -1,0 +1,2 @@
+phase,method,task,features_count,macro_f1,weighted_f1,attack_recall,fpr,accuracy,model_size_bytes,bandwidth_total_bytes,compression_ratio,bandwidth_reduction_ratio,robustness_score,runtime,true_flower_runtime,result_type,evidence_level,accepted,source
+P11,P11 FedTN/MPS fedavg_qga rank 8,l1_binary_compression,12,,,,,,11912,2144160,0.296318407960199,0.703681592039801,,dry_run,False,dry_run,dry_run,True,outputs/reports/p11_fedtn_mps_summary.csv

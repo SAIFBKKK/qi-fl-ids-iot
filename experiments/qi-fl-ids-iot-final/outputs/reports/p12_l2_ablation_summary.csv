@@ -1,0 +1,4 @@
+phase,method,task,features_count,macro_f1,weighted_f1,attack_recall,fpr,accuracy,model_size_bytes,bandwidth_total_bytes,compression_ratio,bandwidth_reduction_ratio,robustness_score,runtime,true_flower_runtime,result_type,evidence_level,accepted,source
+P6,P6 L2 Flower baseline,l2_family,28,0.6355,0.7077,0.7294,0.0439,0.6841,49952,8991360,,,,true_flower,True,measured,final_full,True,outputs/reports/p8b_qga_l2_ablation_summary.csv
+P8-b,P8-b L2 FedAvg + QGA Flower,l2_family,19,0.6466,0.7762,0.7172,0.0332,0.7555,45344,8161920,,,,true_flower,True,measured,final_full,True,outputs/reports/p8b_qga_l2_ablation_summary.csv
+P7,P7 Multi-tier L2 best,l2_family,28,0.7085,,,,0.8194,,13491840,,,,true_flower,True,measured,final_full,True,outputs/reports/p7_multitier_summary.csv

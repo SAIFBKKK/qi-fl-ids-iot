@@ -1,0 +1,15 @@
+phase,method,task,features_count,macro_f1,weighted_f1,attack_recall,fpr,accuracy,model_size_bytes,bandwidth_total_bytes,compression_ratio,bandwidth_reduction_ratio,robustness_score,runtime,true_flower_runtime,result_type,evidence_level,accepted,source
+P4,P4 Centralized L1,l1_binary,28,0.9611,0.9612,0.9526,0.0293,0.9612,48392,0,,,,centralized,False,measured,final_full,True,outputs/centralized_l1/artifacts/metrics_test.json
+P5,P5 FedAvg L1,l1_binary,28,0.9407,0.9409,0.9474,0.0663,0.9409,48392,8710560,,,,in_process,False,measured,final_full,True,outputs/reports/p5_grid_summary.csv
+P8,P8 FedAvg + QGA L1,l1_binary,12,0.948,,0.955,0.0594,0.9481,40200,7236000,,,,manual,True,measured,final_full,True,outputs/reports/p8_qga_ablation_summary.csv
+P9,P9 QIFA L1,l1_binary,28,0.9454,0.9455,0.9436,0.0524,0.9455,48392,8710560,,,,true_flower,True,measured,final_full,True,outputs/reports/p9_qifa_ablation_summary.csv
+P9,P9 QIFA + QGA L1,l1_binary,12,0.9471,0.9472,0.9592,0.0658,0.9473,40200,7236000,,,,true_flower,True,measured,final_full,True,outputs/reports/p9_qifa_ablation_summary.csv
+P6,P6 L2 Flower baseline,l2_family,28,0.6355,0.7077,0.7294,0.0439,0.6841,49952,8991360,,,,true_flower,True,measured,final_full,True,outputs/reports/p8b_qga_l2_ablation_summary.csv
+P8-b,P8-b L2 FedAvg + QGA Flower,l2_family,19,0.6466,0.7762,0.7172,0.0332,0.7555,45344,8161920,,,,true_flower,True,measured,final_full,True,outputs/reports/p8b_qga_l2_ablation_summary.csv
+P7,P7 Multi-tier L1 best,l1_binary,28,0.949,,,,0.949,,13118880,,,,true_flower,True,measured,final_full,True,outputs/reports/p7_multitier_summary.csv
+P7,P7 Multi-tier L2 best,l2_family,28,0.7085,,,,0.8194,,13491840,,,,true_flower,True,measured,final_full,True,outputs/reports/p7_multitier_summary.csv
+P10,P10 FedAvg poisoned,l1_binary_robustness,28,0.9344680692677046,,0.9185252525252525,0.04788888888888889,0.9345185185185185,,,,,0.7332138326136503,in_process_robustness,False,measured,final_full,True,outputs/reports/p10_robustness_full_summary.csv
+P10,P10 FedAvg + QGA poisoned,l1_binary_robustness,12,0.939086958704671,,0.9368484848484848,0.058222222222222224,0.9391957671957673,,,,,0.7389535803624364,in_process_robustness,False,measured,final_full,True,outputs/reports/p10_robustness_full_summary.csv
+P10,P10 QIFA poisoned,l1_binary_robustness,28,0.9375599645294771,,0.9425454545454546,0.0676,0.9377142857142857,,,,,0.738023618628375,in_process_robustness,False,measured,final_full,True,outputs/reports/p10_robustness_full_summary.csv
+P10,P10 QIFA + QGA poisoned,l1_binary_robustness,12,0.9455302294225977,,0.9565858585858585,0.06626666666666667,0.9457037037037037,,,,,0.7464875389537231,in_process_robustness,False,measured,final_full,True,outputs/reports/p10_robustness_full_summary.csv
+P11,P11 FedTN/MPS fedavg_qga rank 8,l1_binary_compression,12,,,,,,11912,2144160,0.296318407960199,0.703681592039801,,dry_run,False,dry_run,dry_run,True,outputs/reports/p11_fedtn_mps_summary.csv

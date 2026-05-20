@@ -1,0 +1,7 @@
+phase,method,task,features_count,macro_f1,weighted_f1,attack_recall,fpr,accuracy,model_size_bytes,bandwidth_total_bytes,compression_ratio,bandwidth_reduction_ratio,robustness_score,runtime,true_flower_runtime,result_type,evidence_level,accepted,source
+P4,P4 Centralized L1,l1_binary,28,0.9611,0.9612,0.9526,0.0293,0.9612,48392,0,,,,centralized,False,measured,final_full,True,outputs/centralized_l1/artifacts/metrics_test.json
+P5,P5 FedAvg L1,l1_binary,28,0.9407,0.9409,0.9474,0.0663,0.9409,48392,8710560,,,,in_process,False,measured,final_full,True,outputs/reports/p5_grid_summary.csv
+P8,P8 FedAvg + QGA L1,l1_binary,12,0.948,,0.955,0.0594,0.9481,40200,7236000,,,,manual,True,measured,final_full,True,outputs/reports/p8_qga_ablation_summary.csv
+P9,P9 QIFA L1,l1_binary,28,0.9454,0.9455,0.9436,0.0524,0.9455,48392,8710560,,,,true_flower,True,measured,final_full,True,outputs/reports/p9_qifa_ablation_summary.csv
+P9,P9 QIFA + QGA L1,l1_binary,12,0.9471,0.9472,0.9592,0.0658,0.9473,40200,7236000,,,,true_flower,True,measured,final_full,True,outputs/reports/p9_qifa_ablation_summary.csv
+P7,P7 Multi-tier L1 best,l1_binary,28,0.949,,,,0.949,,13118880,,,,true_flower,True,measured,final_full,True,outputs/reports/p7_multitier_summary.csv

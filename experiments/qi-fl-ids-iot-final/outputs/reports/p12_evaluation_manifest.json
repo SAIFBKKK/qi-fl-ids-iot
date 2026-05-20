@@ -1,0 +1,29 @@
+{
+  "figures": [
+    "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\figures\\p12_ablation\\p12_l1_macro_f1_comparison.png",
+    "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\figures\\p12_ablation\\p12_l1_attack_recall_fpr_tradeoff.png",
+    "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\figures\\p12_ablation\\p12_l1_bandwidth_comparison.png",
+    "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\figures\\p12_ablation\\p12_qga_qifa_contribution_summary.png",
+    "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\figures\\p12_ablation\\p12_l2_p6_vs_p8b.png",
+    "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\figures\\p12_ablation\\p12_robustness_under_poisoning.png",
+    "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\figures\\p12_ablation\\p12_compression_size_reduction.png",
+    "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\figures\\p12_ablation\\p12_final_method_ranking_table.png",
+    "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\figures\\p12_ablation\\p12_best_model_by_objective.png"
+  ],
+  "reports": [
+    "p12_global_ablation_summary.csv",
+    "p12_global_ablation_summary.json",
+    "p12_global_ablation_table.md",
+    "p12_l1_ablation_summary.csv",
+    "p12_l2_ablation_summary.csv",
+    "p12_robustness_summary.csv",
+    "p12_compression_summary.csv",
+    "p12_final_findings.md"
+  ],
+  "result_type_policy": {
+    "dry_run": "Structural dry-run without checkpoint metrics.",
+    "estimated": "Derived non-training estimate.",
+    "measured": "Full measured evidence from existing reports.",
+    "structural": "Architecture or size-only value."
+  }
+}
