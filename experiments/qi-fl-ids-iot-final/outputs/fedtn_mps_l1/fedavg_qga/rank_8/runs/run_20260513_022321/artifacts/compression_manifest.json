@@ -1,0 +1,10 @@
+{
+  "base_model": "fedavg_qga",
+  "method": "mps_low_rank",
+  "rank": 8,
+  "selected_mask_id": "conservative_seed_42",
+  "target_layers": [
+    "fc1",
+    "fc2"
+  ]
+}

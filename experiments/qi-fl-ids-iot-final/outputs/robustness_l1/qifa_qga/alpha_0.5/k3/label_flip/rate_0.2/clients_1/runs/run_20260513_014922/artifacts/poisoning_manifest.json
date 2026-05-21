@@ -1,0 +1,29 @@
+{
+  "attack_type": "label_flip",
+  "clients": {
+    "client_1": {
+      "attack_type": "label_flip",
+      "eligible_rows": 203744,
+      "labels_flipped": 40748,
+      "poison_rate": 0.2,
+      "poisoned_rows": 40748
+    },
+    "client_2": {
+      "attack_type": "clean",
+      "poisoned_rows": 0
+    },
+    "client_3": {
+      "attack_type": "clean",
+      "poisoned_rows": 0
+    }
+  },
+  "global_test_modified": false,
+  "poison_rate": 0.2,
+  "poisoned_client_ids": [
+    "client_1"
+  ],
+  "poisoned_clients_count": 1,
+  "test_sent_to_clients": false,
+  "train_only": true,
+  "validation_modified": false
+}

@@ -1,0 +1,13 @@
+{
+  "bandwidth_reduction_ratio": 0.703681592039801,
+  "compressed_bandwidth_total_bytes": 2144160,
+  "compressed_model_size_bytes": 11912,
+  "compressed_num_parameters": 2978,
+  "compression_ratio": 0.296318407960199,
+  "dense_bandwidth_total_bytes": 7236000,
+  "dense_model_size_bytes": 40200,
+  "dense_num_parameters": 10050,
+  "parameter_reduction_ratio": 0.703681592039801,
+  "rank": 8,
+  "warnings": []
+}

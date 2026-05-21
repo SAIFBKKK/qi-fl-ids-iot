@@ -1,0 +1,9 @@
+{
+  "figures_dir": "experiments/qi-fl-ids-iot-final/outputs/figures/multitier/l1_binary/alpha_0.5/k3/run_20260507_171127",
+  "global_test_holdout": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/test_scaled.npz",
+  "phase": "P7",
+  "run_dir": "experiments/qi-fl-ids-iot-final/outputs/multitier_heterofl/l1_binary/alpha_0.5/k3/runs/run_20260507_171127",
+  "run_id": "run_20260507_171127",
+  "task": "l1_binary",
+  "test_sent_to_clients": false
+}

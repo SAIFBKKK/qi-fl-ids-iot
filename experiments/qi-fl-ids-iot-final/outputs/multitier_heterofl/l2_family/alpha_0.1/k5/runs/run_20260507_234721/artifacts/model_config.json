@@ -1,0 +1,9 @@
+{
+  "output_dim": 8,
+  "supernet": {
+    "architecture": "28 -> 256 -> 128 -> 8",
+    "model_size_bytes": 165408,
+    "num_parameters": 41352
+  },
+  "task": "l2_family"
+}

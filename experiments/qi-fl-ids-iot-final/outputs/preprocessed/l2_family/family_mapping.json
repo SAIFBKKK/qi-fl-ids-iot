@@ -1,0 +1,22 @@
+{
+  "family_to_id": {
+    "BruteForce": 0,
+    "DDoS": 1,
+    "DoS": 2,
+    "Malware": 3,
+    "Mirai": 4,
+    "Recon": 5,
+    "Spoofing": 6,
+    "Web-based": 7
+  },
+  "id_to_family": {
+    "0": "BruteForce",
+    "1": "DDoS",
+    "2": "DoS",
+    "3": "Malware",
+    "4": "Mirai",
+    "5": "Recon",
+    "6": "Spoofing",
+    "7": "Web-based"
+  }
+}

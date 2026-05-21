@@ -1,0 +1,18 @@
+{
+  "activation": "relu",
+  "architecture": "12 -> 128 -> 64 -> 2",
+  "calibration_decision_used": true,
+  "dropout": 0.2,
+  "hidden_layers": [
+    128,
+    64
+  ],
+  "input_dim": 12,
+  "model_size_bytes": 40200,
+  "name": "QGAFedAvgFlowerL1MLP",
+  "num_parameters": 10050,
+  "output_dim": 2,
+  "qga_selected_features_count": 12,
+  "selected_mask_id": "conservative_seed_42",
+  "selected_mask_source": "final_selected_mask"
+}

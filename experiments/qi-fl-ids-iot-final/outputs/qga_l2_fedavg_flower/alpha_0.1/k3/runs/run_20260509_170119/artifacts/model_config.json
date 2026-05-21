@@ -1,0 +1,13 @@
+{
+  "activation": "relu",
+  "dropout": 0.2,
+  "hidden_layers": [
+    128,
+    64
+  ],
+  "input_dim": 19,
+  "model_size_bytes": 45344,
+  "name": "QGAL2FedAvgFlowerMLP",
+  "output_dim": 8,
+  "selected_features_count": 19
+}

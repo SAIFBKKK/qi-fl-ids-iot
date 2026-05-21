@@ -1,0 +1,21 @@
+{
+  "accuracy": 0.57,
+  "attack": {
+    "f1_score": 0.6651090342679128,
+    "precision": 0.5446428571428571,
+    "recall": 0.854,
+    "support": 500
+  },
+  "macro_avg": {
+    "f1_score": 0.5322751875250178
+  },
+  "normal": {
+    "f1_score": 0.3994413407821229,
+    "precision": 0.6620370370370371,
+    "recall": 0.286,
+    "support": 500
+  },
+  "weighted_avg": {
+    "f1_score": 0.5322751875250178
+  }
+}

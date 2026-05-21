@@ -1,0 +1,10 @@
+{
+  "accepted": true,
+  "artifacts_dir": "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/run_20260508_102929/artifacts",
+  "global_test_holdout": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/test_scaled.npz",
+  "logs_dir": "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/run_20260508_102929/logs",
+  "run_id": "run_20260508_102929",
+  "run_summary": "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/run_20260508_102929/artifacts/run_summary.json",
+  "test_sent_to_clients": false,
+  "true_flower_runtime": true
+}

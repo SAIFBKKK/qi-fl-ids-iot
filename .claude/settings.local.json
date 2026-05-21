@@ -46,7 +46,9 @@
       "Bash(curl -s 'http://localhost:9090/api/v1/query?query=ids_node_assigned_tier_info')",
       "Bash(xargs wc *)",
       "Bash(grep -r \"C:\\\\\\\\\\\\\\\\\" --include=\"*.py\" --exclude-dir=\".venv\")",
-      "Bash(xargs grep *)"
+      "Bash(xargs grep *)",
+      "Bash(grep -E \"\\\\.pth$|\\\\.pt$|\\\\.npz$|\\\\.log$|/runs/|/preprocessed/|/partitions/|settings\\\\.local\")",
+      "Bash(git tag *)"
     ]
   }
 }

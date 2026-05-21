@@ -1,0 +1,116 @@
+{
+  "accepted": true,
+  "artifacts": [
+    "experiments/qi-fl-ids-iot-final/outputs/qga_feature_selection/runs/run_20260508_104311/artifacts/feature_mask.json",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_feature_selection/runs/run_20260508_104311/artifacts/feature_ranking.csv",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_feature_selection/runs/run_20260508_104311/artifacts/fitness_best.json",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_feature_selection/runs/run_20260508_104311/artifacts/fitness_weights.json",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_feature_selection/runs/run_20260508_104311/artifacts/qga_config.json",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_feature_selection/runs/run_20260508_104311/artifacts/qga_history.csv",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_feature_selection/runs/run_20260508_104311/artifacts/selected_features.json",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_feature_selection/runs/run_20260508_104311/artifacts/validation_metrics_best_mask.json",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_feature_selection/runs/run_20260508_104311/artifacts/run_summary.json"
+  ],
+  "comparison": {},
+  "criteria": {
+    "dashboard_not_modified": true,
+    "docker_not_modified": true,
+    "fedavg_qga_ready": true,
+    "fedtn_not_used": true,
+    "fitness_history_generated": true,
+    "heterofl_qga_ready": true,
+    "qga_mask_generated": true,
+    "qifa_not_used": true,
+    "selected_features_within_bounds": true,
+    "test_not_used_for_selection": true
+  },
+  "dataset": {
+    "input_dim_original": 28,
+    "input_dim_selected": 9,
+    "test_npz": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/test_scaled.npz",
+    "test_used_for_selection": false,
+    "train_npz": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/train_scaled.npz",
+    "val_npz": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/val_scaled.npz"
+  },
+  "errors": [],
+  "figures": [
+    "experiments/qi-fl-ids-iot-final/outputs/figures/qga/run_20260508_104311/qga_fitness_evolution.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/qga/run_20260508_104311/qga_num_features_evolution.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/qga/run_20260508_104311/qga_selected_features_barplot.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/qga/run_20260508_104311/qga_feature_mask.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/qga/run_20260508_104311/qga_feature_importance_ranking.png"
+  ],
+  "method": "QGA Feature Selection",
+  "mode": "full",
+  "phase": "P8",
+  "qga": {
+    "best_fitness": 0.7774434736114388,
+    "feature_mask_path": "experiments/qi-fl-ids-iot-final/outputs/qga_feature_selection/runs/run_20260508_104311/artifacts/feature_mask.json",
+    "fitness_formula": "0.6*macro_f1 + 0.3*attack_recall - 0.1*(features_count/28)",
+    "fitness_weights": {
+      "alpha_macro_f1": 0.6,
+      "beta_attack_recall": 0.3,
+      "lambda_feature_penalty": 0.1
+    },
+    "generations": 20,
+    "max_features": 24,
+    "min_features": 8,
+    "mutation_rate": 0.05,
+    "population_size": 20,
+    "selected_features": [
+      "flow_duration",
+      "Protocol Type",
+      "Rate",
+      "urg_count",
+      "rst_count",
+      "HTTPS",
+      "ICMP",
+      "IAT",
+      "Number"
+    ],
+    "selected_features_count": 9,
+    "selected_indices": [
+      0,
+      2,
+      4,
+      13,
+      14,
+      16,
+      22,
+      26,
+      27
+    ]
+  },
+  "run_id": "run_20260508_104311",
+  "task": "l1_binary",
+  "test": {
+    "evaluated": false,
+    "used_for_selection": false
+  },
+  "validation": {
+    "FN": 4511,
+    "FNR": 0.09113131313131313,
+    "FP": 5391,
+    "FPR": 0.1198,
+    "TN": 39609,
+    "TP": 44989,
+    "accuracy": 0.8952169312169312,
+    "f1": 0.9008610332398878,
+    "f1_attack": 0.9008610332398878,
+    "f1_normal": 0.8888913824057452,
+    "features_count": 9,
+    "loss": 0.2592478217208196,
+    "macro_f1": 0.8948762078228165,
+    "precision": 0.8929932512901945,
+    "precision_attack": 0.8929932512901945,
+    "precision_normal": 0.8977561196736175,
+    "recall": 0.9088686868686868,
+    "recall_attack": 0.9088686868686868,
+    "recall_normal": 0.8802,
+    "support_attack": 49500,
+    "support_normal": 45000,
+    "support_total": 94500,
+    "weighted_f1": 0.8951611995093437
+  },
+  "warnings": []
+}

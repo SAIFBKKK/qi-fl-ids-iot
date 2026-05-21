@@ -1,0 +1,5 @@
+{
+  "alpha_macro_f1": 0.6,
+  "beta_attack_recall": 0.3,
+  "lambda_feature_penalty": 0.1
+}

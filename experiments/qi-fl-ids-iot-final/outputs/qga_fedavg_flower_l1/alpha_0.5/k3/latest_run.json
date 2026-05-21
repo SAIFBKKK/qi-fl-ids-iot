@@ -1,0 +1,6 @@
+{
+  "latest_run_summary": "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/latest_run_summary.json",
+  "logs_dir": "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/run_20260508_155659/logs",
+  "run_dir": "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/run_20260508_155659",
+  "run_id": "run_20260508_155659"
+}

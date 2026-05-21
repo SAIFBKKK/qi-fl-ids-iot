@@ -1,0 +1,25 @@
+{
+  "medium": {
+    "hidden_layers": [
+      128,
+      64
+    ],
+    "input_dim": 13,
+    "output_dim": 2
+  },
+  "powerful": {
+    "hidden_layers": [
+      256,
+      128
+    ],
+    "input_dim": 13,
+    "output_dim": 2
+  },
+  "weak": {
+    "hidden_layers": [
+      64
+    ],
+    "input_dim": 13,
+    "output_dim": 2
+  }
+}

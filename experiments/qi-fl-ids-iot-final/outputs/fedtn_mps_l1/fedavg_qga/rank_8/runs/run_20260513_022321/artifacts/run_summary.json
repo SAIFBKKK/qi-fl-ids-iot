@@ -1,0 +1,31 @@
+{
+  "accepted": true,
+  "base_model": "fedavg_qga",
+  "compression": {
+    "bandwidth_reduction_ratio": 0.703681592039801,
+    "compressed_bandwidth_total_bytes": 2144160,
+    "compressed_model_size_bytes": 11912,
+    "compressed_num_parameters": 2978,
+    "compression_ratio": 0.296318407960199,
+    "dense_bandwidth_total_bytes": 7236000,
+    "dense_model_size_bytes": 40200,
+    "dense_num_parameters": 10050,
+    "parameter_reduction_ratio": 0.703681592039801,
+    "rank": 8,
+    "warnings": []
+  },
+  "criteria": {
+    "checkpoint_required_for_metric_evaluation": true,
+    "full_fl_not_auto_launched": true,
+    "l1_only": true,
+    "qga_mask_used": true
+  },
+  "dry_run": true,
+  "errors": [],
+  "phase": "P11",
+  "run_id": "run_20260513_022321",
+  "test": {},
+  "warnings": [
+    "dry_run_structure_only_checkpoint_not_loaded"
+  ]
+}

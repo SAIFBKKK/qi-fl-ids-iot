@@ -1,0 +1,125 @@
+{
+  "accuracy": 0.375,
+  "classes": {
+    "0": {
+      "FN": 23,
+      "FNR": 1.0,
+      "FP": 0,
+      "FPR": 0.0,
+      "TN": 977,
+      "TP": 0,
+      "class_id": 0,
+      "class_name": "BruteForce",
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "support": 23
+    },
+    "1": {
+      "FN": 40,
+      "FNR": 0.10178117048346055,
+      "FP": 355,
+      "FPR": 0.5848434925864909,
+      "TN": 252,
+      "TP": 353,
+      "class_id": 1,
+      "class_name": "DDoS",
+      "f1": 0.6412352406902816,
+      "precision": 0.4985875706214689,
+      "recall": 0.8982188295165394,
+      "support": 393
+    },
+    "2": {
+      "FN": 145,
+      "FNR": 1.0,
+      "FP": 77,
+      "FPR": 0.09005847953216374,
+      "TN": 778,
+      "TP": 0,
+      "class_id": 2,
+      "class_name": "DoS",
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "support": 145
+    },
+    "3": {
+      "FN": 16,
+      "FNR": 1.0,
+      "FP": 1,
+      "FPR": 0.0010162601626016261,
+      "TN": 983,
+      "TP": 0,
+      "class_id": 3,
+      "class_name": "Malware",
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "support": 16
+    },
+    "4": {
+      "FN": 82,
+      "FNR": 1.0,
+      "FP": 2,
+      "FPR": 0.002178649237472767,
+      "TN": 916,
+      "TP": 0,
+      "class_id": 4,
+      "class_name": "Mirai",
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "support": 82
+    },
+    "5": {
+      "FN": 133,
+      "FNR": 0.8807947019867549,
+      "FP": 174,
+      "FPR": 0.2049469964664311,
+      "TN": 675,
+      "TP": 18,
+      "class_id": 5,
+      "class_name": "Recon",
+      "f1": 0.10495626822157435,
+      "precision": 0.09375,
+      "recall": 0.11920529801324503,
+      "support": 151
+    },
+    "6": {
+      "FN": 76,
+      "FNR": 0.95,
+      "FP": 15,
+      "FPR": 0.016304347826086956,
+      "TN": 905,
+      "TP": 4,
+      "class_id": 6,
+      "class_name": "Spoofing",
+      "f1": 0.08080808080808081,
+      "precision": 0.21052631578947367,
+      "recall": 0.05,
+      "support": 80
+    },
+    "7": {
+      "FN": 110,
+      "FNR": 1.0,
+      "FP": 1,
+      "FPR": 0.0011235955056179776,
+      "TN": 889,
+      "TP": 0,
+      "class_id": 7,
+      "class_name": "Web-based",
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "support": 110
+    }
+  },
+  "macro_avg": {
+    "f1_score": 0.10337494871499209,
+    "precision": 0.10035798580136782,
+    "recall": 0.13342801594122305
+  },
+  "weighted_avg": {
+    "f1_score": 0.27431849255738483
+  }
+}

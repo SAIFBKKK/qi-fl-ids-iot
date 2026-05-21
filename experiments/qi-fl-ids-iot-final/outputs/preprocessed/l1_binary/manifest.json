@@ -1,0 +1,587 @@
+{
+  "actual_split_counts": {
+    "test": 94500,
+    "train": 441000,
+    "val": 94500
+  },
+  "anti_leakage_id": "row_id",
+  "anti_leakage_result": {
+    "anti_leakage_id": "row_id",
+    "anti_leakage_valid": true,
+    "overlap_counts": {
+      "train_test": 0,
+      "train_val": 0,
+      "val_test": 0
+    },
+    "split_counts": {
+      "test": 94500,
+      "train": 441000,
+      "val": 94500
+    },
+    "total_assigned": 630000
+  },
+  "created_at": "2026-05-06T14:47:06+00:00",
+  "feature_count": 28,
+  "file_sizes": {
+    "npz": {
+      "test": {
+        "path": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/test_scaled.npz",
+        "size_bytes": 11719014
+      },
+      "train": {
+        "path": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/train_scaled.npz",
+        "size_bytes": 54685014
+      },
+      "val": {
+        "path": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/val_scaled.npz",
+        "size_bytes": 11719014
+      }
+    },
+    "parquet": {
+      "test": {
+        "path": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/test.parquet",
+        "size_bytes": 9931070
+      },
+      "train": {
+        "path": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/train.parquet",
+        "size_bytes": 46036501
+      },
+      "val": {
+        "path": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/val.parquet",
+        "size_bytes": 9923149
+      }
+    },
+    "scaler": {
+      "path": "experiments/qi-fl-ids-iot-final/outputs/artifacts/scalers/l1_binary_robust_scaler.pkl",
+      "size_bytes": 1665
+    }
+  },
+  "label_columns": [
+    "label_id",
+    "label_name",
+    "binary_label",
+    "binary_name"
+  ],
+  "npz_shapes": {
+    "test": {
+      "X": [
+        94500,
+        28
+      ],
+      "label_id_original": [
+        94500
+      ],
+      "row_id": [
+        94500
+      ],
+      "y_binary": [
+        94500
+      ]
+    },
+    "train": {
+      "X": [
+        441000,
+        28
+      ],
+      "label_id_original": [
+        441000
+      ],
+      "row_id": [
+        441000
+      ],
+      "y_binary": [
+        441000
+      ]
+    },
+    "val": {
+      "X": [
+        94500,
+        28
+      ],
+      "label_id_original": [
+        94500
+      ],
+      "row_id": [
+        94500
+      ],
+      "y_binary": [
+        94500
+      ]
+    }
+  },
+  "output_files": {
+    "npz": {
+      "test": {
+        "arrays": {
+          "X": [
+            94500,
+            28
+          ],
+          "label_id_original": [
+            94500
+          ],
+          "row_id": [
+            94500
+          ],
+          "y_binary": [
+            94500
+          ]
+        },
+        "feature_count": 28,
+        "path": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/test_scaled.npz",
+        "rows": 94500,
+        "size_bytes": 11719014
+      },
+      "train": {
+        "arrays": {
+          "X": [
+            441000,
+            28
+          ],
+          "label_id_original": [
+            441000
+          ],
+          "row_id": [
+            441000
+          ],
+          "y_binary": [
+            441000
+          ]
+        },
+        "feature_count": 28,
+        "path": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/train_scaled.npz",
+        "rows": 441000,
+        "size_bytes": 54685014
+      },
+      "val": {
+        "arrays": {
+          "X": [
+            94500,
+            28
+          ],
+          "label_id_original": [
+            94500
+          ],
+          "row_id": [
+            94500
+          ],
+          "y_binary": [
+            94500
+          ]
+        },
+        "feature_count": 28,
+        "path": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/val_scaled.npz",
+        "rows": 94500,
+        "size_bytes": 11719014
+      }
+    },
+    "parquet": {
+      "test": {
+        "path": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/test.parquet",
+        "size_bytes": 9931070
+      },
+      "train": {
+        "path": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/train.parquet",
+        "size_bytes": 46036501
+      },
+      "val": {
+        "path": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/val.parquet",
+        "size_bytes": 9923149
+      }
+    }
+  },
+  "random_seed": 42,
+  "row_counts": {
+    "attack": 330000,
+    "by_binary": {
+      "attack": {
+        "binary_label": 1,
+        "count": 330000,
+        "ratio": 0.5238095238095238
+      },
+      "normal": {
+        "binary_label": 0,
+        "count": 300000,
+        "ratio": 0.47619047619047616
+      }
+    },
+    "by_label_id": {
+      "0": {
+        "count": 10000,
+        "label_name": "Backdoor_Malware"
+      },
+      "1": {
+        "count": 300000,
+        "label_name": "BenignTraffic"
+      },
+      "10": {
+        "count": 10000,
+        "label_name": "DDoS-SYN_Flood"
+      },
+      "11": {
+        "count": 10000,
+        "label_name": "DDoS-SlowLoris"
+      },
+      "12": {
+        "count": 10000,
+        "label_name": "DDoS-SynonymousIP_Flood"
+      },
+      "13": {
+        "count": 10000,
+        "label_name": "DDoS-TCP_Flood"
+      },
+      "14": {
+        "count": 10000,
+        "label_name": "DDoS-UDP_Flood"
+      },
+      "15": {
+        "count": 10000,
+        "label_name": "DDoS-UDP_Fragmentation"
+      },
+      "16": {
+        "count": 10000,
+        "label_name": "DNS_Spoofing"
+      },
+      "17": {
+        "count": 10000,
+        "label_name": "DictionaryBruteForce"
+      },
+      "18": {
+        "count": 10000,
+        "label_name": "DoS-HTTP_Flood"
+      },
+      "19": {
+        "count": 10000,
+        "label_name": "DoS-SYN_Flood"
+      },
+      "2": {
+        "count": 10000,
+        "label_name": "BrowserHijacking"
+      },
+      "20": {
+        "count": 10000,
+        "label_name": "DoS-TCP_Flood"
+      },
+      "21": {
+        "count": 10000,
+        "label_name": "DoS-UDP_Flood"
+      },
+      "22": {
+        "count": 10000,
+        "label_name": "MITM-ArpSpoofing"
+      },
+      "23": {
+        "count": 10000,
+        "label_name": "Mirai-greeth_flood"
+      },
+      "24": {
+        "count": 10000,
+        "label_name": "Mirai-greip_flood"
+      },
+      "25": {
+        "count": 10000,
+        "label_name": "Mirai-udpplain"
+      },
+      "26": {
+        "count": 10000,
+        "label_name": "Recon-HostDiscovery"
+      },
+      "27": {
+        "count": 10000,
+        "label_name": "Recon-OSScan"
+      },
+      "28": {
+        "count": 10000,
+        "label_name": "Recon-PingSweep"
+      },
+      "29": {
+        "count": 10000,
+        "label_name": "Recon-PortScan"
+      },
+      "3": {
+        "count": 10000,
+        "label_name": "CommandInjection"
+      },
+      "30": {
+        "count": 10000,
+        "label_name": "SqlInjection"
+      },
+      "31": {
+        "count": 10000,
+        "label_name": "Uploading_Attack"
+      },
+      "32": {
+        "count": 10000,
+        "label_name": "VulnerabilityScan"
+      },
+      "33": {
+        "count": 10000,
+        "label_name": "XSS"
+      },
+      "4": {
+        "count": 10000,
+        "label_name": "DDoS-ACK_Fragmentation"
+      },
+      "5": {
+        "count": 10000,
+        "label_name": "DDoS-HTTP_Flood"
+      },
+      "6": {
+        "count": 10000,
+        "label_name": "DDoS-ICMP_Flood"
+      },
+      "7": {
+        "count": 10000,
+        "label_name": "DDoS-ICMP_Fragmentation"
+      },
+      "8": {
+        "count": 10000,
+        "label_name": "DDoS-PSHACK_Flood"
+      },
+      "9": {
+        "count": 10000,
+        "label_name": "DDoS-RSTFINFlood"
+      }
+    },
+    "normal": 300000,
+    "total": 630000
+  },
+  "scaler_path": "experiments/qi-fl-ids-iot-final/outputs/artifacts/scalers/l1_binary_robust_scaler.pkl",
+  "scaling_applied": true,
+  "scaling_skipped": false,
+  "scaling_status": "raw_unscaled",
+  "scaling_train_only": true,
+  "source_dataset": "data/balancing_v3_fixed300k_outputs/balancing_v3_fixed300k_balanced.parquet",
+  "source_p1_artifacts": {
+    "feature_names_path": "experiments/qi-fl-ids-iot-final/outputs/artifacts/features/feature_names.json",
+    "id_to_label_path": "experiments/qi-fl-ids-iot-final/outputs/artifacts/mappings/id_to_label.json",
+    "label_mapping_path": "experiments/qi-fl-ids-iot-final/outputs/artifacts/mappings/label_mapping.json",
+    "label_to_binary_path": "experiments/qi-fl-ids-iot-final/outputs/artifacts/mappings/label_to_binary.json",
+    "label_to_family_path": "experiments/qi-fl-ids-iot-final/outputs/artifacts/mappings/label_to_family.json"
+  },
+  "split_distribution_by_binary": {
+    "attack": {
+      "test": 49500,
+      "total": 330000,
+      "train": 231000,
+      "val": 49500
+    },
+    "normal": {
+      "test": 45000,
+      "total": 300000,
+      "train": 210000,
+      "val": 45000
+    }
+  },
+  "split_distribution_by_label": {
+    "Backdoor_Malware": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "BenignTraffic": {
+      "test": 45000,
+      "total": 300000,
+      "train": 210000,
+      "val": 45000
+    },
+    "BrowserHijacking": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "CommandInjection": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "DDoS-ACK_Fragmentation": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "DDoS-HTTP_Flood": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "DDoS-ICMP_Flood": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "DDoS-ICMP_Fragmentation": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "DDoS-PSHACK_Flood": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "DDoS-RSTFINFlood": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "DDoS-SYN_Flood": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "DDoS-SlowLoris": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "DDoS-SynonymousIP_Flood": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "DDoS-TCP_Flood": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "DDoS-UDP_Flood": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "DDoS-UDP_Fragmentation": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "DNS_Spoofing": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "DictionaryBruteForce": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "DoS-HTTP_Flood": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "DoS-SYN_Flood": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "DoS-TCP_Flood": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "DoS-UDP_Flood": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "MITM-ArpSpoofing": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "Mirai-greeth_flood": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "Mirai-greip_flood": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "Mirai-udpplain": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "Recon-HostDiscovery": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "Recon-OSScan": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "Recon-PingSweep": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "Recon-PortScan": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "SqlInjection": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "Uploading_Attack": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "VulnerabilityScan": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    },
+    "XSS": {
+      "test": 1500,
+      "total": 10000,
+      "train": 7000,
+      "val": 1500
+    }
+  },
+  "split_ratios": {
+    "test": 0.15,
+    "train": 0.7,
+    "val": 0.15
+  }
+}

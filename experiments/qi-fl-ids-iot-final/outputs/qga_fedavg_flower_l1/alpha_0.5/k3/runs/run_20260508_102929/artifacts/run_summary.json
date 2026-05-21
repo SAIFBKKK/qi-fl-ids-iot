@@ -1,0 +1,304 @@
+{
+  "accepted": true,
+  "artifacts": [
+    "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/latest_run_summary.json",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/run_20260508_102929/artifacts/aggregation_weights.csv",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/run_20260508_102929/artifacts/bandwidth_rounds.csv",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/run_20260508_102929/artifacts/classification_report.json",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/run_20260508_102929/artifacts/comparison_with_p5.json",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/run_20260508_102929/artifacts/confusion_matrix.csv",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/run_20260508_102929/artifacts/metrics_clients.csv",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/run_20260508_102929/artifacts/metrics_rounds.csv",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/run_20260508_102929/artifacts/metrics_test.json",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/run_20260508_102929/artifacts/metrics_val.json",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/run_20260508_102929/artifacts/model_config.json",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/run_20260508_102929/artifacts/run_manifest.json",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/run_20260508_102929/artifacts/run_summary.json",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/run_20260508_102929/artifacts/selected_features_reference.json",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/run_20260508_102929/artifacts/threshold.json",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/run_20260508_102929/artifacts/threshold_sweep.csv",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/run_20260508_102929/checkpoints/best_global_model.pth",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/run_20260508_102929/checkpoints/last_global_model.pth",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/run_20260508_102929/logs/flower_clients.log",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/run_20260508_102929/logs/flower_server.log",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/run_20260508_102929/logs/run_console.log",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/run_20260508_102929/manifest.json"
+  ],
+  "communication": {
+    "communication_cumulative_bytes": 244272,
+    "model_size_bytes": 40712
+  },
+  "comparison_with_p5": {
+    "gap_macro_f1_vs_p5": -0.35963601071718543,
+    "p5_attack_recall": 0.9474141414141414,
+    "p5_fpr": 0.06626666666666667,
+    "p5_macro_f1": 0.9407415103639889,
+    "p8_attack_recall": 0.9071969696969697,
+    "p8_fpr": 0.6864406779661016,
+    "p8_macro_f1": 0.5811054996468035
+  },
+  "criteria": {
+    "bandwidth_metrics_generated": true,
+    "best_model_saved": true,
+    "client_metrics_generated": true,
+    "comparison_with_p5_generated": true,
+    "figures_generated": true,
+    "flower_runtime_true": true,
+    "full_run_completed": false,
+    "global_test_holdout_protected": true,
+    "last_model_saved": true,
+    "metrics_test_generated": true,
+    "p3_partitions_used": true,
+    "qga_mask_applied": true,
+    "round_metrics_generated": true,
+    "server_client_runtime_started": true,
+    "smoke_run_only": true,
+    "test_not_used_for_selection": true,
+    "test_sent_to_clients_false": true,
+    "threshold_validation_only": true,
+    "true_flower_runtime": true
+  },
+  "dataset": {
+    "client_train_rows": {
+      "client_1": 203744,
+      "client_2": 82691,
+      "client_3": 154565
+    },
+    "client_val_rows": {
+      "client_1": 27634,
+      "client_2": 23457,
+      "client_3": 43409
+    },
+    "global_test_holdout": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/test_scaled.npz",
+    "global_test_rows_expected": 94500,
+    "input_dim_original": 28,
+    "input_dim_selected": 13,
+    "test_rows": 1000,
+    "test_sent_to_clients": false,
+    "train_rows_total": 441000,
+    "val_rows_total": 94500
+  },
+  "errors": [],
+  "figures": [
+    "experiments/qi-fl-ids-iot-final/outputs/figures/qga/fedavg_flower_l1/alpha_0.5/k3/run_20260508_102929/p8_fedavg_qga_flower_macro_f1_by_round.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/qga/fedavg_flower_l1/alpha_0.5/k3/run_20260508_102929/p8_fedavg_qga_flower_bandwidth_by_round.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/qga/fedavg_flower_l1/alpha_0.5/k3/run_20260508_102929/p8_fedavg_qga_flower_confusion_matrix.png"
+  ],
+  "flower_runtime": true,
+  "flower_version": "1.8.0",
+  "method": "FedAvg + QGA",
+  "mode": "smoke",
+  "model": {
+    "activation": "relu",
+    "architecture": "13 -> 128 -> 64 -> 2",
+    "dropout": 0.2,
+    "hidden_layers": [
+      128,
+      64
+    ],
+    "input_dim": 13,
+    "model_size_bytes": 40712,
+    "name": "QGAFedAvgFlowerL1MLP",
+    "num_parameters": 10178,
+    "output_dim": 2,
+    "qga_selected_features_count": 13
+  },
+  "phase": "P8",
+  "qga": {
+    "selected_features": [
+      "flow_duration",
+      "Protocol Type",
+      "fin_flag_number",
+      "syn_flag_number",
+      "rst_flag_number",
+      "fin_count",
+      "rst_count",
+      "HTTP",
+      "DNS",
+      "SSH",
+      "Tot sum",
+      "Min",
+      "Std"
+    ],
+    "selected_features_count": 13,
+    "selected_indices": [
+      0,
+      2,
+      5,
+      6,
+      7,
+      12,
+      14,
+      15,
+      17,
+      18,
+      23,
+      24,
+      25
+    ],
+    "test_used_for_selection": false
+  },
+  "run_id": "run_20260508_102929",
+  "runtime": "subprocess",
+  "scenario": {
+    "alpha": 0.5,
+    "client_ids": [
+      "client_1",
+      "client_2",
+      "client_3"
+    ],
+    "clients": 3,
+    "rounds": 1
+  },
+  "test": {
+    "global_holdout": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/test_scaled.npz",
+    "metrics": {
+      "FN": 49,
+      "FNR": 0.0928030303030303,
+      "FP": 324,
+      "FPR": 0.6864406779661016,
+      "TN": 148,
+      "TP": 479,
+      "accuracy": 0.627,
+      "classification_report": {
+        "accuracy": 0.627,
+        "attack": {
+          "f1_score": 0.7197595792637115,
+          "precision": 0.5965130759651308,
+          "recall": 0.9071969696969697,
+          "support": 528
+        },
+        "macro_avg": {
+          "f1_score": 0.5811054996468035
+        },
+        "normal": {
+          "f1_score": 0.44245142002989535,
+          "precision": 0.751269035532995,
+          "recall": 0.3135593220338983,
+          "support": 472
+        },
+        "weighted_avg": {
+          "f1_score": 0.5888701281053503
+        }
+      },
+      "f1": 0.7197595792637115,
+      "f1_attack": 0.7197595792637115,
+      "f1_normal": 0.44245142002989535,
+      "macro_f1": 0.5811054996468035,
+      "model_size_bytes": 40712,
+      "num_parameters": 10178,
+      "pr_auc": 0.7797057627844535,
+      "precision": 0.5965130759651308,
+      "precision_attack": 0.5965130759651308,
+      "precision_normal": 0.751269035532995,
+      "recall": 0.9071969696969697,
+      "recall_attack": 0.9071969696969697,
+      "recall_normal": 0.3135593220338983,
+      "roc_auc": 0.748647759373395,
+      "roc_pr_warning": null,
+      "support_attack": 528,
+      "support_normal": 472,
+      "support_total": 1000,
+      "threshold": 0.45,
+      "weighted_f1": 0.5888701281053503
+    }
+  },
+  "threshold": {
+    "primary_objective": "f1_attack",
+    "primary_threshold": 0.45,
+    "primary_validation_metrics": {
+      "FN": 149,
+      "FNR": 0.10931768158473955,
+      "FP": 1143,
+      "FPR": 0.6982284667073916,
+      "TN": 494,
+      "TP": 1214,
+      "accuracy": 0.5693333333333334,
+      "f1": 0.6526881720430109,
+      "f1_attack": 0.6526881720430109,
+      "f1_normal": 0.43333333333333335,
+      "macro_f1": 0.5430107526881721,
+      "precision": 0.5150615188799321,
+      "precision_attack": 0.5150615188799321,
+      "precision_normal": 0.7682737169517885,
+      "recall": 0.8906823184152605,
+      "recall_attack": 0.8906823184152605,
+      "recall_normal": 0.3017715332926084,
+      "support_attack": 1363,
+      "support_normal": 1637,
+      "support_total": 3000,
+      "threshold": 0.45,
+      "weighted_f1": 0.5329935483870968
+    },
+    "secondary_objective": "recall_attack_with_fpr_control",
+    "secondary_threshold": 0.55,
+    "secondary_validation_metrics": {
+      "FN": 1202,
+      "FNR": 0.8818782098312545,
+      "FP": 11,
+      "FPR": 0.006719609040928528,
+      "TN": 1626,
+      "TP": 161,
+      "accuracy": 0.5956666666666667,
+      "f1": 0.20977198697068405,
+      "f1_attack": 0.20977198697068405,
+      "f1_normal": 0.7283314669652856,
+      "macro_f1": 0.4690517269679848,
+      "precision": 0.936046511627907,
+      "precision_attack": 0.936046511627907,
+      "precision_normal": 0.574964639321075,
+      "recall": 0.11812179016874541,
+      "recall_attack": 0.11812179016874541,
+      "recall_normal": 0.9932803909590715,
+      "support_attack": 1363,
+      "support_normal": 1637,
+      "support_total": 3000,
+      "threshold": 0.55,
+      "weighted_f1": 0.49273260988773837
+    },
+    "selection_split": "validation",
+    "test_used_for_threshold": false
+  },
+  "training": {
+    "best_round": 1,
+    "framework": "Flower",
+    "rounds_completed": 1,
+    "rounds_configured": 1,
+    "selection_metric": "server_validation_macro_f1",
+    "strategy": "FedAvg"
+  },
+  "true_flower_runtime": true,
+  "validation": {
+    "metrics": {
+      "FN": 149,
+      "FNR": 0.10931768158473955,
+      "FP": 1143,
+      "FPR": 0.6982284667073916,
+      "TN": 494,
+      "TP": 1214,
+      "accuracy": 0.5693333333333334,
+      "f1": 0.6526881720430109,
+      "f1_attack": 0.6526881720430109,
+      "f1_normal": 0.43333333333333335,
+      "macro_f1": 0.5430107526881721,
+      "precision": 0.5150615188799321,
+      "precision_attack": 0.5150615188799321,
+      "precision_normal": 0.7682737169517885,
+      "recall": 0.8906823184152605,
+      "recall_attack": 0.8906823184152605,
+      "recall_normal": 0.3017715332926084,
+      "selection_split": "server_validation",
+      "support_attack": 1363,
+      "support_normal": 1637,
+      "support_total": 3000,
+      "test_used_for_threshold": false,
+      "threshold": 0.45,
+      "weighted_f1": 0.5329935483870968
+    },
+    "selection_split": "server_validation",
+    "test_used_for_threshold": false
+  },
+  "warnings": [
+    "Smoke run uses sampled clients/test data; metrics have low scientific significance."
+  ]
+}

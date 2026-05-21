@@ -1,0 +1,80 @@
+{
+  "accepted": true,
+  "artifacts": [
+    "experiments/qi-fl-ids-iot-final/outputs/qga_heterofl_l1/alpha_0.5/k3/runs/run_20260508_112115/artifacts/bandwidth_by_tier.csv",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_heterofl_l1/alpha_0.5/k3/runs/run_20260508_112115/artifacts/classification_report.json",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_heterofl_l1/alpha_0.5/k3/runs/run_20260508_112115/artifacts/comparison_with_p7.json",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_heterofl_l1/alpha_0.5/k3/runs/run_20260508_112115/artifacts/confusion_matrix.csv",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_heterofl_l1/alpha_0.5/k3/runs/run_20260508_112115/artifacts/metrics_clients.csv",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_heterofl_l1/alpha_0.5/k3/runs/run_20260508_112115/artifacts/metrics_rounds.csv",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_heterofl_l1/alpha_0.5/k3/runs/run_20260508_112115/artifacts/metrics_test.json",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_heterofl_l1/alpha_0.5/k3/runs/run_20260508_112115/artifacts/metrics_val.json",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_heterofl_l1/alpha_0.5/k3/runs/run_20260508_112115/artifacts/model_config.json",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_heterofl_l1/alpha_0.5/k3/runs/run_20260508_112115/artifacts/selected_features_reference.json",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_heterofl_l1/alpha_0.5/k3/runs/run_20260508_112115/artifacts/slices_updated.csv",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_heterofl_l1/alpha_0.5/k3/runs/run_20260508_112115/artifacts/tier_mapping.json",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_heterofl_l1/alpha_0.5/k3/runs/run_20260508_112115/artifacts/tier_model_configs.json",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_heterofl_l1/alpha_0.5/k3/runs/run_20260508_112115/artifacts/run_summary.json"
+  ],
+  "communication": {
+    "model_size_bytes": 142856,
+    "total_bytes": 11076000
+  },
+  "comparison": {
+    "p7_reference": "experiments/qi-fl-ids-iot-final/outputs/reports/p7_multitier_summary.csv",
+    "p8_macro_f1": 0.9118787405609233
+  },
+  "criteria": {
+    "comparison_generated": true,
+    "metrics_test_generated": true,
+    "qga_mask_applied": true,
+    "test_not_used_for_selection": true
+  },
+  "dataset": {
+    "input_dim_original": 28,
+    "input_dim_selected": 9,
+    "test_sent_to_clients": false,
+    "test_used_for_selection": false
+  },
+  "errors": [],
+  "figures": [
+    "experiments/qi-fl-ids-iot-final/outputs/figures/qga/heterofl_l1/run_20260508_112115/p8_heterofl_qga_macro_f1_by_round.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/qga/heterofl_l1/run_20260508_112115/p8_heterofl_qga_bandwidth_by_round.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/qga/heterofl_l1/run_20260508_112115/p8_heterofl_qga_confusion_matrix.png"
+  ],
+  "method": "HeteroFL + QGA",
+  "mode": "full",
+  "phase": "P8",
+  "run_id": "run_20260508_112115",
+  "scenario": {
+    "alpha": 0.5,
+    "clients": 3,
+    "rounds": 30
+  },
+  "task": "l1_binary",
+  "test": {
+    "FN": 817,
+    "FNR": 0.016505050505050505,
+    "FP": 7396,
+    "FPR": 0.16435555555555556,
+    "TN": 37604,
+    "TP": 48683,
+    "accuracy": 0.9130899470899471,
+    "f1": 0.9222099091675428,
+    "f1_attack": 0.9222099091675428,
+    "f1_normal": 0.9015475719543039,
+    "loss": 0.2057376697694183,
+    "macro_f1": 0.9118787405609233,
+    "precision": 0.8681146240125537,
+    "precision_attack": 0.8681146240125537,
+    "precision_normal": 0.9787355873090237,
+    "recall": 0.9834949494949495,
+    "recall_attack": 0.9834949494949495,
+    "recall_normal": 0.8356444444444444,
+    "support_attack": 49500,
+    "support_normal": 45000,
+    "support_total": 94500,
+    "weighted_f1": 0.9123707009707623
+  },
+  "warnings": []
+}

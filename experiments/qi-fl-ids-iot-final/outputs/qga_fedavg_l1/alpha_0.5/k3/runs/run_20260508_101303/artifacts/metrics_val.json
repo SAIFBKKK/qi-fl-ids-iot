@@ -1,0 +1,19 @@
+{
+  "FN": 230,
+  "FNR": 0.15333333333333332,
+  "FP": 986,
+  "FPR": 0.6573333333333333,
+  "TN": 514,
+  "TP": 1270,
+  "alpha": 0.5,
+  "attack_recall": 0.8466666666666667,
+  "clients": 3,
+  "communication_cumulative_bytes": 244272,
+  "communication_total_bytes": 244272,
+  "macro_f1": 0.5671809240687271,
+  "model_size_bytes": 40712,
+  "round": 1,
+  "round_time_sec": 1.0224783000012394,
+  "train_loss_mean": 0.699993352095286,
+  "val_loss_mean": 0.6590677822430928
+}

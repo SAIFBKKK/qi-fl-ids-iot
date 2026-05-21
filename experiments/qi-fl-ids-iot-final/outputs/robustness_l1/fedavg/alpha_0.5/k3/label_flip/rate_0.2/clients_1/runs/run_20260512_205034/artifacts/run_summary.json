@@ -1,0 +1,62 @@
+{
+  "accepted": true,
+  "artifacts": [
+    "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\robustness_l1\\fedavg\\alpha_0.5\\k3\\label_flip\\rate_0.2\\clients_1\\runs\\run_20260512_205034\\artifacts\\aggregation_weights.csv",
+    "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\robustness_l1\\fedavg\\alpha_0.5\\k3\\label_flip\\rate_0.2\\clients_1\\runs\\run_20260512_205034\\artifacts\\classification_report.json",
+    "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\robustness_l1\\fedavg\\alpha_0.5\\k3\\label_flip\\rate_0.2\\clients_1\\runs\\run_20260512_205034\\artifacts\\comparison_with_clean_baseline.json",
+    "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\robustness_l1\\fedavg\\alpha_0.5\\k3\\label_flip\\rate_0.2\\clients_1\\runs\\run_20260512_205034\\artifacts\\confusion_matrix.csv",
+    "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\robustness_l1\\fedavg\\alpha_0.5\\k3\\label_flip\\rate_0.2\\clients_1\\runs\\run_20260512_205034\\artifacts\\metrics_clients.csv",
+    "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\robustness_l1\\fedavg\\alpha_0.5\\k3\\label_flip\\rate_0.2\\clients_1\\runs\\run_20260512_205034\\artifacts\\metrics_rounds.csv",
+    "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\robustness_l1\\fedavg\\alpha_0.5\\k3\\label_flip\\rate_0.2\\clients_1\\runs\\run_20260512_205034\\artifacts\\metrics_test.json",
+    "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\outputs\\robustness_l1\\fedavg\\alpha_0.5\\k3\\label_flip\\rate_0.2\\clients_1\\runs\\run_20260512_205034\\artifacts\\poisoning_manifest.json"
+  ],
+  "criteria": {
+    "dashboard_not_modified": true,
+    "docker_not_modified": true,
+    "fedtn_mps_not_used": true,
+    "full_training_not_auto_launched": true,
+    "global_test_holdout_protected": true,
+    "p3_partitions_not_modified": true,
+    "test_sent_to_clients_false": true,
+    "train_poisoning_only": true
+  },
+  "dataset": {
+    "input_dim": 28,
+    "test_modified": false,
+    "test_sent_to_clients": false,
+    "validation_modified": false
+  },
+  "errors": [],
+  "method": "fedavg",
+  "mode": "smoke",
+  "phase": "P10",
+  "run_id": "run_20260512_205034",
+  "scenario": {
+    "alpha": 0.5,
+    "attack_type": "label_flip",
+    "clients": 3,
+    "poison_rate": 0.2,
+    "poisoned_clients": 1,
+    "rounds": 1
+  },
+  "test": {
+    "FN": 246,
+    "FNR": 0.4667931688804554,
+    "FP": 272,
+    "FPR": 0.5750528541226215,
+    "TN": 201,
+    "TP": 281,
+    "accuracy": 0.482,
+    "attack_recall": 0.5332068311195446,
+    "f1_attack": 0.5203703703703704,
+    "loss": 1.1118568687438966,
+    "macro_f1": 0.4786634460547504,
+    "precision_attack": 0.5081374321880651,
+    "recall_attack": 0.5332068311195446,
+    "robustness_score": 0.2842832015387143,
+    "weighted_f1": 0.48091561996779386
+  },
+  "warnings": [
+    "Smoke metrics are not scientific."
+  ]
+}

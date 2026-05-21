@@ -1,0 +1,9 @@
+{
+  "output_dim": 2,
+  "supernet": {
+    "architecture": "28 -> 256 -> 128 -> 2",
+    "model_size_bytes": 162312,
+    "num_parameters": 40578
+  },
+  "task": "l1_binary"
+}

@@ -1,0 +1,295 @@
+{
+  "accepted": true,
+  "artifacts": [
+    "experiments/qi-fl-ids-iot-final/outputs/multitier_heterofl/l1_binary/alpha_0.1/k3/runs/run_20260507_202624/checkpoints/best_global_supernet.pth",
+    "experiments/qi-fl-ids-iot-final/outputs/multitier_heterofl/l1_binary/alpha_0.1/k3/runs/run_20260507_202624/checkpoints/last_global_supernet.pth",
+    "experiments/qi-fl-ids-iot-final/outputs/multitier_heterofl/l1_binary/alpha_0.1/k3/runs/run_20260507_202624/artifacts/tier_mapping.json",
+    "experiments/qi-fl-ids-iot-final/outputs/multitier_heterofl/l1_binary/alpha_0.1/k3/runs/run_20260507_202624/artifacts/tier_model_configs.json",
+    "experiments/qi-fl-ids-iot-final/outputs/multitier_heterofl/l1_binary/alpha_0.1/k3/runs/run_20260507_202624/artifacts/model_config.json",
+    "experiments/qi-fl-ids-iot-final/outputs/multitier_heterofl/l1_binary/alpha_0.1/k3/runs/run_20260507_202624/artifacts/metrics_rounds.csv",
+    "experiments/qi-fl-ids-iot-final/outputs/multitier_heterofl/l1_binary/alpha_0.1/k3/runs/run_20260507_202624/artifacts/metrics_clients.csv",
+    "experiments/qi-fl-ids-iot-final/outputs/multitier_heterofl/l1_binary/alpha_0.1/k3/runs/run_20260507_202624/artifacts/metrics_tiers.csv",
+    "experiments/qi-fl-ids-iot-final/outputs/multitier_heterofl/l1_binary/alpha_0.1/k3/runs/run_20260507_202624/artifacts/bandwidth_by_tier.csv",
+    "experiments/qi-fl-ids-iot-final/outputs/multitier_heterofl/l1_binary/alpha_0.1/k3/runs/run_20260507_202624/artifacts/slices_updated.csv",
+    "experiments/qi-fl-ids-iot-final/outputs/multitier_heterofl/l1_binary/alpha_0.1/k3/runs/run_20260507_202624/artifacts/metrics_val.json",
+    "experiments/qi-fl-ids-iot-final/outputs/multitier_heterofl/l1_binary/alpha_0.1/k3/runs/run_20260507_202624/artifacts/metrics_test.json",
+    "experiments/qi-fl-ids-iot-final/outputs/multitier_heterofl/l1_binary/alpha_0.1/k3/runs/run_20260507_202624/artifacts/confusion_matrix.csv",
+    "experiments/qi-fl-ids-iot-final/outputs/multitier_heterofl/l1_binary/alpha_0.1/k3/runs/run_20260507_202624/artifacts/classification_report.json",
+    "experiments/qi-fl-ids-iot-final/outputs/multitier_heterofl/l1_binary/alpha_0.1/k3/runs/run_20260507_202624/artifacts/comparison_with_p4_p5_p6.json",
+    "experiments/qi-fl-ids-iot-final/outputs/multitier_heterofl/l1_binary/alpha_0.1/k3/runs/run_20260507_202624/artifacts/run_manifest.json",
+    "experiments/qi-fl-ids-iot-final/outputs/multitier_heterofl/l1_binary/alpha_0.1/k3/runs/run_20260507_202624/artifacts/run_summary.json",
+    "experiments/qi-fl-ids-iot-final/outputs/multitier_heterofl/l1_binary/alpha_0.1/k3/runs/run_20260507_202624/logs/run_console.log"
+  ],
+  "communication": {
+    "by_tier": {
+      "medium": 2903520,
+      "powerful": 9738720,
+      "weak": 476640
+    },
+    "total_bytes": 13118880
+  },
+  "comparison": {
+    "p4_macro_f1": 0.961143284995805,
+    "p5_macro_f1": 0.901261823773277,
+    "p6_macro_f1": 0.6355288381246096,
+    "task": "l1_binary",
+    "with_p4": {
+      "gap_macro_f1": -0.18501977838715633,
+      "p4_accuracy": 0.9611957671957672,
+      "p4_macro_f1": 0.961143284995805,
+      "p7_accuracy": 0.7825396825396825,
+      "p7_macro_f1": 0.7761235066086487
+    },
+    "with_p5": {
+      "gap_macro_f1": -0.1251383171646283,
+      "p5_fpr": 0.06806666666666666,
+      "p5_macro_f1": 0.901261823773277,
+      "p7_fpr": 0.0005777777777777778,
+      "p7_macro_f1": 0.7761235066086487
+    },
+    "with_p6": {
+      "gap_macro_f1": 0.14059466848403912,
+      "p6_l2_macro_f1": 0.6355288381246096,
+      "p7_macro_f1": 0.7761235066086487
+    }
+  },
+  "criteria": {
+    "dashboard_not_modified": true,
+    "docker_not_modified": true,
+    "figures_generated": true,
+    "global_test_holdout_protected": true,
+    "heterofl_slicing_valid": true,
+    "l3_not_used": true,
+    "metrics_generated": true,
+    "p3_partitions_used": true,
+    "qi_not_used": true,
+    "run_summary_generated": true,
+    "slice_aggregation_valid": true,
+    "test_sent_to_clients_false": true
+  },
+  "dataset": {
+    "client_train_rows": {
+      "client_1": 219438,
+      "client_2": 12049,
+      "client_3": 209513
+    },
+    "client_val_rows": {
+      "client_1": 4807,
+      "client_2": 183,
+      "client_3": 89510
+    },
+    "global_test_holdout": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/test_scaled.npz",
+    "test_rows": 94500,
+    "test_sent_to_clients": false,
+    "train_rows_total": 441000,
+    "val_rows_total": 94500
+  },
+  "errors": [],
+  "figures": [
+    "experiments/qi-fl-ids-iot-final/outputs/figures/multitier/l1_binary/alpha_0.1/k3/run_20260507_202624/multitier_architecture.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/multitier/l1_binary/alpha_0.1/k3/run_20260507_202624/supernet_slicing.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/multitier/l1_binary/alpha_0.1/k3/run_20260507_202624/tier_parameter_comparison.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/multitier/l1_binary/alpha_0.1/k3/run_20260507_202624/tier_model_size_comparison.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/multitier/l1_binary/alpha_0.1/k3/run_20260507_202624/tier_bandwidth_comparison.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/multitier/l1_binary/alpha_0.1/k3/run_20260507_202624/tier_latency_comparison.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/multitier/l1_binary/alpha_0.1/k3/run_20260507_202624/l1_p4_p5_p7_comparison.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/multitier/l1_binary/alpha_0.1/k3/run_20260507_202624/l1_macro_f1_p5_vs_p7_by_round.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/multitier/l1_binary/alpha_0.1/k3/run_20260507_202624/l1_fpr_p5_vs_p7_by_round.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/multitier/l1_binary/alpha_0.1/k3/run_20260507_202624/l1_multitier_confusion_matrix.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/multitier/l1_binary/alpha_0.1/k3/run_20260507_202624/heatmap_p7_l1_macro_f1_alpha_k.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/multitier/l1_binary/alpha_0.1/k3/run_20260507_202624/heatmap_p7_l1_fpr_alpha_k.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/multitier/l1_binary/alpha_0.1/k3/run_20260507_202624/heatmap_p7_l2_macro_f1_alpha_k.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/multitier/l1_binary/alpha_0.1/k3/run_20260507_202624/barplot_p7_bandwidth_by_scenario.png",
+    "experiments/qi-fl-ids-iot-final/outputs/figures/multitier/l1_binary/alpha_0.1/k3/run_20260507_202624/p7_scenario_ranking_table.png"
+  ],
+  "implementation": "shared_supernet_prefix_slicing",
+  "method": "HeteroFL",
+  "mode": "full",
+  "models": {
+    "medium": "28 -> 128 -> 64 -> output_dim",
+    "powerful": "28 -> 256 -> 128 -> output_dim",
+    "supernet": "28 -> 256 -> 128 -> output_dim",
+    "weak": "28 -> 64 -> output_dim"
+  },
+  "phase": "P7",
+  "run_id": "run_20260507_202624",
+  "scenario": {
+    "alpha": 0.1,
+    "clients": 3,
+    "rounds": 30
+  },
+  "task": "l1_binary",
+  "test": {
+    "metrics": {
+      "FN": 20524,
+      "FNR": 0.4146262626262626,
+      "FP": 26,
+      "FPR": 0.0005777777777777778,
+      "TN": 44974,
+      "TP": 28976,
+      "accuracy": 0.7825396825396825,
+      "classification_report": {
+        "accuracy": 0.7825396825396825,
+        "attack": {
+          "f1_score": 0.7382232299814018,
+          "precision": 0.9991035101027516,
+          "recall": 0.5853737373737373,
+          "support": 49500
+        },
+        "macro_avg": {
+          "f1_score": 0.7761235066086487
+        },
+        "normal": {
+          "f1_score": 0.8140237832358956,
+          "precision": 0.686646920516657,
+          "recall": 0.9994222222222222,
+          "support": 45000
+        },
+        "weighted_avg": {
+          "f1_score": 0.7743187315311608
+        }
+      },
+      "confusion_matrix": [
+        [
+          44974,
+          26
+        ],
+        [
+          20524,
+          28976
+        ]
+      ],
+      "f1": 0.7382232299814018,
+      "f1_attack": 0.7382232299814018,
+      "f1_normal": 0.8140237832358956,
+      "loss": 1.0374050051607984,
+      "macro_f1": 0.7761235066086487,
+      "one_vs_rest_rows": [
+        {
+          "FN": 26,
+          "FP": 20524,
+          "TN": 28976,
+          "TP": 44974,
+          "class_id": 0,
+          "class_name": "normal",
+          "f1": 0.8140237832358956,
+          "precision": 0.686646920516657,
+          "recall": 0.9994222222222222
+        },
+        {
+          "FN": 20524,
+          "FP": 26,
+          "TN": 44974,
+          "TP": 28976,
+          "class_id": 1,
+          "class_name": "attack",
+          "f1": 0.7382232299814018,
+          "precision": 0.9991035101027516,
+          "recall": 0.5853737373737373
+        }
+      ],
+      "precision": 0.9991035101027516,
+      "precision_attack": 0.9991035101027516,
+      "precision_normal": 0.686646920516657,
+      "recall": 0.5853737373737373,
+      "recall_attack": 0.5853737373737373,
+      "recall_normal": 0.9994222222222222,
+      "support_attack": 49500,
+      "support_normal": 45000,
+      "support_total": 94500,
+      "weighted_f1": 0.7743187315311608
+    }
+  },
+  "tiers": {
+    "client_1": "weak",
+    "client_2": "medium",
+    "client_3": "powerful"
+  },
+  "training": {
+    "best_round": 19,
+    "local_epochs": 1,
+    "rounds_completed": 30
+  },
+  "validation": {
+    "metrics": {
+      "FN": 20506,
+      "FNR": 0.4142626262626263,
+      "FP": 32,
+      "FPR": 0.0007111111111111111,
+      "TN": 44968,
+      "TP": 28994,
+      "accuracy": 0.7826666666666666,
+      "classification_report": {
+        "accuracy": 0.7826666666666666,
+        "attack": {
+          "f1_score": 0.7384560527723302,
+          "precision": 0.9988975401364294,
+          "recall": 0.5857373737373738,
+          "support": 49500
+        },
+        "macro_avg": {
+          "f1_score": 0.7762740281603382
+        },
+        "normal": {
+          "f1_score": 0.8140920035483463,
+          "precision": 0.6868069768152244,
+          "recall": 0.9992888888888889,
+          "support": 45000
+        },
+        "weighted_avg": {
+          "f1_score": 0.7744731721894808
+        }
+      },
+      "confusion_matrix": [
+        [
+          44968,
+          32
+        ],
+        [
+          20506,
+          28994
+        ]
+      ],
+      "f1": 0.7384560527723302,
+      "f1_attack": 0.7384560527723302,
+      "f1_normal": 0.8140920035483463,
+      "loss": 1.0262588833240753,
+      "macro_f1": 0.7762740281603382,
+      "one_vs_rest_rows": [
+        {
+          "FN": 32,
+          "FP": 20506,
+          "TN": 28994,
+          "TP": 44968,
+          "class_id": 0,
+          "class_name": "normal",
+          "f1": 0.8140920035483463,
+          "precision": 0.6868069768152244,
+          "recall": 0.9992888888888889
+        },
+        {
+          "FN": 20506,
+          "FP": 32,
+          "TN": 44968,
+          "TP": 28994,
+          "class_id": 1,
+          "class_name": "attack",
+          "f1": 0.7384560527723302,
+          "precision": 0.9988975401364294,
+          "recall": 0.5857373737373738
+        }
+      ],
+      "precision": 0.9988975401364294,
+      "precision_attack": 0.9988975401364294,
+      "precision_normal": 0.6868069768152244,
+      "recall": 0.5857373737373738,
+      "recall_attack": 0.5857373737373738,
+      "recall_normal": 0.9992888888888889,
+      "support_attack": 49500,
+      "support_normal": 45000,
+      "support_total": 94500,
+      "weighted_f1": 0.7744731721894808
+    }
+  },
+  "warnings": []
+}

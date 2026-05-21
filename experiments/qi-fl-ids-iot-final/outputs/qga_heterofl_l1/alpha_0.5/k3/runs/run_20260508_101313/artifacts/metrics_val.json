@@ -1,0 +1,18 @@
+{
+  "FN": 351,
+  "FNR": 0.234,
+  "FP": 547,
+  "FPR": 0.36466666666666664,
+  "TN": 953,
+  "TP": 1149,
+  "alpha": 0.5,
+  "attack_recall": 0.766,
+  "clients": 3,
+  "communication_cumulative_bytes": 383536,
+  "communication_total_bytes": 383536,
+  "macro_f1": 0.6993835018452095,
+  "round": 1,
+  "slices_updated_ratio": 1.0,
+  "train_loss_mean": 0.6870567401250204,
+  "val_loss_mean": 0.6174641078313192
+}

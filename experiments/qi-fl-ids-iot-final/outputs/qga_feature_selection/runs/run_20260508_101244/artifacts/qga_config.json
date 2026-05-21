@@ -1,0 +1,17 @@
+{
+  "fitness_eval_mode": "fast_mlp",
+  "generations": 3,
+  "max_features": 24,
+  "max_samples_for_fitness": 5000,
+  "min_features": 8,
+  "mode": "smoke",
+  "mutation_rate": 0.05,
+  "objective_name": "balanced_ids_edge_fitness",
+  "population_size": 5,
+  "seed": 42,
+  "weights": {
+    "alpha_macro_f1": 0.6,
+    "beta_attack_recall": 0.3,
+    "lambda_feature_penalty": 0.1
+  }
+}

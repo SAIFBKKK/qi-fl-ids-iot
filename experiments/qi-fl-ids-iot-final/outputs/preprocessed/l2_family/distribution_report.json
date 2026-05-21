@@ -1,0 +1,191 @@
+{
+  "attack_only": true,
+  "distribution_by_family_name": {
+    "BruteForce": {
+      "count": 300000,
+      "family_id": 0,
+      "ratio": 0.03296214297878886
+    },
+    "DDoS": {
+      "count": 3600000,
+      "family_id": 1,
+      "ratio": 0.3955457157454663
+    },
+    "DoS": {
+      "count": 1200000,
+      "family_id": 2,
+      "ratio": 0.13184857191515545
+    },
+    "Malware": {
+      "count": 150000,
+      "family_id": 3,
+      "ratio": 0.01648107148939443
+    },
+    "Mirai": {
+      "count": 900000,
+      "family_id": 4,
+      "ratio": 0.09888642893636658
+    },
+    "Recon": {
+      "count": 1313100,
+      "family_id": 5,
+      "ratio": 0.14427529981815884
+    },
+    "Spoofing": {
+      "count": 600000,
+      "family_id": 6,
+      "ratio": 0.06592428595757772
+    },
+    "Web-based": {
+      "count": 1038250,
+      "family_id": 7,
+      "ratio": 0.11407648315909179
+    }
+  },
+  "distribution_by_original_label_id": {
+    "0": {
+      "count": 150000,
+      "label_name": "Backdoor_Malware"
+    },
+    "10": {
+      "count": 300000,
+      "label_name": "DDoS-SYN_Flood"
+    },
+    "11": {
+      "count": 300000,
+      "label_name": "DDoS-SlowLoris"
+    },
+    "12": {
+      "count": 300000,
+      "label_name": "DDoS-SynonymousIP_Flood"
+    },
+    "13": {
+      "count": 300000,
+      "label_name": "DDoS-TCP_Flood"
+    },
+    "14": {
+      "count": 300000,
+      "label_name": "DDoS-UDP_Flood"
+    },
+    "15": {
+      "count": 300000,
+      "label_name": "DDoS-UDP_Fragmentation"
+    },
+    "16": {
+      "count": 300000,
+      "label_name": "DNS_Spoofing"
+    },
+    "17": {
+      "count": 300000,
+      "label_name": "DictionaryBruteForce"
+    },
+    "18": {
+      "count": 300000,
+      "label_name": "DoS-HTTP_Flood"
+    },
+    "19": {
+      "count": 300000,
+      "label_name": "DoS-SYN_Flood"
+    },
+    "2": {
+      "count": 292950,
+      "label_name": "BrowserHijacking"
+    },
+    "20": {
+      "count": 300000,
+      "label_name": "DoS-TCP_Flood"
+    },
+    "21": {
+      "count": 300000,
+      "label_name": "DoS-UDP_Flood"
+    },
+    "22": {
+      "count": 300000,
+      "label_name": "MITM-ArpSpoofing"
+    },
+    "23": {
+      "count": 300000,
+      "label_name": "Mirai-greeth_flood"
+    },
+    "24": {
+      "count": 300000,
+      "label_name": "Mirai-greip_flood"
+    },
+    "25": {
+      "count": 300000,
+      "label_name": "Mirai-udpplain"
+    },
+    "26": {
+      "count": 300000,
+      "label_name": "Recon-HostDiscovery"
+    },
+    "27": {
+      "count": 300000,
+      "label_name": "Recon-OSScan"
+    },
+    "28": {
+      "count": 113100,
+      "label_name": "Recon-PingSweep"
+    },
+    "29": {
+      "count": 300000,
+      "label_name": "Recon-PortScan"
+    },
+    "3": {
+      "count": 270450,
+      "label_name": "CommandInjection"
+    },
+    "30": {
+      "count": 262250,
+      "label_name": "SqlInjection"
+    },
+    "31": {
+      "count": 62600,
+      "label_name": "Uploading_Attack"
+    },
+    "32": {
+      "count": 300000,
+      "label_name": "VulnerabilityScan"
+    },
+    "33": {
+      "count": 150000,
+      "label_name": "XSS"
+    },
+    "4": {
+      "count": 300000,
+      "label_name": "DDoS-ACK_Fragmentation"
+    },
+    "5": {
+      "count": 300000,
+      "label_name": "DDoS-HTTP_Flood"
+    },
+    "6": {
+      "count": 300000,
+      "label_name": "DDoS-ICMP_Flood"
+    },
+    "7": {
+      "count": 300000,
+      "label_name": "DDoS-ICMP_Fragmentation"
+    },
+    "8": {
+      "count": 300000,
+      "label_name": "DDoS-PSHACK_Flood"
+    },
+    "9": {
+      "count": 300000,
+      "label_name": "DDoS-RSTFINFlood"
+    }
+  },
+  "family_id_mapping": {
+    "BruteForce": 0,
+    "DDoS": 1,
+    "DoS": 2,
+    "Malware": 3,
+    "Mirai": 4,
+    "Recon": 5,
+    "Spoofing": 6,
+    "Web-based": 7
+  },
+  "sampling": false,
+  "total_count": 9101350
+}

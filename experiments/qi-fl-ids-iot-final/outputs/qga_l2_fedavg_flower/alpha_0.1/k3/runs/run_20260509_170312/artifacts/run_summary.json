@@ -1,0 +1,308 @@
+{
+  "accepted": true,
+  "artifacts": [
+    "experiments/qi-fl-ids-iot-final/outputs/qga_l2_fedavg_flower/alpha_0.1/k3/runs/run_20260509_170312/artifacts/metrics_rounds.csv",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_l2_fedavg_flower/alpha_0.1/k3/runs/run_20260509_170312/artifacts/metrics_clients.csv",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_l2_fedavg_flower/alpha_0.1/k3/runs/run_20260509_170312/artifacts/bandwidth_rounds.csv",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_l2_fedavg_flower/alpha_0.1/k3/runs/run_20260509_170312/artifacts/metrics_val.json",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_l2_fedavg_flower/alpha_0.1/k3/runs/run_20260509_170312/artifacts/selected_features_reference.json",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_l2_fedavg_flower/alpha_0.1/k3/runs/run_20260509_170312/artifacts/model_config.json"
+  ],
+  "calibration_decision_used": false,
+  "comparison_with_p6_l2": {
+    "p6_l2_available": false
+  },
+  "criteria": {
+    "calibration_decision_used": false,
+    "final_selected_mask_used": false,
+    "global_test_holdout_protected": true,
+    "metrics_generated": true,
+    "p3_l2_partitions_used": true,
+    "test_not_used_for_selection": true,
+    "test_sent_to_clients_false": true,
+    "true_flower_runtime": true
+  },
+  "dataset": {
+    "input_dim_selected": 24,
+    "test_sent_to_clients": false,
+    "test_used_for_selection": false
+  },
+  "errors": [],
+  "figures": [],
+  "method": "FedAvg + QGA L2 Flower",
+  "mode": "smoke",
+  "phase": "P8-b",
+  "qga": {
+    "selected_features": [
+      "flow_duration",
+      "Header_Length",
+      "Protocol Type",
+      "Duration",
+      "Rate",
+      "fin_flag_number",
+      "psh_flag_number",
+      "ack_flag_number",
+      "ack_count",
+      "syn_count",
+      "fin_count",
+      "urg_count",
+      "HTTP",
+      "HTTPS",
+      "DNS",
+      "SSH",
+      "TCP",
+      "UDP",
+      "ARP",
+      "ICMP",
+      "Tot sum",
+      "Min",
+      "Std",
+      "IAT"
+    ],
+    "selected_features_count": 24
+  },
+  "run_id": "run_20260509_170312",
+  "runtime": "manual_or_subprocess",
+  "scenario": {
+    "alpha": 0.1,
+    "clients": 3,
+    "rounds": 5
+  },
+  "selected_mask_id": "conservative_l2_seed_42",
+  "selected_mask_source": "explicit_mask_path",
+  "task": "l2_family",
+  "test": {
+    "evaluated": false,
+    "metrics": {},
+    "used_for_selection": false
+  },
+  "training": {
+    "best_round": 5,
+    "framework": "Flower",
+    "rounds_completed": 5,
+    "strategy": "FedAvg"
+  },
+  "true_flower_runtime": true,
+  "validation": {
+    "metrics": {
+      "FNR_macro": 0.7394715149944571,
+      "FPR_macro": 0.09784170012731097,
+      "accuracy": 0.32666666666666666,
+      "class_names": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ],
+      "confusion_matrix": [
+        [
+          14,
+          7,
+          1,
+          0,
+          6,
+          18,
+          37,
+          47
+        ],
+        [
+          2,
+          242,
+          68,
+          0,
+          53,
+          95,
+          37,
+          185
+        ],
+        [
+          0,
+          83,
+          58,
+          0,
+          43,
+          8,
+          5,
+          15
+        ],
+        [
+          3,
+          3,
+          0,
+          0,
+          6,
+          6,
+          14,
+          14
+        ],
+        [
+          1,
+          1,
+          4,
+          0,
+          335,
+          37,
+          3,
+          602
+        ],
+        [
+          39,
+          31,
+          31,
+          0,
+          26,
+          149,
+          77,
+          124
+        ],
+        [
+          6,
+          1,
+          2,
+          0,
+          12,
+          7,
+          30,
+          52
+        ],
+        [
+          35,
+          13,
+          10,
+          0,
+          23,
+          45,
+          82,
+          152
+        ]
+      ],
+      "loss": 4.771790504455566,
+      "macro_f1": 0.2537455730924867,
+      "per_class": {
+        "0": {
+          "FN": 116,
+          "FNR": 0.8923076923076924,
+          "FP": 86,
+          "FPR": 0.029965156794425088,
+          "TN": 2784,
+          "TP": 14,
+          "class_id": 0,
+          "class_name": "0",
+          "f1": 0.12173913043478263,
+          "precision": 0.14,
+          "recall": 0.1076923076923077,
+          "support": 130
+        },
+        "1": {
+          "FN": 440,
+          "FNR": 0.6451612903225806,
+          "FP": 139,
+          "FPR": 0.05996548748921484,
+          "TN": 2179,
+          "TP": 242,
+          "class_id": 1,
+          "class_name": "1",
+          "f1": 0.4553151458137347,
+          "precision": 0.6351706036745407,
+          "recall": 0.3548387096774194,
+          "support": 682
+        },
+        "2": {
+          "FN": 154,
+          "FNR": 0.7264150943396226,
+          "FP": 116,
+          "FPR": 0.04160688665710186,
+          "TN": 2672,
+          "TP": 58,
+          "class_id": 2,
+          "class_name": "2",
+          "f1": 0.3005181347150259,
+          "precision": 0.3333333333333333,
+          "recall": 0.27358490566037735,
+          "support": 212
+        },
+        "3": {
+          "FN": 46,
+          "FNR": 1.0,
+          "FP": 0,
+          "FPR": 0.0,
+          "TN": 2954,
+          "TP": 0,
+          "class_id": 3,
+          "class_name": "3",
+          "f1": 0.0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "support": 46
+        },
+        "4": {
+          "FN": 648,
+          "FNR": 0.659206510681587,
+          "FP": 169,
+          "FPR": 0.08378780366881507,
+          "TN": 1848,
+          "TP": 335,
+          "class_id": 4,
+          "class_name": "4",
+          "f1": 0.4505716207128447,
+          "precision": 0.6646825396825397,
+          "recall": 0.340793489318413,
+          "support": 983
+        },
+        "5": {
+          "FN": 328,
+          "FNR": 0.6876310272536688,
+          "FP": 216,
+          "FPR": 0.08561236623067776,
+          "TN": 2307,
+          "TP": 149,
+          "class_id": 5,
+          "class_name": "5",
+          "f1": 0.35391923990498814,
+          "precision": 0.40821917808219177,
+          "recall": 0.31236897274633124,
+          "support": 477
+        },
+        "6": {
+          "FN": 80,
+          "FNR": 0.7272727272727273,
+          "FP": 255,
+          "FPR": 0.08823529411764706,
+          "TN": 2635,
+          "TP": 30,
+          "class_id": 6,
+          "class_name": "6",
+          "f1": 0.1518987341772152,
+          "precision": 0.10526315789473684,
+          "recall": 0.2727272727272727,
+          "support": 110
+        },
+        "7": {
+          "FN": 208,
+          "FNR": 0.5777777777777777,
+          "FP": 1039,
+          "FPR": 0.39356060606060606,
+          "TN": 1601,
+          "TP": 152,
+          "class_id": 7,
+          "class_name": "7",
+          "f1": 0.19600257898130236,
+          "precision": 0.12762384550797648,
+          "recall": 0.4222222222222222,
+          "support": 360
+        }
+      },
+      "precision_macro": 0.30178658227191485,
+      "recall_macro": 0.26052848500554293,
+      "support_total": 3000,
+      "weighted_f1": 0.36302067691641415
+    }
+  },
+  "warnings": [
+    "Smoke metrics have low scientific significance."
+  ]
+}

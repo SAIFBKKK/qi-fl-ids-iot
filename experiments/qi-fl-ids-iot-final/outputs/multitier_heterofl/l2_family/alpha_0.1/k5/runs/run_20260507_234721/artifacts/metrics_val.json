@@ -1,0 +1,588 @@
+{
+  "FNR_macro": 0.646093665594141,
+  "FPR_macro": 0.08575460700464925,
+  "accuracy": 0.3933696258868651,
+  "classification_report": {
+    "accuracy": 0.3933696258868651,
+    "classes": {
+      "0": {
+        "FN": 45000,
+        "FNR": 1.0,
+        "FP": 0,
+        "FPR": 0.0,
+        "TN": 1320202,
+        "TP": 0,
+        "class_id": 0,
+        "class_name": "BruteForce",
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "support": 45000
+      },
+      "1": {
+        "FN": 299518,
+        "FNR": 0.5546629629629629,
+        "FP": 47068,
+        "FPR": 0.057038155506166976,
+        "TN": 778134,
+        "TP": 240482,
+        "class_id": 1,
+        "class_name": "DDoS",
+        "f1": 0.5811902604072262,
+        "precision": 0.8363136845765954,
+        "recall": 0.44533703703703703,
+        "support": 540000
+      },
+      "2": {
+        "FN": 105961,
+        "FNR": 0.5886722222222223,
+        "FP": 216007,
+        "FPR": 0.18225332053101498,
+        "TN": 969195,
+        "TP": 74039,
+        "class_id": 2,
+        "class_name": "DoS",
+        "f1": 0.31502874186781715,
+        "precision": 0.2552664060183557,
+        "recall": 0.4113277777777778,
+        "support": 180000
+      },
+      "3": {
+        "FN": 22500,
+        "FNR": 1.0,
+        "FP": 0,
+        "FPR": 0.0,
+        "TN": 1342702,
+        "TP": 0,
+        "class_id": 3,
+        "class_name": "Malware",
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "support": 22500
+      },
+      "4": {
+        "FN": 883,
+        "FNR": 0.006540740740740741,
+        "FP": 123732,
+        "FPR": 0.10057860416419417,
+        "TN": 1106470,
+        "TP": 134117,
+        "class_id": 4,
+        "class_name": "Mirai",
+        "f1": 0.6827916069533078,
+        "precision": 0.52013775504268,
+        "recall": 0.9934592592592593,
+        "support": 135000
+      },
+      "5": {
+        "FN": 196800,
+        "FNR": 0.9991622877160917,
+        "FP": 727,
+        "FPR": 0.0006223052342974927,
+        "TN": 1167510,
+        "TP": 165,
+        "class_id": 5,
+        "class_name": "Recon",
+        "f1": 0.0016678712403402458,
+        "precision": 0.18497757847533633,
+        "recall": 0.0008377122839083085,
+        "support": 196965
+      },
+      "6": {
+        "FN": 1774,
+        "FNR": 0.01971111111111111,
+        "FP": 440639,
+        "FPR": 0.3455444706015204,
+        "TN": 834563,
+        "TP": 88226,
+        "class_id": 6,
+        "class_name": "Spoofing",
+        "f1": 0.2851219571311998,
+        "precision": 0.16682140054645325,
+        "recall": 0.9802888888888889,
+        "support": 90000
+      },
+      "7": {
+        "FN": 155737,
+        "FNR": 1.0,
+        "FP": 0,
+        "FPR": 0.0,
+        "TN": 1209465,
+        "TP": 0,
+        "class_id": 7,
+        "class_name": "Web-based",
+        "f1": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "support": 155737
+      }
+    },
+    "macro_avg": {
+      "f1_score": 0.2332250546999864,
+      "precision": 0.24543960308242757,
+      "recall": 0.35390633440585895
+    },
+    "weighted_avg": {
+      "f1_score": 0.3579794561504212
+    }
+  },
+  "confusion_matrix": [
+    [
+      0,
+      967,
+      1136,
+      0,
+      1865,
+      97,
+      40935,
+      0
+    ],
+    [
+      0,
+      240482,
+      154535,
+      0,
+      72143,
+      0,
+      72840,
+      0
+    ],
+    [
+      0,
+      37042,
+      74039,
+      0,
+      34443,
+      0,
+      34476,
+      0
+    ],
+    [
+      0,
+      406,
+      78,
+      0,
+      1039,
+      54,
+      20923,
+      0
+    ],
+    [
+      0,
+      103,
+      302,
+      0,
+      134117,
+      0,
+      478,
+      0
+    ],
+    [
+      0,
+      5251,
+      57692,
+      0,
+      6826,
+      165,
+      127031,
+      0
+    ],
+    [
+      0,
+      159,
+      310,
+      0,
+      1300,
+      5,
+      88226,
+      0
+    ],
+    [
+      0,
+      3140,
+      1954,
+      0,
+      6116,
+      571,
+      143956,
+      0
+    ]
+  ],
+  "loss": 605.7862194487001,
+  "macro_f1": 0.2332250546999864,
+  "one_vs_rest_rows": [
+    {
+      "FN": 45000,
+      "FNR": 1.0,
+      "FP": 0,
+      "FPR": 0.0,
+      "TN": 1320202,
+      "TP": 0,
+      "class_id": 0,
+      "class_name": "BruteForce",
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "support": 45000
+    },
+    {
+      "FN": 299518,
+      "FNR": 0.5546629629629629,
+      "FP": 47068,
+      "FPR": 0.057038155506166976,
+      "TN": 778134,
+      "TP": 240482,
+      "class_id": 1,
+      "class_name": "DDoS",
+      "f1": 0.5811902604072262,
+      "precision": 0.8363136845765954,
+      "recall": 0.44533703703703703,
+      "support": 540000
+    },
+    {
+      "FN": 105961,
+      "FNR": 0.5886722222222223,
+      "FP": 216007,
+      "FPR": 0.18225332053101498,
+      "TN": 969195,
+      "TP": 74039,
+      "class_id": 2,
+      "class_name": "DoS",
+      "f1": 0.31502874186781715,
+      "precision": 0.2552664060183557,
+      "recall": 0.4113277777777778,
+      "support": 180000
+    },
+    {
+      "FN": 22500,
+      "FNR": 1.0,
+      "FP": 0,
+      "FPR": 0.0,
+      "TN": 1342702,
+      "TP": 0,
+      "class_id": 3,
+      "class_name": "Malware",
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "support": 22500
+    },
+    {
+      "FN": 883,
+      "FNR": 0.006540740740740741,
+      "FP": 123732,
+      "FPR": 0.10057860416419417,
+      "TN": 1106470,
+      "TP": 134117,
+      "class_id": 4,
+      "class_name": "Mirai",
+      "f1": 0.6827916069533078,
+      "precision": 0.52013775504268,
+      "recall": 0.9934592592592593,
+      "support": 135000
+    },
+    {
+      "FN": 196800,
+      "FNR": 0.9991622877160917,
+      "FP": 727,
+      "FPR": 0.0006223052342974927,
+      "TN": 1167510,
+      "TP": 165,
+      "class_id": 5,
+      "class_name": "Recon",
+      "f1": 0.0016678712403402458,
+      "precision": 0.18497757847533633,
+      "recall": 0.0008377122839083085,
+      "support": 196965
+    },
+    {
+      "FN": 1774,
+      "FNR": 0.01971111111111111,
+      "FP": 440639,
+      "FPR": 0.3455444706015204,
+      "TN": 834563,
+      "TP": 88226,
+      "class_id": 6,
+      "class_name": "Spoofing",
+      "f1": 0.2851219571311998,
+      "precision": 0.16682140054645325,
+      "recall": 0.9802888888888889,
+      "support": 90000
+    },
+    {
+      "FN": 155737,
+      "FNR": 1.0,
+      "FP": 0,
+      "FPR": 0.0,
+      "TN": 1209465,
+      "TP": 0,
+      "class_id": 7,
+      "class_name": "Web-based",
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "support": 155737
+    }
+  ],
+  "per_class": {
+    "0": {
+      "FN": 45000,
+      "FNR": 1.0,
+      "FP": 0,
+      "FPR": 0.0,
+      "TN": 1320202,
+      "TP": 0,
+      "class_id": 0,
+      "class_name": "BruteForce",
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "support": 45000
+    },
+    "1": {
+      "FN": 299518,
+      "FNR": 0.5546629629629629,
+      "FP": 47068,
+      "FPR": 0.057038155506166976,
+      "TN": 778134,
+      "TP": 240482,
+      "class_id": 1,
+      "class_name": "DDoS",
+      "f1": 0.5811902604072262,
+      "precision": 0.8363136845765954,
+      "recall": 0.44533703703703703,
+      "support": 540000
+    },
+    "2": {
+      "FN": 105961,
+      "FNR": 0.5886722222222223,
+      "FP": 216007,
+      "FPR": 0.18225332053101498,
+      "TN": 969195,
+      "TP": 74039,
+      "class_id": 2,
+      "class_name": "DoS",
+      "f1": 0.31502874186781715,
+      "precision": 0.2552664060183557,
+      "recall": 0.4113277777777778,
+      "support": 180000
+    },
+    "3": {
+      "FN": 22500,
+      "FNR": 1.0,
+      "FP": 0,
+      "FPR": 0.0,
+      "TN": 1342702,
+      "TP": 0,
+      "class_id": 3,
+      "class_name": "Malware",
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "support": 22500
+    },
+    "4": {
+      "FN": 883,
+      "FNR": 0.006540740740740741,
+      "FP": 123732,
+      "FPR": 0.10057860416419417,
+      "TN": 1106470,
+      "TP": 134117,
+      "class_id": 4,
+      "class_name": "Mirai",
+      "f1": 0.6827916069533078,
+      "precision": 0.52013775504268,
+      "recall": 0.9934592592592593,
+      "support": 135000
+    },
+    "5": {
+      "FN": 196800,
+      "FNR": 0.9991622877160917,
+      "FP": 727,
+      "FPR": 0.0006223052342974927,
+      "TN": 1167510,
+      "TP": 165,
+      "class_id": 5,
+      "class_name": "Recon",
+      "f1": 0.0016678712403402458,
+      "precision": 0.18497757847533633,
+      "recall": 0.0008377122839083085,
+      "support": 196965
+    },
+    "6": {
+      "FN": 1774,
+      "FNR": 0.01971111111111111,
+      "FP": 440639,
+      "FPR": 0.3455444706015204,
+      "TN": 834563,
+      "TP": 88226,
+      "class_id": 6,
+      "class_name": "Spoofing",
+      "f1": 0.2851219571311998,
+      "precision": 0.16682140054645325,
+      "recall": 0.9802888888888889,
+      "support": 90000
+    },
+    "7": {
+      "FN": 155737,
+      "FNR": 1.0,
+      "FP": 0,
+      "FPR": 0.0,
+      "TN": 1209465,
+      "TP": 0,
+      "class_id": 7,
+      "class_name": "Web-based",
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "support": 155737
+    }
+  },
+  "precision_macro": 0.24543960308242757,
+  "recall_macro": 0.35390633440585895,
+  "support_total": 1365202,
+  "top_confusion_pairs": [
+    {
+      "count": 154535,
+      "pred_class": "DoS",
+      "pred_class_id": 2,
+      "true_class": "DDoS",
+      "true_class_id": 1
+    },
+    {
+      "count": 143956,
+      "pred_class": "Spoofing",
+      "pred_class_id": 6,
+      "true_class": "Web-based",
+      "true_class_id": 7
+    },
+    {
+      "count": 127031,
+      "pred_class": "Spoofing",
+      "pred_class_id": 6,
+      "true_class": "Recon",
+      "true_class_id": 5
+    },
+    {
+      "count": 72840,
+      "pred_class": "Spoofing",
+      "pred_class_id": 6,
+      "true_class": "DDoS",
+      "true_class_id": 1
+    },
+    {
+      "count": 72143,
+      "pred_class": "Mirai",
+      "pred_class_id": 4,
+      "true_class": "DDoS",
+      "true_class_id": 1
+    },
+    {
+      "count": 57692,
+      "pred_class": "DoS",
+      "pred_class_id": 2,
+      "true_class": "Recon",
+      "true_class_id": 5
+    },
+    {
+      "count": 40935,
+      "pred_class": "Spoofing",
+      "pred_class_id": 6,
+      "true_class": "BruteForce",
+      "true_class_id": 0
+    },
+    {
+      "count": 37042,
+      "pred_class": "DDoS",
+      "pred_class_id": 1,
+      "true_class": "DoS",
+      "true_class_id": 2
+    },
+    {
+      "count": 34476,
+      "pred_class": "Spoofing",
+      "pred_class_id": 6,
+      "true_class": "DoS",
+      "true_class_id": 2
+    },
+    {
+      "count": 34443,
+      "pred_class": "Mirai",
+      "pred_class_id": 4,
+      "true_class": "DoS",
+      "true_class_id": 2
+    },
+    {
+      "count": 20923,
+      "pred_class": "Spoofing",
+      "pred_class_id": 6,
+      "true_class": "Malware",
+      "true_class_id": 3
+    },
+    {
+      "count": 6826,
+      "pred_class": "Mirai",
+      "pred_class_id": 4,
+      "true_class": "Recon",
+      "true_class_id": 5
+    },
+    {
+      "count": 6116,
+      "pred_class": "Mirai",
+      "pred_class_id": 4,
+      "true_class": "Web-based",
+      "true_class_id": 7
+    },
+    {
+      "count": 5251,
+      "pred_class": "DDoS",
+      "pred_class_id": 1,
+      "true_class": "Recon",
+      "true_class_id": 5
+    },
+    {
+      "count": 3140,
+      "pred_class": "DDoS",
+      "pred_class_id": 1,
+      "true_class": "Web-based",
+      "true_class_id": 7
+    },
+    {
+      "count": 1954,
+      "pred_class": "DoS",
+      "pred_class_id": 2,
+      "true_class": "Web-based",
+      "true_class_id": 7
+    },
+    {
+      "count": 1865,
+      "pred_class": "Mirai",
+      "pred_class_id": 4,
+      "true_class": "BruteForce",
+      "true_class_id": 0
+    },
+    {
+      "count": 1300,
+      "pred_class": "Mirai",
+      "pred_class_id": 4,
+      "true_class": "Spoofing",
+      "true_class_id": 6
+    },
+    {
+      "count": 1136,
+      "pred_class": "DoS",
+      "pred_class_id": 2,
+      "true_class": "BruteForce",
+      "true_class_id": 0
+    },
+    {
+      "count": 1039,
+      "pred_class": "Mirai",
+      "pred_class_id": 4,
+      "true_class": "Malware",
+      "true_class_id": 3
+    }
+  ],
+  "weighted_f1": 0.3579794561504212
+}

@@ -1,0 +1,15 @@
+{
+  "activation": "relu",
+  "architecture": "9 -> 128 -> 64 -> 2",
+  "dropout": 0.2,
+  "hidden_layers": [
+    128,
+    64
+  ],
+  "input_dim": 9,
+  "model_size_bytes": 38664,
+  "name": "QGAFedAvgFlowerL1MLP",
+  "num_parameters": 9666,
+  "output_dim": 2,
+  "qga_selected_features_count": 9
+}

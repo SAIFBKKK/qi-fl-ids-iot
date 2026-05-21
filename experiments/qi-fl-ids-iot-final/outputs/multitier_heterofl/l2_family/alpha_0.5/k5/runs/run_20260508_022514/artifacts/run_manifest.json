@@ -1,0 +1,9 @@
+{
+  "figures_dir": "experiments/qi-fl-ids-iot-final/outputs/figures/multitier/l2_family/alpha_0.5/k5/run_20260508_022514",
+  "global_test_holdout": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/test_scaled.npz",
+  "phase": "P7",
+  "run_dir": "experiments/qi-fl-ids-iot-final/outputs/multitier_heterofl/l2_family/alpha_0.5/k5/runs/run_20260508_022514",
+  "run_id": "run_20260508_022514",
+  "task": "l2_family",
+  "test_sent_to_clients": false
+}

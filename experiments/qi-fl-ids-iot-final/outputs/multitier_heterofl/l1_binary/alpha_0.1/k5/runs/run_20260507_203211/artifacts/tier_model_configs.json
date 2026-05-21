@@ -1,0 +1,22 @@
+{
+  "medium": {
+    "architecture": "28 -> 128 -> 64 -> 2",
+    "model_size_bytes": 48392,
+    "num_parameters": 12098
+  },
+  "powerful": {
+    "architecture": "28 -> 256 -> 128 -> 2",
+    "model_size_bytes": 162312,
+    "num_parameters": 40578
+  },
+  "supernet": {
+    "architecture": "28 -> 256 -> 128 -> 2",
+    "model_size_bytes": 162312,
+    "num_parameters": 40578
+  },
+  "weak": {
+    "architecture": "28 -> 64 -> 2",
+    "model_size_bytes": 7944,
+    "num_parameters": 1986
+  }
+}

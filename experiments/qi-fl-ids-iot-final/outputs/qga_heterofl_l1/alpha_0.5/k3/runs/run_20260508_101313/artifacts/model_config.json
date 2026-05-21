@@ -1,0 +1,9 @@
+{
+  "hidden_layers": [
+    256,
+    128
+  ],
+  "input_dim": 13,
+  "name": "HeteroFL_L1_Supernet+QGA",
+  "output_dim": 2
+}

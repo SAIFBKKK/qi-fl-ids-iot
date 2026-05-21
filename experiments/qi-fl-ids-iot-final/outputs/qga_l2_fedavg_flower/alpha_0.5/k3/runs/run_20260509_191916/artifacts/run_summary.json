@@ -1,0 +1,517 @@
+{
+  "accepted": true,
+  "artifacts": [
+    "experiments/qi-fl-ids-iot-final/outputs/qga_l2_fedavg_flower/alpha_0.5/k3/runs/run_20260509_191916/artifacts/metrics_rounds.csv",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_l2_fedavg_flower/alpha_0.5/k3/runs/run_20260509_191916/artifacts/metrics_clients.csv",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_l2_fedavg_flower/alpha_0.5/k3/runs/run_20260509_191916/artifacts/bandwidth_rounds.csv",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_l2_fedavg_flower/alpha_0.5/k3/runs/run_20260509_191916/artifacts/metrics_val.json",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_l2_fedavg_flower/alpha_0.5/k3/runs/run_20260509_191916/artifacts/selected_features_reference.json",
+    "experiments/qi-fl-ids-iot-final/outputs/qga_l2_fedavg_flower/alpha_0.5/k3/runs/run_20260509_191916/artifacts/model_config.json"
+  ],
+  "calibration_decision_used": true,
+  "comparison_with_p6_l2": {
+    "p6_l2_available": false
+  },
+  "criteria": {
+    "calibration_decision_used": true,
+    "final_selected_mask_used": true,
+    "global_test_holdout_protected": true,
+    "metrics_generated": true,
+    "p3_l2_partitions_used": true,
+    "test_not_used_for_selection": true,
+    "test_sent_to_clients_false": true,
+    "true_flower_runtime": true
+  },
+  "dataset": {
+    "input_dim_selected": 19,
+    "test_sent_to_clients": false,
+    "test_used_for_selection": false
+  },
+  "errors": [],
+  "figures": [],
+  "method": "FedAvg + QGA L2 Flower",
+  "mode": "full",
+  "phase": "P8-b",
+  "qga": {
+    "selected_features": [
+      "flow_duration",
+      "Header_Length",
+      "Protocol Type",
+      "Rate",
+      "fin_flag_number",
+      "rst_flag_number",
+      "psh_flag_number",
+      "ack_count",
+      "fin_count",
+      "urg_count",
+      "HTTPS",
+      "SSH",
+      "UDP",
+      "ARP",
+      "ICMP",
+      "Tot sum",
+      "Min",
+      "IAT",
+      "Number"
+    ],
+    "selected_features_count": 19
+  },
+  "run_id": "run_20260509_191916",
+  "runtime": "manual_or_subprocess",
+  "scenario": {
+    "alpha": 0.5,
+    "clients": 3,
+    "rounds": 30
+  },
+  "selected_mask_id": "conservative_l2_seed_123",
+  "selected_mask_source": "final_selected_mask",
+  "task": "l2_family",
+  "test": {
+    "evaluated": true,
+    "metrics": {
+      "FNR_macro": 0.2827708476655747,
+      "FPR_macro": 0.03316218834949124,
+      "accuracy": 0.7555178566719699,
+      "class_names": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ],
+      "confusion_matrix": [
+        [
+          22335,
+          99,
+          61,
+          11831,
+          0,
+          2219,
+          1708,
+          6747
+        ],
+        [
+          832,
+          451466,
+          76293,
+          317,
+          1113,
+          9091,
+          413,
+          475
+        ],
+        [
+          59,
+          1718,
+          176768,
+          37,
+          60,
+          1279,
+          16,
+          63
+        ],
+        [
+          361,
+          14,
+          26,
+          18146,
+          0,
+          311,
+          438,
+          3204
+        ],
+        [
+          15,
+          582,
+          1291,
+          12,
+          132832,
+          129,
+          122,
+          17
+        ],
+        [
+          29220,
+          2285,
+          1345,
+          25503,
+          32,
+          108560,
+          12726,
+          17295
+        ],
+        [
+          5107,
+          54,
+          69,
+          12143,
+          85,
+          4284,
+          64553,
+          3705
+        ],
+        [
+          8740,
+          187,
+          210,
+          76985,
+          78,
+          3987,
+          8775,
+          56776
+        ]
+      ],
+      "loss": 0.5181970696846049,
+      "macro_f1": 0.646557348155891,
+      "per_class": {
+        "0": {
+          "FN": 22665,
+          "FNR": 0.5036666666666667,
+          "FP": 44334,
+          "FPR": 0.03358117381859167,
+          "TN": 1275870,
+          "TP": 22335,
+          "class_id": 0,
+          "class_name": "0",
+          "f1": 0.4000214920882251,
+          "precision": 0.33501327453539126,
+          "recall": 0.49633333333333335,
+          "support": 45000
+        },
+        "1": {
+          "FN": 88534,
+          "FNR": 0.16395185185185185,
+          "FP": 4939,
+          "FPR": 0.005985186693229796,
+          "TN": 820265,
+          "TP": 451466,
+          "class_id": 1,
+          "class_name": "1",
+          "f1": 0.9061897521590117,
+          "precision": 0.9891784708756477,
+          "recall": 0.8360481481481481,
+          "support": 540000
+        },
+        "2": {
+          "FN": 3232,
+          "FNR": 0.017955555555555554,
+          "FP": 79295,
+          "FPR": 0.06690409414750541,
+          "TN": 1105909,
+          "TP": 176768,
+          "class_id": 2,
+          "class_name": "2",
+          "f1": 0.8107452363534629,
+          "precision": 0.6903301140734898,
+          "recall": 0.9820444444444445,
+          "support": 180000
+        },
+        "3": {
+          "FN": 4354,
+          "FNR": 0.1935111111111111,
+          "FP": 126828,
+          "FPR": 0.0944571551138598,
+          "TN": 1215876,
+          "TP": 18146,
+          "class_id": 3,
+          "class_name": "3",
+          "f1": 0.2167022940874404,
+          "precision": 0.12516727137279787,
+          "recall": 0.8064888888888889,
+          "support": 22500
+        },
+        "4": {
+          "FN": 2168,
+          "FNR": 0.01605925925925926,
+          "FP": 1368,
+          "FPR": 0.0011120106909098004,
+          "TN": 1228836,
+          "TP": 132832,
+          "class_id": 4,
+          "class_name": "4",
+          "f1": 0.9868647845468054,
+          "precision": 0.989806259314456,
+          "recall": 0.9839407407407408,
+          "support": 135000
+        },
+        "5": {
+          "FN": 88406,
+          "FNR": 0.44883888589908916,
+          "FP": 21300,
+          "FPR": 0.01823258616822942,
+          "TN": 1146938,
+          "TP": 108560,
+          "class_id": 5,
+          "class_name": "5",
+          "f1": 0.664329031350015,
+          "precision": 0.8359772062220853,
+          "recall": 0.5511611141009108,
+          "support": 196966
+        },
+        "6": {
+          "FN": 25447,
+          "FNR": 0.28274444444444446,
+          "FP": 24198,
+          "FPR": 0.018975787403427216,
+          "TN": 1251006,
+          "TP": 64553,
+          "class_id": 6,
+          "class_name": "6",
+          "f1": 0.7222672880151718,
+          "precision": 0.7273495509909748,
+          "recall": 0.7172555555555555,
+          "support": 90000
+        },
+        "7": {
+          "FN": 98962,
+          "FNR": 0.6354390065366192,
+          "FP": 31506,
+          "FPR": 0.026049512760176804,
+          "TN": 1177960,
+          "TP": 56776,
+          "class_id": 7,
+          "class_name": "7",
+          "f1": 0.46533890664699623,
+          "precision": 0.6431209079993657,
+          "recall": 0.36456099346338083,
+          "support": 155738
+        }
+      },
+      "precision_macro": 0.666992881923026,
+      "recall_macro": 0.7172291523344254,
+      "support_total": 1365204,
+      "weighted_f1": 0.7762249172562404
+    },
+    "used_for_selection": false
+  },
+  "training": {
+    "best_round": 22,
+    "framework": "Flower",
+    "rounds_completed": 30,
+    "strategy": "FedAvg"
+  },
+  "true_flower_runtime": true,
+  "validation": {
+    "metrics": {
+      "FNR_macro": 0.28306546314374753,
+      "FPR_macro": 0.03315290592405682,
+      "accuracy": 0.7555555881107704,
+      "class_names": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7"
+      ],
+      "confusion_matrix": [
+        [
+          22527,
+          79,
+          60,
+          11727,
+          0,
+          2330,
+          1612,
+          6665
+        ],
+        [
+          797,
+          451520,
+          76513,
+          305,
+          1076,
+          8881,
+          420,
+          488
+        ],
+        [
+          48,
+          1634,
+          176915,
+          40,
+          35,
+          1254,
+          20,
+          54
+        ],
+        [
+          374,
+          15,
+          33,
+          18008,
+          0,
+          339,
+          454,
+          3277
+        ],
+        [
+          19,
+          584,
+          1324,
+          8,
+          132789,
+          138,
+          127,
+          11
+        ],
+        [
+          29149,
+          2350,
+          1305,
+          25621,
+          22,
+          108659,
+          12548,
+          17311
+        ],
+        [
+          5039,
+          62,
+          68,
+          12298,
+          68,
+          4371,
+          64570,
+          3524
+        ],
+        [
+          8781,
+          169,
+          202,
+          77325,
+          121,
+          3963,
+          8678,
+          56498
+        ]
+      ],
+      "loss": 0.5178118336951357,
+      "macro_f1": 0.6467762829907682,
+      "per_class": {
+        "0": {
+          "FN": 22473,
+          "FNR": 0.4994,
+          "FP": 44207,
+          "FPR": 0.033485027291278155,
+          "TN": 1275995,
+          "TP": 22527,
+          "class_id": 0,
+          "class_name": "0",
+          "f1": 0.40322551774750753,
+          "precision": 0.3375640602990979,
+          "recall": 0.5006,
+          "support": 45000
+        },
+        "1": {
+          "FN": 88480,
+          "FNR": 0.16385185185185186,
+          "FP": 4893,
+          "FPR": 0.00592945727228,
+          "TN": 820309,
+          "TP": 451520,
+          "class_id": 1,
+          "class_name": "1",
+          "f1": 0.9062908653339529,
+          "precision": 0.9892794464662488,
+          "recall": 0.8361481481481482,
+          "support": 540000
+        },
+        "2": {
+          "FN": 3085,
+          "FNR": 0.017138888888888888,
+          "FP": 79505,
+          "FPR": 0.06708139203275054,
+          "TN": 1105697,
+          "TP": 176915,
+          "class_id": 2,
+          "class_name": "2",
+          "f1": 0.8107556940561844,
+          "precision": 0.6899422821932767,
+          "recall": 0.9828611111111111,
+          "support": 180000
+        },
+        "3": {
+          "FN": 4492,
+          "FNR": 0.19964444444444446,
+          "FP": 127324,
+          "FPR": 0.09482670019110719,
+          "TN": 1215378,
+          "TP": 18008,
+          "class_id": 3,
+          "class_name": "3",
+          "f1": 0.21459554792888125,
+          "precision": 0.12390939366416205,
+          "recall": 0.8003555555555556,
+          "support": 22500
+        },
+        "4": {
+          "FN": 2211,
+          "FNR": 0.01637777777777778,
+          "FP": 1322,
+          "FPR": 0.0010746202656149154,
+          "TN": 1228880,
+          "TP": 132789,
+          "class_id": 4,
+          "class_name": "4",
+          "f1": 0.9868715883037111,
+          "precision": 0.9901424939043032,
+          "recall": 0.9836222222222222,
+          "support": 135000
+        },
+        "5": {
+          "FN": 88306,
+          "FNR": 0.44833346025943693,
+          "FP": 21276,
+          "FPR": 0.018212057998505442,
+          "TN": 1146961,
+          "TP": 108659,
+          "class_id": 5,
+          "class_name": "5",
+          "f1": 0.6647843377179565,
+          "precision": 0.8362565898333782,
+          "recall": 0.551666539740563,
+          "support": 196965
+        },
+        "6": {
+          "FN": 25430,
+          "FNR": 0.28255555555555556,
+          "FP": 23859,
+          "FPR": 0.018709976929145344,
+          "TN": 1251343,
+          "TP": 64570,
+          "class_id": 6,
+          "class_name": "6",
+          "f1": 0.7237612719905396,
+          "precision": 0.7301903221793755,
+          "recall": 0.7174444444444444,
+          "support": 90000
+        },
+        "7": {
+          "FN": 99239,
+          "FNR": 0.6372217263720247,
+          "FP": 31330,
+          "FPR": 0.025904015411772972,
+          "TN": 1178135,
+          "TP": 56498,
+          "class_id": 7,
+          "class_name": "7",
+          "f1": 0.4639254408474124,
+          "precision": 0.6432800473653049,
+          "recall": 0.3627782736279754,
+          "support": 155737
+        }
+      },
+      "precision_macro": 0.6675705794881435,
+      "recall_macro": 0.7169345368562525,
+      "support_total": 1365202,
+      "weighted_f1": 0.7763411002163093
+    }
+  },
+  "warnings": []
+}
