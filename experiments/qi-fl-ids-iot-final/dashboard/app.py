@@ -15,7 +15,6 @@ from data_loader import load_evaluations, load_figures, load_registry, load_summ
 
 DASHBOARD_DIR = Path(__file__).resolve().parent
 FINAL_DIR = DASHBOARD_DIR.parent
-REPO_ROOT = FINAL_DIR.parents[1]
 SCRIPTS_DIR = FINAL_DIR / "src" / "scripts"
 
 app = FastAPI(title="QI-FL-IDS-IoT Final L1 Dashboard", version="1.5")
@@ -63,7 +62,7 @@ async def api_evaluate(model_id: str) -> dict[str, Any]:
     if model_id not in {model.get("model_id") for model in registry.get("models", [])}:
         raise HTTPException(status_code=404, detail="Unknown model_id")
 
-    if str(SCRIPTS_DIR) not in sys.path:
+    if SCRIPTS_DIR.exists() and str(SCRIPTS_DIR) not in sys.path:
         sys.path.insert(0, str(SCRIPTS_DIR))
     if str(DASHBOARD_DIR) not in sys.path:
         sys.path.insert(0, str(DASHBOARD_DIR))

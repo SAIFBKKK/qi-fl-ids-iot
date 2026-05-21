@@ -1,16 +1,15 @@
 FROM python:3.11-slim
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    DEPLOYMENT_BUNDLE_DIR=/app/l1_final
-
 WORKDIR /app
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+
+RUN python -m pip install --no-cache-dir --upgrade pip && \
+    python -m pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch==2.2.2+cpu && \
+    python -m pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
 EXPOSE 8014
 
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8014"]
+CMD ["python", "app.py"]
