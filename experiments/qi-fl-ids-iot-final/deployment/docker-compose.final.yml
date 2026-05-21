@@ -5,8 +5,8 @@ services:
     ports:
       - "1883:1883"
     volumes:
-      - ../../services/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
-      - ../../services/mosquitto/passwords:/mosquitto/config/passwords:ro
+      - ../../../services/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ../../../services/mosquitto/passwords:/mosquitto/config/passwords:ro
     networks:
       - p14-net
 
@@ -42,18 +42,27 @@ services:
   traffic-generator:
     profiles: ["demo"]
     build:
-      context: ../../services/traffic-generator
+      context: ../../../services/traffic-generator
     container_name: p14-traffic-generator
+    env_file:
+      - ../../../services/.env
     environment:
       MQTT_BROKER: mosquitto
       MQTT_PORT: "1883"
       MQTT_USERNAME: ids_user
-      MQTT_PASSWORD: ${MQTT_PASSWORD:-}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-changeme_in_dotenv}
       NODE_ID: node1
+      TARGET_NODE_IDS: node1
+      REPLAY_SCENARIO: deployment_15
+      DATASET_DIR: /data/deployment
+      ARTIFACTS_DIR: /artifacts
     depends_on:
       - mosquitto
     ports:
       - "8010:8000"
+    volumes:
+      - ../../../experiments/fl-iot-ids-v3/outputs/model_factory_30rounds/deployment_data:/data/deployment:ro
+      - ../../../experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights:/artifacts:ro
     networks:
       - p14-net
 
@@ -78,8 +87,8 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ../../services/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
-      - ../../services/monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - ../../../services/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../../../services/monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
     networks:
       - p14-net
     depends_on:
