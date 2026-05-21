@@ -66,6 +66,26 @@ services:
     networks:
       - p14-net
 
+  online-validator:
+    profiles: ["online"]
+    build:
+      context: ./online_validator
+    container_name: p15-online-validator
+    env_file:
+      - ../../../services/.env
+    environment:
+      MQTT_BROKER: mosquitto
+      MQTT_PORT: "1883"
+      MQTT_USERNAME: ids_user
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-changeme_in_dotenv}
+      OBSERVE_TOPICS: "ids/flows/#,ids/predictions/#,ids/alerts/#,ids/status/#"
+    depends_on:
+      - mosquitto
+    ports:
+      - "8015:8015"
+    networks:
+      - p14-net
+
   prometheus:
     image: prom/prometheus:v2.51.2
     container_name: p14-prometheus
