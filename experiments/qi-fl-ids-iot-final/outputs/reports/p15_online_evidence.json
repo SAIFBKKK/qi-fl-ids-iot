@@ -1,0 +1,74 @@
+{
+  "phase": "P15",
+  "mode": "online_evidence_collection",
+  "generated_at_unix": 1779379690.425303,
+  "endpoints": {
+    "final_ids_api_health": {
+      "url": "http://127.0.0.1:8014/health",
+      "reachable": false,
+      "status_code": null,
+      "latency_ms": 2031.815,
+      "body": null,
+      "error": "<urlopen error [WinError 10061] No connection could be made because the target machine actively refused it>"
+    },
+    "final_ids_api_ready": {
+      "url": "http://127.0.0.1:8014/ready",
+      "reachable": false,
+      "status_code": null,
+      "latency_ms": 2049.399,
+      "body": null,
+      "error": "<urlopen error [WinError 10061] No connection could be made because the target machine actively refused it>"
+    },
+    "final_ids_api_metrics": {
+      "url": "http://127.0.0.1:8014/metrics",
+      "reachable": false,
+      "status_code": null,
+      "latency_ms": 2033.162,
+      "body": null,
+      "error": "<urlopen error [WinError 10061] No connection could be made because the target machine actively refused it>"
+    },
+    "dashboard_p13_health": {
+      "url": "http://127.0.0.1:8013/health",
+      "reachable": false,
+      "status_code": null,
+      "latency_ms": 2033.442,
+      "body": null,
+      "error": "<urlopen error [WinError 10061] No connection could be made because the target machine actively refused it>"
+    },
+    "traffic_generator_health": {
+      "url": "http://127.0.0.1:8010/health",
+      "reachable": false,
+      "status_code": null,
+      "latency_ms": 2049.666,
+      "body": null,
+      "error": "<urlopen error [WinError 10061] No connection could be made because the target machine actively refused it>"
+    },
+    "online_validator_health": {
+      "url": "http://127.0.0.1:8015/health",
+      "reachable": false,
+      "status_code": null,
+      "latency_ms": 2024.474,
+      "body": null,
+      "error": "<urlopen error [WinError 10061] No connection could be made because the target machine actively refused it>"
+    },
+    "online_validator_ready": {
+      "url": "http://127.0.0.1:8015/ready",
+      "reachable": false,
+      "status_code": null,
+      "latency_ms": 2017.837,
+      "body": null,
+      "error": "<urlopen error [WinError 10061] No connection could be made because the target machine actively refused it>"
+    },
+    "online_validator_metrics": {
+      "url": "http://127.0.0.1:8015/metrics",
+      "reachable": false,
+      "status_code": null,
+      "latency_ms": 2050.292,
+      "body": null,
+      "error": "<urlopen error [WinError 10061] No connection could be made because the target machine actively refused it>"
+    }
+  },
+  "reachable_count": 0,
+  "total_endpoints": 8,
+  "accepted": false
+}
