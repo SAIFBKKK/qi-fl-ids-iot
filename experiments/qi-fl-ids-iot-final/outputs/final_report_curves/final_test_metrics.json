@@ -1,0 +1,68 @@
+{
+  "loss": 0.11412100510023258,
+  "macro_f1": 0.9556397544923779,
+  "weighted_f1": 0.9557199583527364,
+  "attack_recall": 0.9485050505050505,
+  "fpr": 0.03637777777777778,
+  "accuracy": 0.9557037037037037,
+  "confusion_matrix": [
+    [
+      43363,
+      1637
+    ],
+    [
+      2549,
+      46951
+    ]
+  ],
+  "best_epoch": 37,
+  "best_val_macro_f1": 0.9564501231082945,
+  "model_architecture": "12 -> 128 -> 64 -> 2",
+  "metadata": {
+    "task": "l1_binary",
+    "use_qga_mask": true,
+    "input_dim_original": 28,
+    "device": "cuda",
+    "seed": 42,
+    "test_used_for_training": false,
+    "test_used_for_model_selection": false,
+    "test_used_for_final_evaluation_only": true,
+    "selected_mask_id": "conservative_seed_42",
+    "selected_features_count": 12,
+    "selected_features": [
+      "flow_duration",
+      "Protocol Type",
+      "Duration",
+      "Rate",
+      "syn_flag_number",
+      "urg_count",
+      "rst_count",
+      "TCP",
+      "UDP",
+      "Std",
+      "IAT",
+      "Number"
+    ],
+    "selected_indices": [
+      0,
+      2,
+      3,
+      4,
+      6,
+      13,
+      14,
+      19,
+      20,
+      25,
+      26,
+      27
+    ],
+    "calibration_decision_used": true,
+    "selected_mask_source": "final_selected_mask",
+    "input_dim_selected": 12,
+    "model_architecture": "12 -> 128 -> 64 -> 2",
+    "train_rows": 441000,
+    "val_rows": 94500,
+    "test_rows": 94500
+  }
+}

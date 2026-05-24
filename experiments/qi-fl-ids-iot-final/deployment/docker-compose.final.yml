@@ -86,6 +86,32 @@ services:
     networks:
       - p14-net
 
+  final-mqtt-bridge:
+    profiles: ["online"]
+    build:
+      context: ./final_mqtt_bridge
+    container_name: p15-final-mqtt-bridge
+    env_file:
+      - ../../../services/.env
+    environment:
+      MQTT_HOST: mosquitto
+      MQTT_PORT: "1883"
+      MQTT_USERNAME: ids_user
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-changeme_in_dotenv}
+      MQTT_SUBSCRIBE_TOPIC: ids/flows/#
+      FINAL_IDS_API_URL: http://final-ids-api:8014
+      BRIDGE_NODE_ID: final-mqtt-bridge
+      FEATURE_SCHEMA_PATH: /app/l1_final/feature_schema.json
+    depends_on:
+      - mosquitto
+      - final-ids-api
+    ports:
+      - "8016:8016"
+    volumes:
+      - ./l1_final:/app/l1_final:ro
+    networks:
+      - p14-net
+
   prometheus:
     image: prom/prometheus:v2.51.2
     container_name: p14-prometheus

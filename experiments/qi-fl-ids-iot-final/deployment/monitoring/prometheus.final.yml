@@ -12,3 +12,13 @@ scrape_configs:
     static_configs:
       - targets: ["traffic-generator:8000"]
     metrics_path: "/metrics"
+
+  - job_name: "online-validator"
+    static_configs:
+      - targets: ["online-validator:8015"]
+    metrics_path: "/metrics"
+
+  - job_name: "final-mqtt-bridge"
+    static_configs:
+      - targets: ["final-mqtt-bridge:8016"]
+    metrics_path: "/metrics"
