@@ -112,6 +112,16 @@ services:
     networks:
       - p14-net
 
+  live-lab-controller:
+    profiles: ["live-lab"]
+    build:
+      context: ./live_lab_controller
+    container_name: p16-live-lab-controller
+    ports:
+      - "8020:8020"
+    networks:
+      - p14-net
+
   prometheus:
     image: prom/prometheus:v2.51.2
     container_name: p14-prometheus
