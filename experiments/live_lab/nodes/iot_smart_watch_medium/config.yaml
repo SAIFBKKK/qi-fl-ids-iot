@@ -1,0 +1,8 @@
+node_id: iot-smart-watch-medium
+device_type: smart_watch_like
+inference_mode: edge_placeholder
+input_mode: original_28_scaled
+controller_url: http://SERVER_IP:8020
+mqtt_host: SERVER_IP
+mqtt_port: 1883
+

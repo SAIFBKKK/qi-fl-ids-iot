@@ -1,0 +1,16 @@
+server:
+  host_only_ip: 192.168.56.1
+  mqtt_port: 1883
+  controller_port: 8020
+  final_ids_api_port: 8014
+  final_mqtt_bridge_port: 8016
+  online_validator_port: 8015
+vms:
+  weak_node:
+    name: iot-rpi-weak
+    planned_virtualbox_path: E:\VirtualBox VMs\qi-fl-ids-iot-live-lab\iot-rpi-weak
+  medium_node:
+    name: iot-smart-watch-medium
+    planned_virtualbox_path: E:\VirtualBox VMs\qi-fl-ids-iot-live-lab\iot-smart-watch-medium
+network_scope: local_isolated_lab_only
+
