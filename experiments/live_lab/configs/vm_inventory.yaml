@@ -1,0 +1,31 @@
+server:
+  host_ip: 192.168.56.1
+  network: VirtualBox Host-Only
+  storage_root: "E:\\VirtualBox VMs\\qi-fl-ids-iot-live-lab\\"
+
+vms:
+  - name: iot-rpi-weak
+    role: raspberry_like_weak_node
+    os: ubuntu_server_minimal
+    ip: 192.168.56.101
+    cpu: 1
+    ram_mb: 1024
+    disk_gb: 12
+    inference_mode: server_side
+  - name: iot-smart-watch-medium
+    role: smart_watch_like_medium_node
+    os: ubuntu_server_minimal
+    ip: 192.168.56.102
+    cpu: 1
+    ram_mb: 1536
+    disk_gb: 15
+    inference_mode: edge_future
+  - name: lab-attacker-kali
+    role: ciciot2023_inspired_controlled_attacker
+    os: kali_linux
+    ip: 192.168.56.103
+    cpu: 1
+    ram_mb: 1536
+    disk_gb: 20
+    scenario_mode: controlled_scenarios_only
+
