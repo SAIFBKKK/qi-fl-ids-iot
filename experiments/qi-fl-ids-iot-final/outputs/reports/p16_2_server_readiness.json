@@ -1,0 +1,120 @@
+{
+  "generated_at": "2026-05-26T15:29:38.599535Z",
+  "compose": {
+    "path": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\deployment\\docker-compose.final.yml",
+    "exists": true,
+    "required_services": {
+      "mosquitto": true,
+      "final-ids-api": true,
+      "final-mqtt-bridge": true,
+      "online-validator": true,
+      "live-lab-controller": true,
+      "dashboard-p13": true,
+      "prometheus": true,
+      "grafana": true
+    },
+    "all_required_services_defined": true
+  },
+  "docker": {
+    "reachable": true,
+    "server_version": "29.4.1",
+    "details": {
+      "ran": true,
+      "returncode": 0,
+      "stdout": "29.4.1\n",
+      "stderr": ""
+    }
+  },
+  "compose_config": {
+    "command": "docker compose -f C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\deployment\\docker-compose.final.yml --profile online --profile live-lab config",
+    "ran": true,
+    "returncode": 0,
+    "ok": true,
+    "stdout": "1883\"\n        protocol: tcp\n    volumes:\n      - type: bind\n        source: C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\services\\mosquitto\\mosquitto.conf\n        target: /mosquitto/config/mosquitto.conf\n        read_only: true\n        bind: {}\n      - type: bind\n        source: C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\services\\mosquitto\\passwords\n        target: /mosquitto/config/passwords\n        read_only: true\n        bind: {}\n  online-validator:\n    profiles:\n      - online\n    build:\n      context: C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\deployment\\online_validator\n      dockerfile: Dockerfile\n    container_name: p15-online-validator\n    depends_on:\n      mosquitto:\n        condition: service_started\n        required: true\n    environment:\n      DATASET_DIR: /data/demo\n      EDGE_GATEWAY_INFERENCE_THRESHOLD: \"0.5\"\n      FL_NUM_ROUNDS: \"10\"\n      FL_SERVER_HOST: fl-server\n      FL_SERVER_PORT: \"8080\"\n      GRAFANA_ADMIN_PASSWORD: changeme_in_dotenv\n      GRAFANA_ADMIN_USER: admin\n      GRAFANA_PORT: \"3000\"\n      INFERENCE_THRESHOLD: \"0.5\"\n      LABEL_MAPPING_PATH: /artifacts/label_mapping.json\n      LOG_FORMAT: json\n      LOG_LEVEL: INFO\n      MLFLOW_PORT: \"5000\"\n      MODEL_PATH: /artifacts/global_model.pth\n      MQTT_BROKER: mosquitto\n      MQTT_PASSWORD: changeme_in_dotenv\n      MQTT_PORT: \"1883\"\n      MQTT_USERNAME: ids_user\n      NODE_ID: node1\n      OBSERVE_TOPICS: ids/flows/#,ids/predictions/#,ids/alerts/#,ids/status/#\n      PROMETHEUS_PORT: \"9090\"\n      QGA_DEFAULT_ITERATIONS: \"20\"\n      QGA_SERVICE_PORT: \"8020\"\n      REAL_FL_EXPERIMENT: exp_v4_multitier_fedavg_normal_classweights\n      REAL_FL_ROUNDS: \"1\"\n      REAL_FL_WORKDIR: /app/experiments/fl-iot-ids-v3\n      REPLAY_RATE: \"5\"\n      REPLAY_SCENARIO: mixed_chaos\n      SCALER_PATH: /artifacts/scaler.pkl\n      TRAINING_MODE: mock\n    networks:\n      p14-net: null\n    ports:\n      - mode: ingress\n        target: 8015\n        published: \"8015\"\n        protocol: tcp\n  prometheus:\n    container_name: p14-prometheus\n    image: prom/prometheus:v2.51.2\n    networks:\n      p14-net: null\n    ports:\n      - mode: ingress\n        target: 9090\n        published: \"9090\"\n        protocol: tcp\n    volumes:\n      - type: bind\n        source: C:\\Users\\saifb\\dev\\qi-fl-ids-iot\\experiments\\qi-fl-ids-iot-final\\deployment\\monitoring\\prometheus.final.yml\n        target: /etc/prometheus/prometheus.yml\n        read_only: true\n        bind: {}\nnetworks:\n  p14-net:\n    name: deployment_p14-net\n    driver: bridge\n",
+    "stderr": ""
+  },
+  "endpoints": {
+    "final_ids_api_ready": {
+      "url": "http://127.0.0.1:8014/ready",
+      "reachable": true,
+      "status": 200,
+      "body": {
+        "ready": true,
+        "message": "ready"
+      }
+    },
+    "final_mqtt_bridge_ready": {
+      "url": "http://127.0.0.1:8016/ready",
+      "reachable": true,
+      "status": 200,
+      "body": {
+        "ready": true,
+        "service": "final-mqtt-bridge",
+        "mqtt_host": "mosquitto",
+        "mqtt_port": 1883,
+        "subscribe_topic": "ids/flows/#",
+        "final_ids_api_url": "http://final-ids-api:8014",
+        "mqtt_connected": true,
+        "last_error": null
+      }
+    },
+    "online_validator_ready": {
+      "url": "http://127.0.0.1:8015/ready",
+      "reachable": true,
+      "status": 200,
+      "body": {
+        "ready": true,
+        "service": "online-validator",
+        "broker": "mosquitto",
+        "port": 1883,
+        "topics": [
+          "ids/flows/#",
+          "ids/predictions/#",
+          "ids/alerts/#",
+          "ids/status/#"
+        ],
+        "mqtt_connected": true,
+        "last_error": null
+      }
+    },
+    "live_lab_controller_health": {
+      "url": "http://127.0.0.1:8020/health",
+      "reachable": true,
+      "status": 200,
+      "body": {
+        "status": "ok",
+        "service": "live-lab-controller"
+      }
+    },
+    "live_lab_controller_nodes": {
+      "url": "http://127.0.0.1:8020/nodes",
+      "reachable": true,
+      "status": 200,
+      "body": {
+        "count": 0,
+        "nodes": []
+      }
+    },
+    "dashboard_p13_health": {
+      "url": "http://127.0.0.1:8013/health",
+      "reachable": true,
+      "status": 200,
+      "body": {
+        "status": "ok",
+        "service": "p13-dashboard"
+      }
+    }
+  },
+  "warnings": [],
+  "server_ports": {
+    "mqtt": 1883,
+    "final_ids_api": 8014,
+    "final_mqtt_bridge": 8016,
+    "online_validator": 8015,
+    "live_lab_controller": 8020,
+    "dashboard_p13": 8013,
+    "prometheus": 9090,
+    "grafana": 3000
+  },
+  "ok": true
+}
