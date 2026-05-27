@@ -1,198 +1,167 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>QI-FL-IDS-IoT Final L1 Dashboard</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <title>QI-FL-IDS-IoT Live Lab Dashboard</title>
+  <link rel="stylesheet" href="/static/css/dashboard.css">
 </head>
 <body>
-  <header class="topbar">
-    <div>
-      <p class="eyebrow">P13 Dashboard L1 Final</p>
-      <h1>{{ summary.project.name if summary.project else "Quantum-Inspired FL IDS for IoT" }}</h1>
-      <p class="subtitle">Evidence, local test evaluation, robustness, and compression readiness for L1 binary IDS deployment.</p>
+  <div id="toast-stack" class="toast-stack" aria-live="polite" aria-atomic="false"></div>
+
+  <header class="app-header">
+    <div class="header-copy">
+      <p class="eyebrow">P16.9 Live Lab SOC Dashboard</p>
+      <h1>Quantum-Inspired Federated IDS Live Lab</h1>
+      <p class="subtitle">Real-time node registration, model assignment, MQTT inference, and IDS alert presentation for the final defense demo.</p>
     </div>
-    <div class="status-pill">Recommended: {{ summary.recommended_model.method if summary.recommended_model else "P8 FedAvg + QGA" }}</div>
+    <div class="header-actions">
+      <div id="platform-status-pill" class="status-pill status-muted">Platform: loading</div>
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle light or dark theme">Dark mode</button>
+    </div>
   </header>
 
-  <main>
-    <section class="band">
-      <div class="section-title">
-        <h2>Overview</h2>
-        <span>{{ summary.project.branch if summary.project else "" }}</span>
-      </div>
-      <div class="grid four">
-        <article class="metric">
-          <span>Task</span>
-          <strong>L1 Binary IDS</strong>
-        </article>
-        <article class="metric">
-          <span>Runtime Evidence</span>
-          <strong>Flower FL</strong>
-        </article>
-        <article class="metric">
-          <span>Feature Selection</span>
-          <strong>QGA</strong>
-        </article>
-        <article class="metric">
-          <span>Aggregation</span>
-          <strong>FedAvg / QIFA</strong>
-        </article>
-      </div>
+  <main class="dashboard-shell">
+    <section class="overview-grid" aria-label="Live lab overview">
+      <article class="kpi-card">
+        <span>Connected Devices</span>
+        <strong id="kpi-devices">--</strong>
+        <small>registered in live-lab-controller</small>
+      </article>
+      <article class="kpi-card">
+        <span>Flows Observed</span>
+        <strong id="kpi-flows">--</strong>
+        <small>MQTT ids/flows/#</small>
+      </article>
+      <article class="kpi-card">
+        <span>Predictions</span>
+        <strong id="kpi-predictions">--</strong>
+        <small>MQTT ids/predictions/#</small>
+      </article>
+      <article class="kpi-card alert-kpi">
+        <span>Alerts</span>
+        <strong id="kpi-alerts">--</strong>
+        <small>MQTT ids/alerts/#</small>
+      </article>
+      <article class="kpi-card">
+        <span>API Errors</span>
+        <strong id="kpi-api-errors">--</strong>
+        <small>final-ids-api prediction errors</small>
+      </article>
+      <article class="kpi-card">
+        <span>Bridge Errors</span>
+        <strong id="kpi-bridge-errors">--</strong>
+        <small>final-mqtt-bridge prediction errors</small>
+      </article>
     </section>
 
-    <section class="band accent">
-      <div class="section-title">
-        <h2>Recommended Deployment Model</h2>
-        <span>{{ summary.recommended_model.selected_mask_id if summary.recommended_model else "conservative_seed_42" }}</span>
-      </div>
-      <div class="recommended-layout">
-        <div>
-          <h3>{{ summary.recommended_model.method if summary.recommended_model else "P8 FedAvg + QGA L1" }}</h3>
-          <p>{{ summary.recommended_model.recommended_use_case if summary.recommended_model else "" }}</p>
-          <p class="small">Selected features: {{ summary.recommended_model.features_count if summary.recommended_model else "12" }}</p>
-        </div>
-        <div class="grid four compact">
-          <article class="metric"><span>Macro-F1</span><strong>{{ summary.recommended_model.macro_f1 if summary.recommended_model else "" }}</strong></article>
-          <article class="metric"><span>Attack Recall</span><strong>{{ summary.recommended_model.attack_recall if summary.recommended_model else "" }}</strong></article>
-          <article class="metric"><span>FPR</span><strong>{{ summary.recommended_model.fpr if summary.recommended_model else "" }}</strong></article>
-          <article class="metric"><span>Accuracy</span><strong>{{ summary.recommended_model.accuracy if summary.recommended_model else "" }}</strong></article>
-        </div>
-      </div>
-    </section>
+    <section class="layout-main">
+      <div class="primary-column">
+        <section class="panel live-events-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Device Connected Notifications</p>
+              <h2>Node Arrival Stream</h2>
+            </div>
+            <span id="last-refresh" class="muted">waiting for data</span>
+          </div>
+          <div id="device-event-list" class="event-list empty-state">No device events yet.</div>
+        </section>
 
-    <section class="band">
-      <div class="section-title">
-        <h2>Test Set Evaluation</h2>
-        <span>recomputed when checkpoints are compatible, otherwise reported</span>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Model</th>
-              <th>Status</th>
-              <th>Source</th>
-              <th>Macro-F1</th>
-              <th>Attack Recall</th>
-              <th>FPR</th>
-              <th>Accuracy</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for row in evaluations %}
-            <tr>
-              <td>{{ row.method }}</td>
-              <td><span class="tag">{{ row.status }}</span></td>
-              <td>{{ row.metric_source }}</td>
-              <td>{{ row.macro_f1 }}</td>
-              <td>{{ row.attack_recall }}</td>
-              <td>{{ row.fpr }}</td>
-              <td>{{ row.accuracy }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </section>
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Connected Devices</p>
+              <h2>Node And Model Assignment Table</h2>
+            </div>
+            <span class="badge badge-info">controller /nodes + /assignments</span>
+          </div>
+          <div class="table-wrap">
+            <table class="device-table">
+              <thead>
+                <tr>
+                  <th>Status</th>
+                  <th>Node</th>
+                  <th>Hostname</th>
+                  <th>Device Type</th>
+                  <th>CPU</th>
+                  <th>RAM</th>
+                  <th>Tier</th>
+                  <th>Model</th>
+                  <th>Mask</th>
+                  <th>Input Modes</th>
+                  <th>MQTT Topics</th>
+                  <th>Registered</th>
+                </tr>
+              </thead>
+              <tbody id="device-table-body">
+                <tr><td colspan="12" class="empty-row">Waiting for live-lab-controller...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
 
-    <section class="band">
-      <div class="section-title">
-        <h2>L1 Comparison</h2>
-        <span>P5 / P8 / P9</span>
+        <section class="panel alerts-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Alert Detected Notifications</p>
+              <h2>Recent Alerts / Security Events</h2>
+            </div>
+            <span class="badge badge-danger">ids/alerts/#</span>
+          </div>
+          <div id="alert-event-list" class="alert-list empty-state">No IDS alerts observed yet.</div>
+        </section>
       </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Method</th>
-              <th>Features</th>
-              <th>Macro-F1</th>
-              <th>Attack Recall</th>
-              <th>FPR</th>
-              <th>Bandwidth</th>
-              <th>Evidence</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for row in summary.l1_comparison %}
-            <tr>
-              <td>{{ row.method }}</td>
-              <td>{{ row.features_count }}</td>
-              <td>{{ row.macro_f1 }}</td>
-              <td>{{ row.attack_recall }}</td>
-              <td>{{ row.fpr }}</td>
-              <td>{{ row.bandwidth_total_bytes }}</td>
-              <td>{{ row.evidence_level }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </section>
 
-    <section class="band two-column">
-      <div>
-        <div class="section-title">
-          <h2>Robustness</h2>
-          <span>P10 label flipping</span>
-        </div>
-        <p class="small">{{ summary.robustness.scenario if summary.robustness else "" }}</p>
-        <div class="grid two compact">
-          <article class="metric"><span>Best Method</span><strong>{{ summary.robustness.best_method if summary.robustness else "" }}</strong></article>
-          <article class="metric"><span>Robustness Score</span><strong>{{ summary.robustness.best_row.robustness_score if summary.robustness and summary.robustness.best_row else "" }}</strong></article>
-        </div>
-      </div>
-      <div>
-        <div class="section-title">
-          <h2>Compression</h2>
-          <span>P11 dry-run</span>
-        </div>
-        <p class="small">{{ summary.compression.warning if summary.compression else "" }}</p>
-        <div class="grid two compact">
-          <article class="metric"><span>Compressed Size</span><strong>{{ summary.compression.row.compressed_model_size_bytes if summary.compression and summary.compression.row else "" }}</strong></article>
-          <article class="metric"><span>Bandwidth Reduction</span><strong>{{ summary.compression.row.bandwidth_reduction_ratio if summary.compression and summary.compression.row else "" }}</strong></article>
-        </div>
-      </div>
-    </section>
+      <aside class="side-column">
+        <section class="panel model-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Model Profile</p>
+              <h2>Final P8 FedAvg + QGA IDS</h2>
+            </div>
+          </div>
+          <dl class="model-facts">
+            <div><dt>Model ID</dt><dd id="model-id">p8_fedavg_qga_l1</dd></div>
+            <div><dt>Selected Mask</dt><dd id="selected-mask-id">conservative_seed_42</dd></div>
+            <div><dt>Threshold</dt><dd id="model-threshold">runtime default</dd></div>
+            <div><dt>Accepted Input Modes</dt><dd id="model-input-modes">selected_12_scaled, original_28_scaled</dd></div>
+          </dl>
+          <div class="path-card">
+            <strong>Weak node path</strong>
+            <p>Weak IoT nodes can publish 12 selected scaled features directly to the IDS API path.</p>
+          </div>
+          <div class="path-card">
+            <strong>Medium node path</strong>
+            <p>Medium nodes can publish 28 scaled features; final-ids-api applies the QGA mask before inference.</p>
+          </div>
+        </section>
 
-    <section class="band">
-      <div class="section-title">
-        <h2>Evidence and Reproducibility</h2>
-        <span>reports, figures, and endpoints</span>
-      </div>
-      <div class="grid two">
-        <div>
-          <h3>Reports</h3>
-          <ul>
-            {% for key, path in summary.evidence_paths.items() %}
-            <li><code>{{ key }}</code>: {{ path }}</li>
-            {% endfor %}
-          </ul>
-        </div>
-        <div>
-          <h3>API</h3>
-          <ul>
-            <li><code>GET /api/summary</code></li>
-            <li><code>GET /api/models</code></li>
-            <li><code>GET /api/evaluations</code></li>
-            <li><code>GET /api/figures</code></li>
-            <li><code>POST /api/evaluate/{model_id}</code></li>
-          </ul>
-        </div>
-      </div>
-      {% if summary.warnings %}
-      <div class="warning">
-        <strong>Warnings</strong>
-        <ul>
-          {% for warning in summary.warnings %}
-          <li>{{ warning }}</li>
-          {% endfor %}
-        </ul>
-      </div>
-      {% endif %}
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Service Status</p>
+              <h2>Runtime Components</h2>
+            </div>
+          </div>
+          <div id="service-status-list" class="service-list"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Evidence Counters</p>
+              <h2>MQTT Topic Counts</h2>
+            </div>
+          </div>
+          <div id="topic-counts" class="topic-counts empty-state">No topic counts available.</div>
+        </section>
+      </aside>
     </section>
   </main>
+
+  <script src="/static/js/theme.js"></script>
+  <script src="/static/js/notifications.js"></script>
+  <script src="/static/js/dashboard.js"></script>
 </body>
 </html>
