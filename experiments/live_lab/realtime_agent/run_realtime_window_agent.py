@@ -27,8 +27,13 @@ def select_features_for_mode(
     warnings: list[str] = []
     if input_mode == "original_28_unscaled":
         return [float(value) for value in features_28], {
-            "scaler": {"available": scaler.available, "used": False, "warnings": scaler.warnings},
-            "qga_mask": {"used": False, "mask_id": mask["mask_id"], "warnings": mask["warnings"]},
+            "scaler": {**scaler.describe(), "used": False},
+            "qga_mask": {
+                "used": False,
+                "mask_id": mask["mask_id"],
+                "selected_mask_id": mask["selected_mask_id"],
+                "warnings": mask["warnings"],
+            },
             "warnings": warnings,
         }
 
@@ -37,7 +42,12 @@ def select_features_for_mode(
     if input_mode == "original_28_scaled":
         return scaled, {
             "scaler": {**scaler.describe(), "used": not no_scale and scaler.available},
-            "qga_mask": {"used": False, "mask_id": mask["mask_id"], "warnings": mask["warnings"]},
+            "qga_mask": {
+                "used": False,
+                "mask_id": mask["mask_id"],
+                "selected_mask_id": mask["selected_mask_id"],
+                "warnings": mask["warnings"],
+            },
             "warnings": list(dict.fromkeys(warnings + mask["warnings"])),
         }
 
@@ -48,6 +58,7 @@ def select_features_for_mode(
         "qga_mask": {
             "used": True,
             "mask_id": mask["mask_id"],
+            "selected_mask_id": mask["selected_mask_id"],
             "selected_indices": mask["selected_indices"],
             "warnings": mask["warnings"],
         },
