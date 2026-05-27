@@ -1,0 +1,39 @@
+{
+  "generated_at": "2026-05-27T14:34:23.225829Z",
+  "files": {
+    "ok": true,
+    "missing": []
+  },
+  "dry_runs": {
+    "ok": true,
+    "checks": {
+      "vm1_selected_12_scaled": true,
+      "vm2_original_28_scaled": true
+    },
+    "runs": {
+      "vm1": {
+        "ok": true,
+        "returncode": 0,
+        "stderr": "",
+        "features_count": 12,
+        "topic": "ids/flows/iot-rpi-weak",
+        "published": false,
+        "dry_run": true
+      },
+      "vm2": {
+        "ok": true,
+        "returncode": 0,
+        "stderr": "",
+        "features_count": 28,
+        "topic": "ids/flows/iot-smart-watch-medium",
+        "published": false,
+        "dry_run": true
+      }
+    }
+  },
+  "safety": {
+    "ok": true,
+    "violations": []
+  },
+  "ok": true
+}
