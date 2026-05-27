@@ -64,7 +64,7 @@ class NodeRegistry:
         self._lock = Lock()
 
     def register(self, registration: NodeRegistration) -> RegisteredNode:
-        tier = assign_tier(registration.cpu_count, registration.ram_gb)
+        tier = assign_tier(registration.cpu_count, registration.ram_gb, registration.device_type)
         now = utc_now()
         with self._lock:
             existing = self._nodes.get(registration.node_id)
@@ -94,4 +94,3 @@ class NodeRegistry:
     def count(self) -> int:
         with self._lock:
             return len(self._nodes)
-

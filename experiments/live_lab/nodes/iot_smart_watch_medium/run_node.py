@@ -3,7 +3,10 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import urllib.error
+import urllib.request
 from pathlib import Path
+from typing import Any
 
 
 COMMON_DIR = Path(__file__).resolve().parents[1] / "common"
@@ -19,14 +22,47 @@ from qga_mask import selected_mask_id  # noqa: E402
 from utils import load_simple_yaml  # noqa: E402
 
 
+NODE_ID = "iot-smart-watch-medium"
+DECLARED_CPU_COUNT = 1
+DECLARED_RAM_GB = 1.5
+DEVICE_TYPE = "smart_watch_like"
+
+
+def build_registration_payload(hostname: str | None = None) -> dict[str, object]:
+    profile = get_hardware_profile()
+    return {
+        "node_id": NODE_ID,
+        "hostname": hostname or str(profile["hostname"]),
+        "cpu_count": DECLARED_CPU_COUNT,
+        "ram_gb": DECLARED_RAM_GB,
+        "device_type": DEVICE_TYPE,
+        "mqtt_topic": f"ids/flows/{NODE_ID}",
+    }
+
+
+def post_registration(server_url: str, payload: dict[str, object]) -> dict[str, Any]:
+    request = urllib.request.Request(
+        f"{server_url.rstrip('/')}/register-node",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=10) as response:
+            return json.loads(response.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode("utf-8", errors="replace")
+        raise RuntimeError(f"registration failed with HTTP {exc.code}: {body}") from exc
+
+
 def build_dry_run_summary(config_path: str | Path | None = None) -> dict[str, object]:
     config = load_simple_yaml(config_path or Path(__file__).with_name("config.yaml"))
-    node_id = str(config.get("node_id", "iot-smart-watch-medium"))
+    node_id = str(config.get("node_id", NODE_ID))
     features = [0.0 for _ in expected_28_features()]
     edge_runtime = EdgeInferenceRuntime(model_path=None, enabled=False)
     return {
         "node_id": node_id,
-        "device_type": config.get("device_type", "smart_watch_like"),
+        "device_type": config.get("device_type", DEVICE_TYPE),
         "inference_mode": config.get("inference_mode", "edge_placeholder"),
         "input_mode": config.get("input_mode", "original_28_scaled"),
         "selected_mask_id": selected_mask_id(),
@@ -34,6 +70,7 @@ def build_dry_run_summary(config_path: str | Path | None = None) -> dict[str, ob
         "alert_topic": build_topic(node_id, "alerts"),
         "hardware_profile": get_hardware_profile(),
         "edge_runtime": edge_runtime.describe(),
+        "registration_payload": build_registration_payload(),
         "sample_payload": build_payload(node_id, "original_28_scaled", features),
     }
 
@@ -41,14 +78,20 @@ def build_dry_run_summary(config_path: str | Path | None = None) -> dict[str, ob
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Dry-run smart-watch-like IoT node placeholder.")
     parser.add_argument("--config", default=str(Path(__file__).with_name("config.yaml")))
+    parser.add_argument("--server-url", default="http://192.168.56.1:8020")
+    parser.add_argument("--register", action="store_true", help="Register this node with live-lab-controller.")
     parser.add_argument("--dry-run", action="store_true", help="Print planned node configuration without network activity.")
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
+    if args.register:
+        response = post_registration(args.server_url, build_registration_payload())
+        print(json.dumps(response, indent=2))
+        return 0
     if not args.dry_run:
-        print("Only --dry-run is enabled in P16.1 step 0.", file=sys.stderr)
+        print("Use --dry-run to inspect payloads or --register to call /register-node.", file=sys.stderr)
         return 2
     print(json.dumps(build_dry_run_summary(args.config), indent=2))
     return 0
@@ -56,4 +99,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
