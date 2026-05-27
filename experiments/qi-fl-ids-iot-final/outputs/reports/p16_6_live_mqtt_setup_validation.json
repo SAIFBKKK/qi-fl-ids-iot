@@ -1,0 +1,32 @@
+{
+  "generated_at": "2026-05-27T02:11:32.171787Z",
+  "files": {
+    "ok": true,
+    "missing": []
+  },
+  "services": {
+    "ok": true,
+    "checks": {
+      "docker_compose_final": true,
+      "final_mqtt_bridge": true,
+      "live_lab_controller": true
+    }
+  },
+  "scripts": {
+    "ok": true,
+    "checks": {
+      "publish_uses_ids_flows_topic": true,
+      "publish_supports_selected_12_scaled": true,
+      "publish_supports_original_28_scaled": true,
+      "publish_includes_selected_mask_id": true,
+      "collect_queries_bridge_metrics": true,
+      "collect_queries_online_summary": true,
+      "collect_queries_controller": true
+    }
+  },
+  "safety": {
+    "ok": true,
+    "violations": []
+  },
+  "ok": true
+}

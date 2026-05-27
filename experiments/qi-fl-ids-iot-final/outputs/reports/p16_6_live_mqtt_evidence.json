@@ -1,0 +1,163 @@
+{
+  "generated_at": "2026-05-27T02:11:16.400021Z",
+  "server_url": "http://192.168.56.1",
+  "manual_runtime_observations": {
+    "iot-rpi-weak": {
+      "input_mode": "selected_12_scaled",
+      "flow_topic": "ids/flows/iot-rpi-weak",
+      "prediction_topic": "ids/predictions/iot-rpi-weak",
+      "alert_topic": "ids/alerts/iot-rpi-weak",
+      "bridge_flows_received_total": 1,
+      "bridge_predictions_published_total": 1,
+      "bridge_alerts_published_total": 1,
+      "predicted_label": "attack",
+      "alert_severity": "critical"
+    },
+    "iot-smart-watch-medium": {
+      "input_mode": "original_28_scaled",
+      "flow_topic": "ids/flows/iot-smart-watch-medium",
+      "prediction_topic": "ids/predictions/iot-smart-watch-medium",
+      "alert_topic": "ids/alerts/iot-smart-watch-medium",
+      "bridge_flows_received_total": 1,
+      "bridge_predictions_published_total": 1,
+      "bridge_alerts_published_total": 1,
+      "predicted_label": "attack",
+      "alert_severity": "critical",
+      "api_behavior": "QGA mask applied by final-ids-api"
+    },
+    "errors": {
+      "final_ids_api_prediction_errors_total": 0,
+      "final_mqtt_bridge_prediction_errors_total": 0
+    },
+    "online_validator_topic_counts": {
+      "ids/flows/iot-rpi-weak": 1,
+      "ids/predictions/iot-rpi-weak": 1,
+      "ids/alerts/iot-rpi-weak": 1,
+      "ids/flows/iot-smart-watch-medium": 1,
+      "ids/predictions/iot-smart-watch-medium": 1,
+      "ids/alerts/iot-smart-watch-medium": 1
+    }
+  },
+  "live_fetches": {
+    "final_mqtt_bridge_metrics": {
+      "ok": true,
+      "url": "http://192.168.56.1:8016/metrics",
+      "status": 200,
+      "bytes": 3486
+    },
+    "online_validator_summary": {
+      "ok": true,
+      "url": "http://192.168.56.1:8015/summary",
+      "status": 200,
+      "bytes": 12267
+    },
+    "final_ids_api_metrics": {
+      "ok": true,
+      "url": "http://192.168.56.1:8014/metrics",
+      "status": 200,
+      "bytes": 578
+    },
+    "live_lab_controller_nodes": {
+      "ok": true,
+      "url": "http://192.168.56.1:8020/nodes",
+      "status": 200,
+      "bytes": 597
+    },
+    "live_lab_controller_assignments": {
+      "ok": true,
+      "url": "http://192.168.56.1:8020/assignments",
+      "status": 200,
+      "bytes": 741
+    }
+  },
+  "live_extracted_evidence": {
+    "nodes": {
+      "iot-rpi-weak": {
+        "bridge_flows_received_total": 1.0,
+        "bridge_predictions_published_total": 1.0,
+        "bridge_alerts_published_total": 1.0
+      },
+      "iot-smart-watch-medium": {
+        "bridge_flows_received_total": 1.0,
+        "bridge_predictions_published_total": 1.0,
+        "bridge_alerts_published_total": 1.0
+      }
+    },
+    "errors": {
+      "final_ids_api_prediction_errors_total": 0.0,
+      "final_mqtt_bridge_prediction_errors_total": 0.0
+    },
+    "online_validator_topic_counts": {
+      "ids/alerts/iot-rpi-weak": 1,
+      "ids/alerts/iot-smart-watch-medium": 1,
+      "ids/alerts/node1": 20769,
+      "ids/flows/iot-rpi-weak": 1,
+      "ids/flows/iot-smart-watch-medium": 1,
+      "ids/flows/node1": 21009,
+      "ids/predictions/iot-rpi-weak": 1,
+      "ids/predictions/iot-smart-watch-medium": 1,
+      "ids/predictions/node1": 20997,
+      "ids/status/node1": 1
+    },
+    "controller_nodes": {
+      "count": 2,
+      "nodes": [
+        {
+          "node_id": "iot-rpi-weak",
+          "hostname": "iot-rpi-weak",
+          "cpu_count": 1,
+          "ram_gb": 1.0,
+          "device_type": "raspberry_like",
+          "requested_mqtt_topic": "ids/flows/iot-rpi-weak",
+          "assigned_tier": "weak",
+          "registered_at": "2026-05-27T01:52:54.218336Z",
+          "updated_at": "2026-05-27T01:52:54.218336Z"
+        },
+        {
+          "node_id": "iot-smart-watch-medium",
+          "hostname": "iot-smart-watch-medium",
+          "cpu_count": 1,
+          "ram_gb": 1.5,
+          "device_type": "smart_watch_like",
+          "requested_mqtt_topic": "ids/flows/iot-smart-watch-medium",
+          "assigned_tier": "medium",
+          "registered_at": "2026-05-27T01:53:12.435951Z",
+          "updated_at": "2026-05-27T01:53:12.435951Z"
+        }
+      ]
+    },
+    "controller_assignments": {
+      "count": 2,
+      "assignments": [
+        {
+          "node_id": "iot-rpi-weak",
+          "assigned_tier": "weak",
+          "model_id": "p8_fedavg_qga_l1",
+          "selected_mask_id": "conservative_seed_42",
+          "supported_input_modes": [
+            "selected_12_scaled",
+            "original_28_scaled"
+          ],
+          "mqtt_publish_topic": "ids/flows/iot-rpi-weak",
+          "mqtt_prediction_topic": "ids/predictions/iot-rpi-weak",
+          "mqtt_alert_topic": "ids/alerts/iot-rpi-weak"
+        },
+        {
+          "node_id": "iot-smart-watch-medium",
+          "assigned_tier": "medium",
+          "model_id": "p8_fedavg_qga_l1",
+          "selected_mask_id": "conservative_seed_42",
+          "supported_input_modes": [
+            "selected_12_scaled",
+            "original_28_scaled"
+          ],
+          "mqtt_publish_topic": "ids/flows/iot-smart-watch-medium",
+          "mqtt_prediction_topic": "ids/predictions/iot-smart-watch-medium",
+          "mqtt_alert_topic": "ids/alerts/iot-smart-watch-medium"
+        }
+      ]
+    }
+  },
+  "warnings": [],
+  "note": "Zero-vector MQTT payloads validate the technical pipeline only; scientific evaluation remains P12/P13."
+}
