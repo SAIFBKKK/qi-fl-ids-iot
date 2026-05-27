@@ -1,0 +1,51 @@
+{
+  "generated_at": "2026-05-27T20:35:55Z",
+  "files": {
+    "ok": true,
+    "missing": []
+  },
+  "passive_capture": {
+    "ok": true,
+    "checks": {
+      "functions_present": true,
+      "host_only_filter": true,
+      "no_payload_storage": true,
+      "no_pcap_write": true,
+      "filter_builds": true
+    }
+  },
+  "run_agent": {
+    "ok": true,
+    "checks": {
+      "source_choices": true,
+      "allow_required": true,
+      "live_warning": true,
+      "live_payload_metadata": true,
+      "synthetic_available": true
+    }
+  },
+  "wrapper": {
+    "ok": true,
+    "checks": {
+      "wrapper_exists": true,
+      "refuses_without_allow": true,
+      "source_live": true,
+      "default_vm1": true
+    },
+    "stderr": "usage: 16_12_run_passive_observation_publish.py [-h] [--broker BROKER]\n                                                [--port PORT]\n                                                [--username USERNAME]\n                                                [--password PASSWORD]\n                                                [--node-id {iot-rpi-weak}]\n                                                [--interface INTERFACE]\n                                                [--node-ip NODE_IP]\n                                                [--peer-ip PEER_IP]\n                                                [--input-mode {selected_12_scaled,original_28_scaled}]\n                                                [--window-size WINDOW_SIZE]\n                                                [--max-windows MAX_WINDOWS]\n                                                [--timeout-seconds TIMEOUT_SECONDS]\n                                                [--dry-run] [--publish]\n                                                [--allow-live-capture]\n16_12_run_passive_observation_publish.py: error: passive live observation requires --allow-live-capture"
+  },
+  "docs": {
+    "ok": true,
+    "checks": {
+      "doc_exists": true,
+      "report_exists": true,
+      "limits_documented": true,
+      "safety_documented": true
+    }
+  },
+  "safety": {
+    "ok": true,
+    "violations": []
+  },
+  "ok": true
+}
