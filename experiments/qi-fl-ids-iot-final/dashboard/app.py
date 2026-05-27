@@ -52,6 +52,36 @@ MODEL_DEFAULTS = {
     "threshold": None,
 }
 
+DEMO_NODE_PROFILES = {
+    "iot-rpi-weak": {
+        "display_name": "iot-rpi-weak",
+        "device_type": "raspberry-like",
+        "expected_tier": "weak",
+        "inference_path": "selected_12_scaled",
+        "qga_behavior": "12 selected scaled features sent directly",
+        "description": "Weak IoT node using server-side inference.",
+    },
+    "iot-smart-watch-medium": {
+        "display_name": "iot-smart-watch-medium",
+        "device_type": "smart-watch-like",
+        "expected_tier": "medium",
+        "inference_path": "original_28_scaled",
+        "qga_behavior": "QGA mask applied by final-ids-api",
+        "description": "Medium IoT node prepared for edge-aware runtime evidence.",
+    },
+}
+
+DEMO_STEP_TEXT = {
+    "platform_ready": "Step 1 - Platform Ready",
+    "devices_connected": "Step 2 - Devices Connected",
+    "model_assigned": "Step 3 - Model Assigned",
+    "packet_window_generated": "Step 4 - Packet Window Generated",
+    "mqtt_flows_seen": "Step 5 - MQTT Flow Received",
+    "predictions_seen": "Step 6 - IDS Prediction Produced",
+    "alerts_seen": "Step 7 - Alert Detected",
+    "zero_errors": "Step 8 - Zero Runtime Errors",
+}
+
 app = FastAPI(title="QI-FL-IDS-IoT Final L1 Dashboard", version="1.5")
 app.mount("/static", StaticFiles(directory=DASHBOARD_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=DASHBOARD_DIR / "templates")
@@ -102,6 +132,10 @@ def prometheus_metric_sum(text: str, metric_name: str, labels: dict[str, str] | 
         except ValueError:
             continue
     return total if found else 0.0
+
+
+def metric_int(text: str, metric_name: str, labels: dict[str, str] | None = None) -> int:
+    return int(prometheus_metric_sum(text, metric_name, labels))
 
 
 def topic_family_total(topic_counts: dict[str, Any], family: str) -> int:
@@ -274,6 +308,296 @@ def build_live_lab_state() -> dict[str, Any]:
     }
 
 
+def assignments_by_node(assignments: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    return {
+        item.get("node_id"): item
+        for item in assignments
+        if isinstance(item, dict) and item.get("node_id")
+    }
+
+
+def build_demo_devices(state: dict[str, Any]) -> list[dict[str, Any]]:
+    nodes = {
+        node.get("node_id"): node
+        for node in state.get("nodes", [])
+        if isinstance(node, dict) and node.get("node_id")
+    }
+    assignments = assignments_by_node(state.get("assignments", []))
+    demo_devices: list[dict[str, Any]] = []
+
+    for node_id, profile in DEMO_NODE_PROFILES.items():
+        node = nodes.get(node_id, {})
+        assignment = assignments.get(node_id, {})
+        connected = bool(node)
+        model_id = assignment.get("model_id") or node.get("model_id") or MODEL_DEFAULTS["model_id"]
+        selected_mask_id = (
+            assignment.get("selected_mask_id")
+            or node.get("selected_mask_id")
+            or MODEL_DEFAULTS["selected_mask_id"]
+        )
+        demo_devices.append(
+            {
+                "node_id": node_id,
+                "hostname": node.get("hostname", "waiting"),
+                "device_type": node.get("device_type") or profile["device_type"],
+                "display_device_type": profile["device_type"],
+                "cpu_count": node.get("cpu_count"),
+                "ram_gb": node.get("ram_gb"),
+                "assigned_tier": assignment.get("assigned_tier") or node.get("assigned_tier") or profile["expected_tier"],
+                "expected_tier": profile["expected_tier"],
+                "model_id": model_id,
+                "selected_mask_id": selected_mask_id,
+                "supported_input_modes": assignment.get("supported_input_modes", MODEL_DEFAULTS["supported_input_modes"]),
+                "mqtt_publish_topic": assignment.get("mqtt_publish_topic", f"ids/flows/{node_id}"),
+                "mqtt_prediction_topic": assignment.get("mqtt_prediction_topic", f"ids/predictions/{node_id}"),
+                "mqtt_alert_topic": assignment.get("mqtt_alert_topic", f"ids/alerts/{node_id}"),
+                "registered_at": node.get("registered_at"),
+                "updated_at": node.get("updated_at"),
+                "status": "connected" if connected else "waiting",
+                "connected": connected,
+                "inference_path": profile["inference_path"],
+                "qga_behavior": profile["qga_behavior"],
+                "description": profile["description"],
+            }
+        )
+    return demo_devices
+
+
+def build_demo_metrics(state: dict[str, Any], bridge_text: str, api_text: str) -> dict[str, Any]:
+    node_metrics: dict[str, dict[str, int]] = {}
+    for node_id in DEMO_NODE_PROFILES:
+        node_metrics[node_id] = {
+            "flows": metric_int(bridge_text, "final_mqtt_bridge_flows_received_total", {"node_id": node_id}),
+            "predictions": metric_int(
+                bridge_text, "final_mqtt_bridge_predictions_published_total", {"node_id": node_id}
+            ),
+            "alerts": metric_int(bridge_text, "final_mqtt_bridge_alerts_published_total", {"node_id": node_id}),
+        }
+
+    api_errors = metric_int(api_text, "final_ids_api_prediction_errors_total")
+    bridge_errors = metric_int(bridge_text, "final_mqtt_bridge_prediction_errors_total")
+    if api_errors == 0:
+        api_errors = int(state.get("kpis", {}).get("api_errors", 0) or 0)
+    if bridge_errors == 0:
+        bridge_errors = int(state.get("kpis", {}).get("bridge_errors", 0) or 0)
+
+    return {
+        "nodes": node_metrics,
+        "totals": {
+            "flows": sum(item["flows"] for item in node_metrics.values())
+            or int(state.get("kpis", {}).get("flows_observed", 0) or 0),
+            "predictions": sum(item["predictions"] for item in node_metrics.values())
+            or int(state.get("kpis", {}).get("predictions", 0) or 0),
+            "alerts": sum(item["alerts"] for item in node_metrics.values())
+            or int(state.get("kpis", {}).get("alerts", 0) or 0),
+        },
+        "errors": {
+            "final_ids_api_prediction_errors_total": api_errors,
+            "final_mqtt_bridge_prediction_errors_total": bridge_errors,
+        },
+    }
+
+
+def build_demo_model_profile(model_info_response: dict[str, Any]) -> dict[str, Any]:
+    data = model_info_response.get("data") if isinstance(model_info_response.get("data"), dict) else {}
+    threshold = first_present(data, "threshold", "decision_threshold", "alert_threshold", default=0.4)
+    return {
+        "final_model": "P8 FedAvg + QGA",
+        "model_id": first_present(data, "model_id", default=MODEL_DEFAULTS["model_id"]),
+        "selected_mask_id": first_present(data, "selected_mask_id", default=MODEL_DEFAULTS["selected_mask_id"]),
+        "threshold": threshold,
+        "supported_input_modes": first_present(
+            data, "supported_input_modes", default=MODEL_DEFAULTS["supported_input_modes"]
+        ),
+        "vm1_path": "iot-rpi-weak -> PacketWindow(30) -> scaler JSON -> selected_12_scaled -> MQTT -> IDS",
+        "vm2_path": "iot-smart-watch-medium -> PacketWindow(30) -> scaler JSON -> original_28_scaled -> API QGA mask -> IDS",
+        "scaler": "JSON runtime scaler",
+        "qga_behavior": "The weak node may send 12 selected scaled features directly; the medium node may send 28 scaled features and final-ids-api applies the QGA mask.",
+        "model_info_available": bool(model_info_response.get("ok")),
+    }
+
+
+def build_demo_steps(
+    state: dict[str, Any], devices: list[dict[str, Any]], metrics: dict[str, Any]
+) -> dict[str, bool]:
+    services = state.get("services", {})
+    required_services = ("controller", "validator", "bridge", "api")
+    platform_ready = all(bool(services.get(name, {}).get("ok")) for name in required_services)
+    devices_connected = all(device.get("connected") for device in devices)
+    model_assigned = all(
+        device.get("model_id") == MODEL_DEFAULTS["model_id"]
+        and device.get("selected_mask_id") == MODEL_DEFAULTS["selected_mask_id"]
+        and device.get("assigned_tier") == device.get("expected_tier")
+        for device in devices
+    )
+    totals = metrics.get("totals", {})
+    errors = metrics.get("errors", {})
+    mqtt_flows_seen = int(totals.get("flows", 0) or 0) > 0
+    predictions_seen = int(totals.get("predictions", 0) or 0) > 0
+    alerts_seen = int(totals.get("alerts", 0) or 0) > 0 or bool(state.get("recent_alerts"))
+    zero_errors = (
+        int(errors.get("final_ids_api_prediction_errors_total", 0) or 0) == 0
+        and int(errors.get("final_mqtt_bridge_prediction_errors_total", 0) or 0) == 0
+    )
+    return {
+        "platform_ready": platform_ready,
+        "devices_connected": devices_connected,
+        "model_assigned": model_assigned,
+        "packet_window_generated": mqtt_flows_seen,
+        "mqtt_flows_seen": mqtt_flows_seen,
+        "predictions_seen": predictions_seen,
+        "alerts_seen": alerts_seen,
+        "zero_errors": zero_errors,
+    }
+
+
+def demo_platform_status(steps: dict[str, bool], state: dict[str, Any]) -> str:
+    if all(steps.values()):
+        return "ready"
+    if any(steps.values()) or any(service.get("ok") for service in state.get("services", {}).values()):
+        return "degraded"
+    return "offline"
+
+
+def build_demo_step_details(steps: dict[str, bool]) -> list[dict[str, str]]:
+    details = []
+    first_pending_seen = False
+    explanations = {
+        "platform_ready": "Docker services answer health and readiness checks.",
+        "devices_connected": "The two VirtualBox IoT nodes are registered in live-lab-controller.",
+        "model_assigned": "Each node has the expected tier and final P8 FedAvg + QGA assignment.",
+        "packet_window_generated": "A controlled PacketWindow(30) payload has entered the live path.",
+        "mqtt_flows_seen": "final-mqtt-bridge observed ids/flows/{node_id}.",
+        "predictions_seen": "final-ids-api produced predictions through the MQTT bridge.",
+        "alerts_seen": "IDS alerts appeared on ids/alerts/{node_id}.",
+        "zero_errors": "Runtime prediction error counters remain at zero.",
+    }
+    for key, label in DEMO_STEP_TEXT.items():
+        done = bool(steps.get(key))
+        if done:
+            status = "done"
+        elif not first_pending_seen:
+            status = "active"
+            first_pending_seen = True
+        else:
+            status = "pending"
+        details.append({"key": key, "label": label, "status": status, "explanation": explanations[key]})
+    return details
+
+
+def build_demo_events(state: dict[str, Any], devices: list[dict[str, Any]], metrics: dict[str, Any]) -> list[dict[str, Any]]:
+    generated_at = state.get("generated_at")
+    events: list[dict[str, Any]] = []
+    for device in devices:
+        node_id = device["node_id"]
+        timestamp = device.get("updated_at") or device.get("registered_at") or generated_at
+        if device.get("connected"):
+            events.append(
+                {
+                    "timestamp": timestamp,
+                    "type": "device_connected",
+                    "title": "device connected",
+                    "node_id": node_id,
+                    "detail": f"{node_id} registered as {device.get('assigned_tier')} tier.",
+                    "severity": "info",
+                }
+            )
+            events.append(
+                {
+                    "timestamp": timestamp,
+                    "type": "model_assigned",
+                    "title": "model assigned",
+                    "node_id": node_id,
+                    "detail": f"{device.get('model_id')} with mask {device.get('selected_mask_id')}.",
+                    "severity": "success",
+                }
+            )
+        node_counts = metrics.get("nodes", {}).get(node_id, {})
+        if int(node_counts.get("flows", 0) or 0) > 0:
+            events.append(
+                {
+                    "timestamp": generated_at,
+                    "type": "flow_published",
+                    "title": "flow published",
+                    "node_id": node_id,
+                    "detail": f"{node_counts.get('flows')} controlled PacketWindow flow(s) observed.",
+                    "severity": "info",
+                }
+            )
+        if int(node_counts.get("predictions", 0) or 0) > 0:
+            events.append(
+                {
+                    "timestamp": generated_at,
+                    "type": "prediction_received",
+                    "title": "prediction received",
+                    "node_id": node_id,
+                    "detail": f"{node_counts.get('predictions')} IDS prediction(s) published.",
+                    "severity": "success",
+                }
+            )
+    for alert in state.get("recent_alerts", [])[:8]:
+        events.append(
+            {
+                "timestamp": alert.get("timestamp") or generated_at,
+                "type": "alert_detected",
+                "title": "alert detected",
+                "node_id": alert.get("node_id"),
+                "detail": f"label {alert.get('predicted_label')} confidence {alert.get('confidence')}",
+                "severity": alert.get("severity", "medium"),
+                "flow_id": alert.get("flow_id"),
+            }
+        )
+    return events[:24]
+
+
+def build_demo_warnings(
+    state: dict[str, Any],
+    bridge_metrics: dict[str, Any],
+    api_metrics: dict[str, Any],
+    model_info: dict[str, Any],
+) -> list[str]:
+    warnings: list[str] = []
+    for name, service in state.get("services", {}).items():
+        if not service.get("ok"):
+            warnings.append(f"{name} service is not fully reachable from the dashboard container.")
+    for response, label in ((bridge_metrics, "final-mqtt-bridge metrics"), (api_metrics, "final-ids-api metrics")):
+        if not response.get("ok"):
+            warnings.append(f"{label} unavailable: {'; '.join(response.get('errors', [])[:1])}")
+    if not model_info.get("ok"):
+        warnings.append("final-ids-api /model/info unavailable; dashboard uses the final model defaults.")
+    return warnings
+
+
+def build_demo_state() -> dict[str, Any]:
+    state = build_live_lab_state()
+    bridge_metrics = fetch_first("bridge", "/metrics", as_json=False)
+    api_metrics = fetch_first("api", "/metrics", as_json=False)
+    model_info = fetch_first("api", "/model/info")
+    bridge_text = bridge_metrics.get("data") if isinstance(bridge_metrics.get("data"), str) else ""
+    api_text = api_metrics.get("data") if isinstance(api_metrics.get("data"), str) else ""
+
+    devices = build_demo_devices(state)
+    metrics = build_demo_metrics(state, bridge_text, api_text)
+    steps = build_demo_steps(state, devices, metrics)
+    platform = demo_platform_status(steps, state)
+    recent_events = build_demo_events(state, devices, metrics)
+
+    return {
+        "generated_at": state.get("generated_at"),
+        "platform_status": platform,
+        "steps": steps,
+        "step_details": build_demo_step_details(steps),
+        "devices": devices,
+        "assignments": state.get("assignments", []),
+        "model_profile": build_demo_model_profile(model_info),
+        "latest_alert": state.get("recent_alerts", [None])[0] if state.get("recent_alerts") else None,
+        "metrics": metrics,
+        "recent_events": recent_events,
+        "services": state.get("services", {}),
+        "warnings": build_demo_warnings(state, bridge_metrics, api_metrics, model_info),
+    }
+
+
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(
@@ -285,6 +609,15 @@ async def index(request: Request) -> HTMLResponse:
             "registry": load_registry(),
             "evaluations": load_evaluations(),
         },
+    )
+
+
+@app.get("/demo", response_class=HTMLResponse)
+async def demo(request: Request) -> HTMLResponse:
+    return templates.TemplateResponse(
+        request=request,
+        name="demo.html",
+        context={"request": request},
     )
 
 
@@ -311,6 +644,11 @@ async def api_figures() -> dict[str, Any]:
 @app.get("/api/live-lab/state")
 async def api_live_lab_state() -> dict[str, Any]:
     return build_live_lab_state()
+
+
+@app.get("/api/live-lab/demo-state")
+async def api_live_lab_demo_state() -> dict[str, Any]:
+    return build_demo_state()
 
 
 @app.post("/api/evaluate/{model_id}")

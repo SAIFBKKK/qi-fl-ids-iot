@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Live Defense Demo Mode</title>
+  <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body class="demo-body">
+  <div id="toast-stack" class="toast-stack" aria-live="polite" aria-atomic="false"></div>
+
+  <header class="app-header demo-header">
+    <div class="header-copy">
+      <p class="eyebrow">P16.9.2 Live Defense Demo Mode</p>
+      <h1>Quantum-Inspired Federated IDS Live Lab</h1>
+      <p class="subtitle">A safe live defense path for the jury: VM registration, PacketWindow(30) features, runtime scaler JSON, MQTT inference, predictions, alerts, and zero-error deployment evidence.</p>
+    </div>
+    <div class="header-actions">
+      <div id="demo-status-pill" class="status-pill status-muted">Status: loading</div>
+      <div id="demo-last-refresh" class="status-pill status-muted">Last refresh: waiting</div>
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle light or dark theme">Dark mode</button>
+    </div>
+  </header>
+
+  <main class="dashboard-shell demo-shell">
+    <section class="demo-control-bar" aria-label="Presentation controls">
+      <button id="demo-refresh" class="control-button" type="button">Refresh now</button>
+      <button id="demo-clear-notifications" class="control-button" type="button">Clear local notifications</button>
+      <button id="demo-focus-alert" class="control-button" type="button">Focus last alert</button>
+      <button id="demo-toggle-theme" class="control-button" type="button">Toggle dark mode</button>
+      <a class="control-button" href="/">Open main dashboard</a>
+      <a class="control-button" href="http://192.168.56.1:3000" target="_blank" rel="noreferrer">Open Grafana</a>
+      <a class="control-button" href="http://192.168.56.1:8014/model/info" target="_blank" rel="noreferrer">Open API model info</a>
+    </section>
+
+    <section class="panel demo-timeline-panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Demo Progress Timeline</p>
+          <h2>Live Defense Path</h2>
+        </div>
+        <span class="badge badge-info">VM -> PacketWindow(30) -> scaler JSON -> MQTT -> IDS</span>
+      </div>
+      <div id="demo-step-timeline" class="demo-step-timeline" aria-label="Demo progress steps">
+        <article class="demo-step active"><span>Step 1 - Platform Ready</span><small>waiting for live state</small></article>
+        <article class="demo-step pending"><span>Step 2 - Devices Connected</span><small>waiting for live state</small></article>
+        <article class="demo-step pending"><span>Step 3 - Model Assigned</span><small>waiting for live state</small></article>
+        <article class="demo-step pending"><span>Step 4 - Packet Window Generated</span><small>waiting for live state</small></article>
+        <article class="demo-step pending"><span>Step 5 - MQTT Flow Received</span><small>waiting for live state</small></article>
+        <article class="demo-step pending"><span>Step 6 - IDS Prediction Produced</span><small>waiting for live state</small></article>
+        <article class="demo-step pending"><span>Step 7 - Alert Detected</span><small>waiting for live state</small></article>
+        <article class="demo-step pending"><span>Step 8 - Zero Runtime Errors</span><small>waiting for live state</small></article>
+      </div>
+    </section>
+
+    <section class="demo-grid">
+      <div class="demo-main-column">
+        <section class="demo-device-grid" id="demo-device-cards" aria-label="Live device cards">
+          <article class="panel demo-device-card waiting">
+            <p class="eyebrow">Live Device Card</p>
+            <h2>iot-rpi-weak</h2>
+            <p class="muted">Waiting for controller state.</p>
+          </article>
+          <article class="panel demo-device-card waiting">
+            <p class="eyebrow">Live Device Card</p>
+            <h2>iot-smart-watch-medium</h2>
+            <p class="muted">Waiting for controller state.</p>
+          </article>
+        </section>
+
+        <section id="demo-alert-focus" class="panel demo-alert-focus severity-medium">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Live Alert Focus Panel</p>
+              <h2>Alert Detected</h2>
+            </div>
+            <span id="demo-alert-severity" class="badge severity-medium">waiting</span>
+          </div>
+          <div id="demo-latest-alert" class="latest-alert-empty">
+            <strong>No alert detected yet.</strong>
+            <p>Publish a controlled PacketWindow(30) flow from VM1 or VM2 to show the live IDS alert path.</p>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Live Event Stream</p>
+              <h2>Operational Timeline</h2>
+            </div>
+            <span class="badge badge-success">safe runtime evidence</span>
+          </div>
+          <div id="demo-event-stream" class="demo-event-stream empty-state">No live events observed yet.</div>
+        </section>
+      </div>
+
+      <aside class="demo-side-column">
+        <section class="panel demo-model-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Model Assignment Panel</p>
+              <h2>Final Model Profile</h2>
+            </div>
+          </div>
+          <dl class="model-facts demo-model-facts">
+            <div><dt>Final model</dt><dd id="demo-final-model">P8 FedAvg + QGA</dd></div>
+            <div><dt>model_id</dt><dd id="demo-model-id">p8_fedavg_qga_l1</dd></div>
+            <div><dt>selected_mask_id</dt><dd id="demo-mask-id">conservative_seed_42</dd></div>
+            <div><dt>threshold</dt><dd id="demo-threshold">0.4</dd></div>
+            <div><dt>scaler</dt><dd id="demo-scaler">JSON runtime scaler</dd></div>
+          </dl>
+          <div class="path-card"><strong>VM1 path</strong><p id="demo-vm1-path">12 selected scaled features.</p></div>
+          <div class="path-card"><strong>VM2 path</strong><p id="demo-vm2-path">28 scaled features, QGA mask inside API.</p></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Live Metrics Panel</p>
+              <h2>MQTT-to-IDS Counters</h2>
+            </div>
+          </div>
+          <div id="demo-metrics-grid" class="demo-metrics-grid"></div>
+        </section>
+
+        <section class="panel jury-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">What the jury is seeing</p>
+              <h2>Defense Narrative</h2>
+            </div>
+          </div>
+          <p>This live lab demonstrates that each IoT node is registered, assigned to a tier, linked to the final P8 FedAvg + QGA model, and able to send packet-window features through MQTT to obtain real IDS predictions and alerts.</p>
+          <p>The live dashboard separates scientific evaluation from runtime deployment evidence. Scientific metrics are from P12/P13, while this demo validates the operational path.</p>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Service Health</p>
+              <h2>Readiness Signals</h2>
+            </div>
+          </div>
+          <div id="demo-service-status" class="service-list"></div>
+          <div id="demo-warnings" class="demo-warnings"></div>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <script src="/static/js/theme.js"></script>
+  <script src="/static/js/notifications.js"></script>
+  <script src="/static/js/demo.js"></script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+{
+  "generated_at": "2026-05-27T16:57:30Z",
+  "files": {
+    "ok": true,
+    "missing": []
+  },
+  "routes_and_endpoint": {
+    "ok": true,
+    "checks": {
+      "demo_route_present": true,
+      "demo_state_endpoint_present": true,
+      "demo_state_builder_present": true,
+      "main_dashboard_link_present": true,
+      "demo_state_shape": true
+    },
+    "endpoint_probe": {
+      "ok": true,
+      "demo_status": 200,
+      "demo_state_status": 200,
+      "demo_state_keys": [
+        "assignments",
+        "devices",
+        "generated_at",
+        "latest_alert",
+        "metrics",
+        "model_profile",
+        "platform_status",
+        "recent_events",
+        "services",
+        "step_details",
+        "steps",
+        "warnings"
+      ],
+      "warnings": []
+    }
+  },
+  "ui_components": {
+    "ok": true,
+    "checks": {
+      "term_platform_ready": true,
+      "term_devices_connected": true,
+      "term_model_assigned": true,
+      "term_packet_window": true,
+      "term_alert_detected": true,
+      "term_zero_runtime_errors": true,
+      "term_dark_mode": true,
+      "live_device_cards": true,
+      "model_assignment_panel": true,
+      "live_alert_focus_panel": true,
+      "live_metrics_panel": true,
+      "live_event_stream": true,
+      "jury_explanation_panel": true,
+      "presentation_controls": true,
+      "theme_support": true
+    }
+  },
+  "docs": {
+    "ok": true,
+    "checks": {
+      "live_demo_doc": true,
+      "runbook": true,
+      "report": true,
+      "safe_scope_doc": true,
+      "safe_scope_runbook": true
+    }
+  },
+  "safety": {
+    "ok": true,
+    "violations": []
+  },
+  "ok": true
+}
