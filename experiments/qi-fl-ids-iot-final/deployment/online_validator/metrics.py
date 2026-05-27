@@ -82,16 +82,20 @@ class OnlineValidatorMetrics:
                     latency_ms = max((ended - started) * 1000.0, 0.0)
                     if math.isfinite(latency_ms):
                         self.latencies_ms.append(latency_ms)
-            self.samples.append(
-                {
-                    "topic": topic,
-                    "family": family,
-                    "flow_id": flow_id,
-                    "timestamp": payload.get("timestamp") if isinstance(payload, dict) else None,
-                    "received_at_unix": now,
-                    "payload_preview": payload_text[:250],
-                }
-            )
+            sample = {
+                "topic": topic,
+                "family": family,
+                "flow_id": flow_id,
+                "timestamp": payload.get("timestamp") if isinstance(payload, dict) else None,
+                "received_at_unix": now,
+                "payload_preview": payload_text[:250],
+            }
+            if isinstance(payload, dict):
+                if family in {"alerts", "predictions", "status"}:
+                    sample["payload"] = payload
+                elif family == "flows":
+                    sample["payload"] = {key: value for key, value in payload.items() if key != "features"}
+            self.samples.append(sample)
 
     def snapshot(self) -> dict[str, Any]:
         with self._lock:

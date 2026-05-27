@@ -53,6 +53,19 @@
     return "severity-medium";
   }
 
+  function alertLabel(alert) {
+    return alert.predicted_label || alert.label || alert.prediction_label || "unknown";
+  }
+
+  function alertConfidence(alert) {
+    const value = alert.confidence ?? alert.probability_attack ?? alert.attack_probability ?? alert.score;
+    if (value === null || value === undefined || value === "") {
+      return "n/a";
+    }
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed.toFixed(3) : String(value);
+  }
+
   function renderKpis(state) {
     const kpis = state.kpis || {};
     setText("kpi-devices", number(kpis.connected_devices));
@@ -202,9 +215,11 @@
         return;
       }
       knownAlerts.add(key);
+      const label = alertLabel(alert);
+      const confidence = alertConfidence(alert);
       P169Notifications.toast(
         `Alert detected on ${alert.node_id}`,
-        `${alert.severity || "medium"} severity, label ${alert.predicted_label || "unknown"}, flow ${alert.flow_id || "n/a"}`,
+        `${alert.severity || "medium"} severity, label ${label}, confidence ${confidence}, flow ${alert.flow_id || "n/a"}`,
         { kind: "alert", timeout: 6500 }
       );
     });
@@ -223,13 +238,14 @@
     target.className = "alert-list";
     target.innerHTML = alerts.map((alert) => {
       const cls = severityClass(alert.severity);
-      const confidence = alert.confidence === null || alert.confidence === undefined ? "n/a" : Number(alert.confidence).toFixed(3);
+      const label = alertLabel(alert);
+      const confidence = alertConfidence(alert);
       return `
         <div class="alert-item ${cls}">
           <strong>Alert detected on ${esc(alert.node_id)}</strong>
           <div class="alert-meta">
             ${badge(alert.severity || "medium", cls)}
-            <span>label ${esc(alert.predicted_label)}</span>
+            <span>label ${esc(label)}</span>
             <span>confidence ${esc(confidence)}</span>
             <span>flow ${esc(alert.flow_id || "n/a")}</span>
             <span>${fmtTime(alert.timestamp)}</span>

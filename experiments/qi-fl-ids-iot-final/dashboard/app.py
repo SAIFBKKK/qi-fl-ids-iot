@@ -126,6 +126,31 @@ def parse_payload_preview(value: Any) -> dict[str, Any]:
     return payload if isinstance(payload, dict) else {}
 
 
+def sample_payload(sample: dict[str, Any]) -> dict[str, Any]:
+    payload = sample.get("payload")
+    if isinstance(payload, dict):
+        return payload
+    return parse_payload_preview(sample.get("payload_preview"))
+
+
+def first_present(payload: dict[str, Any], *keys: str, default: Any = None) -> Any:
+    for key in keys:
+        value = payload.get(key)
+        if value is not None and value != "":
+            return value
+    return default
+
+
+def normalize_confidence(payload: dict[str, Any]) -> float | None:
+    value = first_present(payload, "confidence", "probability_attack", "attack_probability", "score")
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def node_id_from_topic(topic: str) -> str:
     parts = topic.split("/")
     return parts[2] if len(parts) >= 3 else "unknown"
@@ -165,17 +190,21 @@ def extract_recent_alerts(summary_payload: dict[str, Any]) -> list[dict[str, Any
         if not isinstance(sample, dict) or sample.get("family") != "alerts":
             continue
         topic = str(sample.get("topic", ""))
-        payload = parse_payload_preview(sample.get("payload_preview"))
+        payload = sample_payload(sample)
+        predicted_label = first_present(payload, "predicted_label", "label", "prediction_label", default="unknown")
         alerts.append(
             {
                 "timestamp": payload.get("timestamp") or sample.get("timestamp"),
                 "node_id": payload.get("node_id") or node_id_from_topic(topic),
                 "severity": str(payload.get("severity", "medium")).lower(),
-                "predicted_label": payload.get("predicted_label") or payload.get("label") or "unknown",
-                "confidence": payload.get("confidence"),
+                "predicted_label": predicted_label,
+                "predicted_label_id": payload.get("predicted_label_id"),
+                "confidence": normalize_confidence(payload),
+                "probability_attack": payload.get("probability_attack"),
                 "flow_id": payload.get("flow_id") or sample.get("flow_id"),
                 "source_topic": topic,
                 "received_at_unix": sample.get("received_at_unix"),
+                "payload_parse_status": "structured" if "payload" in sample else ("preview_json" if payload else "preview_unavailable"),
             }
         )
     return sorted(alerts, key=lambda item: item.get("received_at_unix") or 0, reverse=True)[:12]
