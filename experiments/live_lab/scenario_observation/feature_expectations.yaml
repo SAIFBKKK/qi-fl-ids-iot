@@ -1,0 +1,40 @@
+schema_version: "p16.11"
+scope: "expected_live_lab_feature_tendencies"
+notes:
+  - "These are expected live-lab feature tendencies."
+  - "They are not a scientific reproduction of CICIoT2023 generation."
+  - "Final scientific evaluation remains P12/P13."
+scenarios:
+  icmp_flood_like:
+    ciciot_family: "DoS/DDoS"
+    expected_features:
+      ICMP: "should increase"
+      Rate: "may increase"
+      IAT: "may decrease"
+      Number: "may increase depending on window density"
+    packet_window_link: "PacketWindow(30) should carry the scenario label and summarize ICMP-oriented packet windows."
+    supported_modes:
+      - "selected_12_scaled"
+      - "original_28_scaled"
+  tcp_syn_recon_like:
+    ciciot_family: "Recon / DoS SYN"
+    expected_features:
+      TCP: "should be active"
+      syn_flag_number: "should increase"
+      syn_count: "should increase"
+      Rate: "may increase"
+    packet_window_link: "PacketWindow(30) should carry the scenario label and summarize TCP SYN-oriented packet windows."
+    supported_modes:
+      - "selected_12_scaled"
+      - "original_28_scaled"
+  http_slow_like:
+    ciciot_family: "Web-Based / HTTP Flood"
+    expected_features:
+      HTTP: "should be active"
+      TCP: "should be active"
+      Duration: "may increase"
+      IAT: "may change"
+      Rate: "may remain moderate or vary"
+    packet_window_link: "PacketWindow(30) should carry the scenario label and summarize HTTP-oriented packet windows."
+    supported_modes:
+      - "original_28_scaled"
