@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import sys
+import time
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -51,6 +52,8 @@ MODEL_DEFAULTS = {
     "supported_input_modes": ["selected_12_scaled", "original_28_scaled"],
     "threshold": None,
 }
+
+DRONE_NODE_ID = "iot-drone-sitl"
 
 DEMO_NODE_PROFILES = {
     # ancien node: iot-rpi-weak (remplacé phase 2 live lab)
@@ -247,6 +250,97 @@ def extract_recent_alerts(summary_payload: dict[str, Any]) -> list[dict[str, Any
     return sorted(alerts, key=lambda item: item.get("received_at_unix") or 0, reverse=True)[:12]
 
 
+def extract_recent_samples(
+    summary_payload: dict[str, Any],
+    family: str,
+    node_id: str | None = None,
+) -> list[dict[str, Any]]:
+    items: list[dict[str, Any]] = []
+    for sample in summary_payload.get("samples", []):
+        if not isinstance(sample, dict) or sample.get("family") != family:
+            continue
+        topic = str(sample.get("topic", ""))
+        payload = sample_payload(sample)
+        sample_node_id = payload.get("node_id") or node_id_from_topic(topic)
+        if node_id and sample_node_id != node_id:
+            continue
+        items.append(
+            {
+                "timestamp": payload.get("timestamp") or sample.get("timestamp"),
+                "node_id": sample_node_id,
+                "source_topic": topic,
+                "received_at_unix": sample.get("received_at_unix"),
+                "flow_id": payload.get("flow_id") or sample.get("flow_id"),
+                "payload": payload,
+            }
+        )
+    return sorted(items, key=lambda item: item.get("received_at_unix") or 0, reverse=True)[:12]
+
+
+def observer_runtime_status(sample: dict[str, Any] | None) -> tuple[str, float | None]:
+    if not sample:
+        return "STOPPED", None
+    received_at = sample.get("received_at_unix")
+    if not isinstance(received_at, (int, float)):
+        return "STOPPED", None
+    age_seconds = max(time.time() - float(received_at), 0.0)
+    if age_seconds < 15:
+        return "RUNNING", round(age_seconds, 3)
+    if age_seconds <= 60:
+        return "STALE", round(age_seconds, 3)
+    return "STOPPED", round(age_seconds, 3)
+
+
+def build_drone_observer_state(state: dict[str, Any]) -> dict[str, Any]:
+    status_sample = next((item for item in state.get("recent_status", []) if item.get("node_id") == DRONE_NODE_ID), None)
+    window_sample = next((item for item in state.get("recent_windows", []) if item.get("node_id") == DRONE_NODE_ID), None)
+    prediction_sample = next(
+        (item for item in state.get("recent_predictions", []) if item.get("node_id") == DRONE_NODE_ID),
+        None,
+    )
+    alert_sample = next((item for item in state.get("recent_alerts", []) if item.get("node_id") == DRONE_NODE_ID), None)
+
+    status_payload = status_sample.get("payload", {}) if status_sample else {}
+    window_payload = window_sample.get("payload", {}) if window_sample else {}
+    prediction_payload = prediction_sample.get("payload", {}) if prediction_sample else {}
+    observer_status, age_seconds = observer_runtime_status(status_sample)
+    window_size = int(window_payload.get("window_size") or 30)
+    buffer_fill = int(window_payload.get("buffer_fill") or 0)
+    progress_percent = round(min(max(buffer_fill / window_size, 0.0), 1.0) * 100, 1) if window_size else 0.0
+    predicted_label = first_present(
+        prediction_payload,
+        "predicted_label",
+        "label",
+        "prediction_label",
+        default=alert_sample.get("predicted_label") if alert_sample else None,
+    )
+    return {
+        "node_id": DRONE_NODE_ID,
+        "protocol": "MAVLink/UDP",
+        "listen_port": int(status_payload.get("listen_port") or 14551),
+        "observer_status": observer_status,
+        "status_age_seconds": age_seconds,
+        "buffer_fill": buffer_fill,
+        "window_size": window_size,
+        "progress_percent": progress_percent,
+        "last_window_id": window_payload.get("last_window_id") or status_payload.get("last_window_id"),
+        "last_rate": window_payload.get("last_rate"),
+        "last_iat": window_payload.get("last_iat"),
+        "last_udp_count": window_payload.get("last_udp_count"),
+        "last_number": window_payload.get("last_number"),
+        "windows_published": int(status_payload.get("windows_published") or 0),
+        "packets_received": int(status_payload.get("packets_received") or 0),
+        "last_prediction_label": predicted_label,
+        "last_alert": alert_sample,
+        "status_topic": f"ids/status/{DRONE_NODE_ID}",
+        "window_topic": f"ids/windows/{DRONE_NODE_ID}",
+        "flow_topic": f"ids/flows/{DRONE_NODE_ID}",
+        "latest_status": status_sample,
+        "latest_window": window_sample,
+        "latest_prediction": prediction_sample,
+    }
+
+
 def platform_status(services: dict[str, dict[str, Any]], api_errors: float, bridge_errors: float) -> str:
     if any(not service.get("ok") for service in services.values()):
         return "degraded"
@@ -306,6 +400,9 @@ def build_live_lab_state() -> dict[str, Any]:
         "assignments": assignments_payload.get("assignments", []),
         "model_profile": MODEL_DEFAULTS,
         "recent_alerts": extract_recent_alerts(summary_payload),
+        "recent_predictions": extract_recent_samples(summary_payload, "predictions"),
+        "recent_status": extract_recent_samples(summary_payload, "status"),
+        "recent_windows": extract_recent_samples(summary_payload, "windows"),
         "services": services,
         "topic_counts": topic_counts,
     }
@@ -596,6 +693,7 @@ def build_demo_state() -> dict[str, Any]:
         "assignments": state.get("assignments", []),
         "model_profile": build_demo_model_profile(model_info),
         "latest_alert": state.get("recent_alerts", [None])[0] if state.get("recent_alerts") else None,
+        "drone_observer": build_drone_observer_state(state),
         "metrics": metrics,
         "recent_events": recent_events,
         "services": state.get("services", {}),

@@ -82,6 +82,77 @@
           </div>
         </section>
 
+        <section class="panel demo-window-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Live Packet Window</p>
+              <h2>UAV/MAVLink Observer</h2>
+            </div>
+            <span id="demo-observer-status" class="badge badge-warning">STOPPED</span>
+          </div>
+          <dl class="compact-facts">
+            <div><dt>Node</dt><dd id="demo-window-node">iot-drone-sitl</dd></div>
+            <div><dt>Protocol</dt><dd id="demo-window-protocol">MAVLink/UDP - Port 14551</dd></div>
+            <div><dt>Buffer fill</dt><dd><span id="demo-window-buffer">0 / 30 packets</span></dd></div>
+            <div><dt>Last window ID</dt><dd id="demo-window-id">n/a</dd></div>
+            <div><dt>Rate</dt><dd id="demo-window-rate">n/a</dd></div>
+            <div><dt>IAT</dt><dd id="demo-window-iat">n/a</dd></div>
+            <div><dt>Windows published</dt><dd id="demo-window-count">0</dd></div>
+            <div><dt>Packets received</dt><dd id="demo-window-packets">0</dd></div>
+            <div><dt>Last prediction</dt><dd id="demo-window-prediction">n/a</dd></div>
+          </dl>
+          <div class="packet-progress" aria-label="PacketWindow progress">
+            <div id="demo-window-progress-bar" class="packet-progress-bar" style="width: 0%"></div>
+          </div>
+          <p id="demo-window-progress-label" class="muted">PacketWindow(30): 0/30</p>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Normal vs Burst</p>
+              <h2>Feature Contrast</h2>
+            </div>
+            <span class="badge badge-info">MAVLink remains UDP</span>
+          </div>
+          <div class="table-wrap feature-contrast-wrap">
+            <table class="feature-contrast-table">
+              <thead>
+                <tr>
+                  <th>Feature</th>
+                  <th>Normal MAVLink</th>
+                  <th>Burst MAVLink</th>
+                  <th>Interpretation</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>UDP</td><td>30</td><td>30</td><td>Same protocol</td></tr>
+                <tr><td>Rate</td><td>about 1 pkt/s</td><td>about 333-517 pkt/s</td><td>Strong acceleration</td></tr>
+                <tr><td>IAT</td><td>about 1.0 s</td><td>about 0.002-0.003 s</td><td>Packets become very close</td></tr>
+                <tr><td>Number</td><td>30</td><td>30</td><td>Complete window</td></tr>
+                <tr><td>SYN</td><td>0</td><td>0</td><td>Expected because MAVLink is UDP</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel pipeline-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Architecture Pipeline</p>
+              <h2>Live UAV Defense Path</h2>
+            </div>
+          </div>
+          <ol class="pipeline-list">
+            <li><strong>Kali VM</strong><span>192.168.56.103, controlled lab workstation</span></li>
+            <li><strong>Drone VM iot-drone-sitl</strong><span>192.168.56.101, passive MAVLink/UDP observer</span></li>
+            <li><strong>PacketWindow(30) sliding</strong><span>28 features -> scaler JSON -> QGA selected 12</span></li>
+            <li><strong>MQTT Broker</strong><span>ids/flows/iot-drone-sitl</span></li>
+            <li><strong>Final IDS API</strong><span>P8 FedAvg + QGA, p8_fedavg_qga_l1</span></li>
+            <li><strong>Dashboard Alert</strong><span>prediction and severity shown live</span></li>
+          </ol>
+        </section>
+
         <section class="panel">
           <div class="panel-heading">
             <div>

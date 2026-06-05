@@ -1,6 +1,6 @@
 """QI-FL-IDS-IoT project author: Saif Ben Fredj.
-Phase 2 Live Lab - 2026-06-05.
-Passive/synthetic MAVLink packet-window agent for the simulated UAV SITL node.
+P16.16 Phase 2 Live Lab - 2026-06-05.
+Continuous passive/synthetic MAVLink packet-window agent for the simulated UAV SITL node.
 """
 
 from __future__ import annotations
@@ -12,6 +12,7 @@ import socket
 import statistics
 import sys
 import time
+from collections import deque
 from pathlib import Path
 from typing import Any, Iterable
 from uuid import uuid4
@@ -29,6 +30,8 @@ NODE_ID = "iot-drone-sitl"
 INPUT_MODE = "selected_12_scaled"
 MAVLINK_LISTEN_PORT = 14551
 MAVLINK_PROTOCOL_NUMBER = 17.0
+STATUS_TOPIC_KIND = "status"
+WINDOW_TOPIC_KIND = "windows"
 FEATURE_NAMES = [
     "flow_duration",
     "Header_Length",
@@ -97,6 +100,19 @@ def synthetic_packets(scenario: str, window_size: int) -> list[dict[str, Any]]:
     raise ValueError(f"unsupported synthetic scenario: {scenario}")
 
 
+def synthetic_packet_stream(scenario: str) -> Iterable[dict[str, Any]]:
+    """Yield deterministic packet metadata forever without generating network traffic."""
+    index = 0
+    while True:
+        if scenario == "normal-sim":
+            yield packet(timestamp=float(index), length=48 + (index % 5), source="normal-sim")
+        elif scenario == "burst-sim":
+            yield packet(timestamp=index * 0.002, length=48 + ((index * 7) % 25), source="burst-sim")
+        else:
+            raise ValueError(f"unsupported synthetic scenario: {scenario}")
+        index += 1
+
+
 def passive_udp_packets(listen_port: int, window_size: int, timeout_seconds: int = 30) -> Iterable[dict[str, Any]]:
     """Listen for UDP metadata without generating traffic or storing application payloads."""
     deadline = time.time() + timeout_seconds
@@ -120,6 +136,28 @@ def passive_udp_packets(listen_port: int, window_size: int, timeout_seconds: int
             }
             if window_size <= 0:
                 break
+
+
+def passive_udp_stream(listen_port: int) -> Iterable[dict[str, Any]]:
+    """Yield UDP packet metadata passively until interrupted; application payloads are not stored."""
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as server:
+        server.bind(("0.0.0.0", listen_port))
+        server.settimeout(1.0)
+        while True:
+            try:
+                data, address = server.recvfrom(2048)
+            except socket.timeout:
+                continue
+            yield {
+                "timestamp": time.time(),
+                "protocol": "UDP",
+                "length": len(data),
+                "src": address[0],
+                "dst": "0.0.0.0",
+                "flags": {},
+                "sport": int(address[1]),
+                "dport": listen_port,
+            }
 
 
 def window_from_packets(packets: Iterable[dict[str, Any]], window_size: int) -> PacketWindow:
@@ -261,6 +299,78 @@ def build_payload(node_id: str, features_12: list[float], scenario: str, flow_id
     }
 
 
+def build_status_payload(
+    *,
+    node_id: str,
+    windows_published: int,
+    packets_received: int,
+    last_window_id: str | None,
+    uptime_seconds: float,
+    errors: int,
+    listen_port: int,
+) -> dict[str, Any]:
+    return {
+        "node_id": node_id,
+        "timestamp": utc_now(),
+        "event_type": "drone_observer_status",
+        "agent_status": "running",
+        "windows_published": int(windows_published),
+        "packets_received": int(packets_received),
+        "last_window_id": last_window_id,
+        "last_prediction_label": None,
+        "uptime_seconds": round(float(uptime_seconds), 3),
+        "errors": int(errors),
+        "protocol": "MAVLink/UDP",
+        "listen_port": int(listen_port),
+    }
+
+
+def build_window_update_payload(
+    *,
+    node_id: str,
+    status: str,
+    packet_count: int,
+    buffer_fill: int,
+    window_size: int,
+    window_stride: int,
+    window_number: int | None = None,
+    last_window_id: str | None = None,
+    features_28: list[float] | None = None,
+) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "node_id": node_id,
+        "timestamp": utc_now(),
+        "event_type": "packet_window_update",
+        "packet_count": int(packet_count),
+        "buffer_fill": int(buffer_fill),
+        "window_size": int(window_size),
+        "window_stride": int(window_stride),
+        "last_window_id": last_window_id,
+        "status": status,
+    }
+    if window_number is not None:
+        payload["window_number"] = int(window_number)
+    if features_28 is not None:
+        payload.update(
+            {
+                "last_rate": float(features_28[4]),
+                "last_iat": float(features_28[26]),
+                "last_udp_count": float(features_28[20]),
+                "last_number": float(features_28[27]),
+            }
+        )
+    return payload
+
+
+def write_jsonl(log_file: str | Path | None, row: dict[str, Any]) -> None:
+    if not log_file:
+        return
+    target = Path(log_file)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with target.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(row, sort_keys=True) + "\n")
+
+
 def publish_payload(
     *,
     broker: str,
@@ -294,6 +404,17 @@ def publish_payload(
             return {"topic": topic, "published": True, "publisher": "mosquitto_pub", "payload": payload}
         except Exception as fallback_error:
             return {"topic": topic, "published": False, "error": f"{paho_error}; {fallback_error}", "payload": payload}
+
+
+def publish_event_payload(
+    *,
+    broker: str,
+    port: int,
+    topic: str,
+    payload: dict[str, Any],
+    dry_run: bool,
+) -> dict[str, Any]:
+    return publish_payload(broker=broker, port=port, topic=topic, payload=payload, dry_run=dry_run)
 
 
 def run_once(args: argparse.Namespace) -> dict[str, Any]:
@@ -366,6 +487,254 @@ def run_once(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
+def packet_source_for_continuous(args: argparse.Namespace) -> Iterable[dict[str, Any]]:
+    if args.scenario == "passive":
+        logging.getLogger("mavlink_passive_agent").info("PASSIVE CONTINUOUS MODE - no traffic is generated by this agent")
+        return passive_udp_stream(args.listen_port)
+    logging.getLogger("mavlink_passive_agent").info(
+        "CONTINUOUS SIMULATION MODE - aucun trafic reseau genere - scenario=%s",
+        args.scenario,
+    )
+    return synthetic_packet_stream(args.scenario)
+
+
+def publish_status(
+    *,
+    args: argparse.Namespace,
+    windows_published: int,
+    packets_received: int,
+    last_window_id: str | None,
+    started_at: float,
+    errors: int,
+) -> dict[str, Any]:
+    topic = f"ids/{STATUS_TOPIC_KIND}/{args.node_id}"
+    payload = build_status_payload(
+        node_id=args.node_id,
+        windows_published=windows_published,
+        packets_received=packets_received,
+        last_window_id=last_window_id,
+        uptime_seconds=time.time() - started_at,
+        errors=errors,
+        listen_port=args.listen_port,
+    )
+    return publish_event_payload(
+        broker=args.mqtt_broker,
+        port=args.mqtt_port,
+        topic=topic,
+        payload=payload,
+        dry_run=args.dry_run,
+    )
+
+
+def publish_window_update(
+    *,
+    args: argparse.Namespace,
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    return publish_event_payload(
+        broker=args.mqtt_broker,
+        port=args.mqtt_port,
+        topic=f"ids/{WINDOW_TOPIC_KIND}/{args.node_id}",
+        payload=payload,
+        dry_run=args.dry_run,
+    )
+
+
+def process_completed_window(
+    *,
+    args: argparse.Namespace,
+    buffer: deque[dict[str, Any]],
+    window_number: int,
+    packets_received_total: int,
+) -> dict[str, Any]:
+    window = PacketWindow(window_size=args.window_size, flow_id=f"mavlink-window-{uuid4().hex[:12]}")
+    for item in list(buffer):
+        window.add_packet(item)
+    extraction = extract_mavlink_features_28(window)
+    transform = transform_features(extraction["features_28"], args.scaler_path)
+    flow_payload = build_payload(args.node_id, transform["selected_12"], args.scenario, window.flow_id)
+    flow_publish = publish_payload(
+        broker=args.mqtt_broker,
+        port=args.mqtt_port,
+        topic=f"ids/flows/{args.node_id}",
+        payload=flow_payload,
+        dry_run=args.dry_run,
+    )
+    features = extraction["features_28"]
+    window_payload = build_window_update_payload(
+        node_id=args.node_id,
+        status="ready",
+        packet_count=args.window_size,
+        buffer_fill=len(buffer),
+        window_size=args.window_size,
+        window_stride=args.window_stride,
+        window_number=window_number,
+        last_window_id=window.flow_id,
+        features_28=features,
+    )
+    window_publish = publish_window_update(args=args, payload=window_payload)
+    log_row = {
+        "ts": utc_now(),
+        "window_number": window_number,
+        "flow_id": window.flow_id,
+        "scenario": args.scenario,
+        "rate": float(features[4]),
+        "iat": float(features[26]),
+        "udp": float(features[20]),
+        "number": float(features[27]),
+        "features_12": transform["selected_12"],
+        "predicted_label": None,
+        "confidence": None,
+    }
+    write_jsonl(args.log_file, log_row)
+    logging.getLogger("mavlink_passive_agent").info(
+        "[WINDOW] continuous window=%s packet_total=%s flow_id=%s Rate=%.6f UDP=%.0f IAT=%.6f Number=%.0f",
+        window_number,
+        packets_received_total,
+        window.flow_id,
+        features[4],
+        features[20],
+        features[26],
+        features[27],
+    )
+    return {
+        "window_number": window_number,
+        "packets_received_total": packets_received_total,
+        "flow_id": window.flow_id,
+        "feature_names": FEATURE_NAMES,
+        "features_28": extraction["features_28"],
+        "features_12": transform["selected_12"],
+        "transform": {
+            "scaler": transform["scaler"],
+            "qga_mask": transform["qga_mask"],
+        },
+        "mqtt": flow_publish,
+        "window_update": window_publish,
+        "log_row": log_row,
+    }
+
+
+def run_continuous(args: argparse.Namespace) -> dict[str, Any]:
+    logger = logging.getLogger("mavlink_passive_agent")
+    buffer: deque[dict[str, Any]] = deque(maxlen=args.window_size)
+    packets_received_total = 0
+    last_publish_packet_count = 0
+    windows_published = 0
+    last_window_id: str | None = None
+    errors = 0
+    started_at = time.time()
+    last_status_at = 0.0
+    windows: list[dict[str, Any]] = []
+    status_events: list[dict[str, Any]] = []
+    window_events: list[dict[str, Any]] = []
+
+    status_events.append(
+        publish_status(
+            args=args,
+            windows_published=windows_published,
+            packets_received=packets_received_total,
+            last_window_id=last_window_id,
+            started_at=started_at,
+            errors=errors,
+        )
+    )
+    last_status_at = time.time()
+
+    try:
+        for item in packet_source_for_continuous(args):
+            packets_received_total += 1
+            buffer.append(item)
+
+            if len(buffer) < args.window_size:
+                window_events.append(
+                    publish_window_update(
+                        args=args,
+                        payload=build_window_update_payload(
+                            node_id=args.node_id,
+                            status="filling",
+                            packet_count=packets_received_total,
+                            buffer_fill=len(buffer),
+                            window_size=args.window_size,
+                            window_stride=args.window_stride,
+                            last_window_id=last_window_id,
+                        ),
+                    )
+                )
+
+            should_publish = (
+                len(buffer) >= args.window_size
+                and packets_received_total - last_publish_packet_count >= args.window_stride
+            )
+            if should_publish:
+                windows_published += 1
+                window_result = process_completed_window(
+                    args=args,
+                    buffer=buffer,
+                    window_number=windows_published,
+                    packets_received_total=packets_received_total,
+                )
+                windows.append(window_result)
+                window_events.append(window_result["window_update"])
+                last_publish_packet_count = packets_received_total
+                last_window_id = str(window_result["flow_id"])
+                status_events.append(
+                    publish_status(
+                        args=args,
+                        windows_published=windows_published,
+                        packets_received=packets_received_total,
+                        last_window_id=last_window_id,
+                        started_at=started_at,
+                        errors=errors,
+                    )
+                )
+                last_status_at = time.time()
+                if args.max_windows and windows_published >= args.max_windows:
+                    break
+
+            now = time.time()
+            if now - last_status_at >= args.status_interval:
+                status_events.append(
+                    publish_status(
+                        args=args,
+                        windows_published=windows_published,
+                        packets_received=packets_received_total,
+                        last_window_id=last_window_id,
+                        started_at=started_at,
+                        errors=errors,
+                    )
+                )
+                last_status_at = now
+    except KeyboardInterrupt:
+        logger.info("Continuous observer stopped by user.")
+    except Exception as exc:  # noqa: BLE001 - runtime errors are surfaced in the result.
+        errors += 1
+        logger.warning("Continuous observer error: %s", exc)
+
+    return {
+        "ok": errors == 0 and (bool(windows) or args.max_windows == 0),
+        "node_id": args.node_id,
+        "scenario": args.scenario,
+        "continuous": True,
+        "dry_run": args.dry_run,
+        "window_size": args.window_size,
+        "window_stride": args.window_stride,
+        "max_windows": args.max_windows,
+        "windows_published": windows_published,
+        "packets_received_total": packets_received_total,
+        "last_window_id": last_window_id,
+        "status_events": status_events,
+        "window_events": window_events,
+        "windows": windows,
+        "errors": errors,
+        "log_file": args.log_file,
+        "scientific_notes": [
+            "MAVLink/UDP keeps syn_flag_number and syn_count at zero.",
+            "Continuous synthetic modes generate packet metadata in memory only.",
+            "Sliding windows use packets_received_total and last_publish_packet_count for stride correctness.",
+        ],
+    }
+
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Passive/synthetic MAVLink PacketWindow agent for iot-drone-sitl.")
     parser.add_argument("--node-id", default=NODE_ID)
@@ -377,18 +746,29 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--scenario", choices=("passive", "normal-sim", "burst-sim"), default="passive")
     parser.add_argument("--log-level", choices=("DEBUG", "INFO", "WARNING"), default="INFO")
+    parser.add_argument("--continuous", action="store_true")
+    parser.add_argument("--window-stride", type=int, default=15)
+    parser.add_argument("--status-interval", type=int, default=5)
+    parser.add_argument("--max-windows", type=int, default=0, help="0 means run until interrupted.")
+    parser.add_argument("--log-file", default=None)
     args = parser.parse_args(argv)
     if args.window_size <= 0:
         parser.error("--window-size must be positive")
     if args.listen_port <= 0:
         parser.error("--listen-port must be positive")
+    if args.window_stride <= 0:
+        parser.error("--window-stride must be positive")
+    if args.status_interval <= 0:
+        parser.error("--status-interval must be positive")
+    if args.max_windows < 0:
+        parser.error("--max-windows must be zero or positive")
     return args
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     logging.basicConfig(level=getattr(logging, args.log_level), format="%(message)s")
-    result = run_once(args)
+    result = run_continuous(args) if args.continuous else run_once(args)
     print(json.dumps(result, indent=2))
     return 0 if result.get("ok") else 1
 
