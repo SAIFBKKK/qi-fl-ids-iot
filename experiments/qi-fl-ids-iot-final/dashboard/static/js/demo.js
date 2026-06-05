@@ -173,6 +173,56 @@
     `;
   }
 
+  function fmtNumber(value, digits = 3) {
+    const number = Number(value);
+    if (!Number.isFinite(number)) {
+      return "n/a";
+    }
+    return number.toFixed(digits);
+  }
+
+  function observerBadgeClass(status) {
+    if (status === "RUNNING") {
+      return "badge-success";
+    }
+    if (status === "STALE") {
+      return "badge-warning";
+    }
+    return "badge-danger";
+  }
+
+  function renderDroneObserver(observer) {
+    const data = observer || {};
+    const status = String(data.observer_status || "STOPPED").toUpperCase();
+    const statusBadge = byId("demo-observer-status");
+    if (statusBadge) {
+      statusBadge.className = `badge ${observerBadgeClass(status)}`;
+      statusBadge.textContent = status;
+    }
+    const values = {
+      "demo-window-node": data.node_id || "iot-drone-sitl",
+      "demo-window-protocol": `${data.protocol || "MAVLink/UDP"} - Port ${data.listen_port || 14551}`,
+      "demo-window-buffer": `${data.buffer_fill || 0} / ${data.window_size || 30} packets`,
+      "demo-window-id": data.last_window_id || "n/a",
+      "demo-window-rate": data.last_rate === null || data.last_rate === undefined ? "n/a" : `${fmtNumber(data.last_rate)} pkt/s`,
+      "demo-window-iat": data.last_iat === null || data.last_iat === undefined ? "n/a" : `${fmtNumber(data.last_iat, 6)} s`,
+      "demo-window-count": data.windows_published ?? 0,
+      "demo-window-packets": data.packets_received ?? 0,
+      "demo-window-prediction": data.last_prediction_label || "n/a",
+      "demo-window-progress-label": `PacketWindow(${data.window_size || 30}): ${data.buffer_fill || 0}/${data.window_size || 30}`,
+    };
+    Object.entries(values).forEach(([id, value]) => {
+      const node = byId(id);
+      if (node) {
+        node.textContent = value;
+      }
+    });
+    const bar = byId("demo-window-progress-bar");
+    if (bar) {
+      bar.style.width = `${Math.max(0, Math.min(Number(data.progress_percent || 0), 100))}%`;
+    }
+  }
+
   function renderMetrics(metrics) {
     const target = byId("demo-metrics-grid");
     if (!target) {
@@ -284,6 +334,7 @@
     renderDevices(state.devices);
     renderModel(state.model_profile);
     renderLatestAlert(state.latest_alert);
+    renderDroneObserver(state.drone_observer);
     renderMetrics(state.metrics);
     renderEvents(state.recent_events);
     renderServices(state.services);

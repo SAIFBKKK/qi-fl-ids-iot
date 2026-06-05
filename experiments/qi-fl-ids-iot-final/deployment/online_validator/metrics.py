@@ -19,6 +19,8 @@ def topic_family(topic: str) -> str:
         return "alerts"
     if topic.startswith("ids/status/"):
         return "status"
+    if topic.startswith("ids/windows/"):
+        return "windows"
     return "other"
 
 
@@ -91,7 +93,7 @@ class OnlineValidatorMetrics:
                 "payload_preview": payload_text[:250],
             }
             if isinstance(payload, dict):
-                if family in {"alerts", "predictions", "status"}:
+                if family in {"alerts", "predictions", "status", "windows"}:
                     sample["payload"] = payload
                 elif family == "flows":
                     sample["payload"] = {key: value for key, value in payload.items() if key != "features"}

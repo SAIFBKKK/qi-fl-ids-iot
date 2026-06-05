@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-27T16:57:30Z",
+  "generated_at": "2026-06-05T11:00:06Z",
   "files": {
     "ok": true,
     "missing": []
@@ -20,6 +20,7 @@
       "demo_state_keys": [
         "assignments",
         "devices",
+        "drone_observer",
         "generated_at",
         "latest_alert",
         "metrics",

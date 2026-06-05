@@ -78,7 +78,7 @@ services:
       MQTT_PORT: "1883"
       MQTT_USERNAME: ids_user
       MQTT_PASSWORD: ${MQTT_PASSWORD:-changeme_in_dotenv}
-      OBSERVE_TOPICS: "ids/flows/#,ids/predictions/#,ids/alerts/#,ids/status/#"
+      OBSERVE_TOPICS: "ids/flows/#,ids/predictions/#,ids/alerts/#,ids/status/#,ids/windows/#"
     depends_on:
       - mosquitto
     ports:

@@ -20,7 +20,7 @@ class MQTTSettings:
     def from_env(cls) -> "MQTTSettings":
         topics_raw = os.getenv(
             "OBSERVE_TOPICS",
-            "ids/flows/#,ids/predictions/#,ids/alerts/#,ids/status/#",
+            "ids/flows/#,ids/predictions/#,ids/alerts/#,ids/status/#,ids/windows/#",
         )
         topics = tuple(topic.strip() for topic in topics_raw.split(",") if topic.strip())
         return cls(
