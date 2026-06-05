@@ -223,6 +223,57 @@
     }
   }
 
+  function renderSmartwatchObserver(observer) {
+    const data = observer || {};
+    const status = String(data.observer_status || "STOPPED").toUpperCase();
+    const statusBadge = byId("demo-smartwatch-status");
+    if (statusBadge) {
+      statusBadge.className = `badge ${observerBadgeClass(status)}`;
+      statusBadge.textContent = status;
+    }
+    const errorCount = Number(data.runtime_errors || 0);
+    const errorBadge = byId("demo-smartwatch-errors");
+    if (errorBadge) {
+      errorBadge.className = `badge ${errorCount === 0 ? "badge-success" : "badge-danger"}`;
+      errorBadge.textContent = String(errorCount);
+    }
+    const alertSeverity = data.last_alert_severity || "n/a";
+    const values = {
+      "demo-smartwatch-node": data.node_id || "iot-smart-watch-medium",
+      "demo-smartwatch-device": data.device_type || "Wearable IoT / Smartwatch",
+      "demo-smartwatch-protocol": data.protocol_focus || "ICMP/TCP/HTTP-like",
+      "demo-smartwatch-input-mode": data.input_mode || "original_28_scaled",
+      "demo-smartwatch-buffer": `${data.buffer_fill || 0} / ${data.window_size || 30} packets`,
+      "demo-smartwatch-window-id": data.last_window_id || "n/a",
+      "demo-smartwatch-rate": data.last_rate_scaled === null || data.last_rate_scaled === undefined ? "n/a" : fmtNumber(data.last_rate_scaled),
+      "demo-smartwatch-iat": data.last_iat_scaled === null || data.last_iat_scaled === undefined ? "n/a" : fmtNumber(data.last_iat_scaled, 6),
+      "demo-smartwatch-icmp": data.last_icmp_count ?? 0,
+      "demo-smartwatch-count": data.windows_published ?? 0,
+      "demo-smartwatch-prediction": data.last_prediction_label || "n/a",
+      "demo-smartwatch-alert-severity": alertSeverity,
+      "demo-smartwatch-progress-label": `PacketWindow(${data.window_size || 30}): ${data.buffer_fill || 0}/${data.window_size || 30}`,
+    };
+    Object.entries(values).forEach(([id, value]) => {
+      const node = byId(id);
+      if (node) {
+        node.textContent = value;
+      }
+    });
+    const tier = byId("demo-smartwatch-tier");
+    if (tier) {
+      tier.className = "badge badge-success";
+      tier.textContent = data.tier || "medium";
+    }
+    const severityNode = byId("demo-smartwatch-alert-severity");
+    if (severityNode && alertSeverity !== "n/a") {
+      severityNode.className = `badge ${severityClass(alertSeverity)}`;
+    }
+    const bar = byId("demo-smartwatch-progress-bar");
+    if (bar) {
+      bar.style.width = `${Math.max(0, Math.min(Number(data.progress_percent || 0), 100))}%`;
+    }
+  }
+
   function renderMetrics(metrics) {
     const target = byId("demo-metrics-grid");
     if (!target) {
@@ -335,6 +386,7 @@
     renderModel(state.model_profile);
     renderLatestAlert(state.latest_alert);
     renderDroneObserver(state.drone_observer);
+    renderSmartwatchObserver(state.smartwatch_observer);
     renderMetrics(state.metrics);
     renderEvents(state.recent_events);
     renderServices(state.services);

@@ -54,6 +54,7 @@ MODEL_DEFAULTS = {
 }
 
 DRONE_NODE_ID = "iot-drone-sitl"
+SMARTWATCH_NODE_ID = "iot-smart-watch-medium"
 
 DEMO_NODE_PROFILES = {
     # ancien node: iot-rpi-weak (remplacé phase 2 live lab)
@@ -69,11 +70,12 @@ DEMO_NODE_PROFILES = {
     },
     "iot-smart-watch-medium": {
         "display_name": "iot-smart-watch-medium",
-        "device_type": "smart-watch-like",
+        "device_type": "Wearable IoT / Smartwatch",
         "expected_tier": "medium",
         "inference_path": "original_28_scaled",
         "qga_behavior": "QGA mask applied by final-ids-api",
-        "description": "Medium IoT node prepared for edge-aware runtime evidence.",
+        "protocol_focus": "ICMP/TCP/HTTP-like",
+        "description": "Medium wearable IoT node using passive PacketWindow(30) observation and 28 scaled features.",
     },
 }
 
@@ -335,6 +337,72 @@ def build_drone_observer_state(state: dict[str, Any]) -> dict[str, Any]:
         "status_topic": f"ids/status/{DRONE_NODE_ID}",
         "window_topic": f"ids/windows/{DRONE_NODE_ID}",
         "flow_topic": f"ids/flows/{DRONE_NODE_ID}",
+        "latest_status": status_sample,
+        "latest_window": window_sample,
+        "latest_prediction": prediction_sample,
+    }
+
+
+def build_smartwatch_observer_state(state: dict[str, Any]) -> dict[str, Any]:
+    status_sample = next(
+        (item for item in state.get("recent_status", []) if item.get("node_id") == SMARTWATCH_NODE_ID),
+        None,
+    )
+    window_sample = next(
+        (item for item in state.get("recent_windows", []) if item.get("node_id") == SMARTWATCH_NODE_ID),
+        None,
+    )
+    prediction_sample = next(
+        (item for item in state.get("recent_predictions", []) if item.get("node_id") == SMARTWATCH_NODE_ID),
+        None,
+    )
+    alert_sample = next(
+        (item for item in state.get("recent_alerts", []) if item.get("node_id") == SMARTWATCH_NODE_ID),
+        None,
+    )
+
+    status_payload = status_sample.get("payload", {}) if status_sample else {}
+    window_payload = window_sample.get("payload", {}) if window_sample else {}
+    prediction_payload = prediction_sample.get("payload", {}) if prediction_sample else {}
+    observer_status, age_seconds = observer_runtime_status(status_sample)
+    window_size = int(window_payload.get("window_size") or 30)
+    buffer_fill = int(window_payload.get("buffer_fill") or 0)
+    progress_percent = round(min(max(buffer_fill / window_size, 0.0), 1.0) * 100, 1) if window_size else 0.0
+    predicted_label = first_present(
+        prediction_payload,
+        "predicted_label",
+        "label",
+        "prediction_label",
+        default=alert_sample.get("predicted_label") if alert_sample else None,
+    )
+    return {
+        "node_id": SMARTWATCH_NODE_ID,
+        "device_type": "Wearable IoT / Smartwatch",
+        "tier": "medium",
+        "protocol_focus": status_payload.get("protocol_focus") or "ICMP/TCP/HTTP-like",
+        "input_mode": "original_28_scaled",
+        "observer_status": observer_status,
+        "status_age_seconds": age_seconds,
+        "interface": status_payload.get("interface") or "enp0s8",
+        "buffer_fill": buffer_fill,
+        "window_size": window_size,
+        "progress_percent": progress_percent,
+        "last_window_id": window_payload.get("last_window_id") or status_payload.get("last_window_id"),
+        "last_rate_scaled": window_payload.get("last_rate_scaled"),
+        "last_iat_scaled": window_payload.get("last_iat_scaled"),
+        "last_icmp_count": window_payload.get("last_icmp_count"),
+        "last_tcp_count": window_payload.get("last_tcp_count"),
+        "last_udp_count": window_payload.get("last_udp_count"),
+        "last_number": window_payload.get("last_number"),
+        "windows_published": int(status_payload.get("windows_published") or 0),
+        "packets_received": int(status_payload.get("packets_received") or 0),
+        "last_prediction_label": predicted_label,
+        "last_alert_severity": alert_sample.get("severity") if alert_sample else None,
+        "runtime_errors": int(status_payload.get("errors") or 0),
+        "last_alert": alert_sample,
+        "status_topic": f"ids/status/{SMARTWATCH_NODE_ID}",
+        "window_topic": f"ids/windows/{SMARTWATCH_NODE_ID}",
+        "flow_topic": f"ids/flows/{SMARTWATCH_NODE_ID}",
         "latest_status": status_sample,
         "latest_window": window_sample,
         "latest_prediction": prediction_sample,
@@ -694,6 +762,7 @@ def build_demo_state() -> dict[str, Any]:
         "model_profile": build_demo_model_profile(model_info),
         "latest_alert": state.get("recent_alerts", [None])[0] if state.get("recent_alerts") else None,
         "drone_observer": build_drone_observer_state(state),
+        "smartwatch_observer": build_smartwatch_observer_state(state),
         "metrics": metrics,
         "recent_events": recent_events,
         "services": state.get("services", {}),

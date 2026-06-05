@@ -682,6 +682,14 @@ code {
   border-left: 7px solid var(--blue);
 }
 
+.smartwatch-window-panel {
+  border-left-color: var(--accent);
+}
+
+.smartwatch-pipeline-panel {
+  border-left: 7px solid var(--accent);
+}
+
 .packet-progress {
   width: 100%;
   height: 16px;
