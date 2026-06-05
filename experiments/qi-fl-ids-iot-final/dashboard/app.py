@@ -53,13 +53,16 @@ MODEL_DEFAULTS = {
 }
 
 DEMO_NODE_PROFILES = {
-    "iot-rpi-weak": {
-        "display_name": "iot-rpi-weak",
-        "device_type": "raspberry-like",
+    # ancien node: iot-rpi-weak (remplacé phase 2 live lab)
+    "iot-drone-sitl": {
+        "display_name": "iot-drone-sitl",
+        "device_type": "Drone UAV SITL",
+        "protocol": "MAVLink/UDP",
+        "mavlink_port": 14550,
         "expected_tier": "weak",
         "inference_path": "selected_12_scaled",
-        "qga_behavior": "12 selected scaled features sent directly",
-        "description": "Weak IoT node using server-side inference.",
+        "qga_behavior": "12 selected scaled MAVLink/UDP packet-window features sent directly",
+        "description": "Simulated UAV node using passive PacketWindow(30) observation and server-side IDS inference.",
     },
     "iot-smart-watch-medium": {
         "display_name": "iot-smart-watch-medium",
@@ -341,6 +344,8 @@ def build_demo_devices(state: dict[str, Any]) -> list[dict[str, Any]]:
                 "hostname": node.get("hostname", "waiting"),
                 "device_type": node.get("device_type") or profile["device_type"],
                 "display_device_type": profile["device_type"],
+                "protocol": profile.get("protocol"),
+                "mavlink_port": profile.get("mavlink_port"),
                 "cpu_count": node.get("cpu_count"),
                 "ram_gb": node.get("ram_gb"),
                 "assigned_tier": assignment.get("assigned_tier") or node.get("assigned_tier") or profile["expected_tier"],
@@ -409,7 +414,7 @@ def build_demo_model_profile(model_info_response: dict[str, Any]) -> dict[str, A
         "supported_input_modes": first_present(
             data, "supported_input_modes", default=MODEL_DEFAULTS["supported_input_modes"]
         ),
-        "vm1_path": "iot-rpi-weak -> PacketWindow(30) -> scaler JSON -> selected_12_scaled -> MQTT -> IDS",
+        "vm1_path": "iot-drone-sitl -> PacketWindow(30) -> scaler JSON -> selected_12_scaled -> MQTT -> IDS",
         "vm2_path": "iot-smart-watch-medium -> PacketWindow(30) -> scaler JSON -> original_28_scaled -> API QGA mask -> IDS",
         "scaler": "JSON runtime scaler",
         "qga_behavior": "The weak node may send 12 selected scaled features directly; the medium node may send 28 scaled features and final-ids-api applies the QGA mask.",

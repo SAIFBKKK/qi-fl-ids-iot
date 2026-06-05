@@ -16,7 +16,7 @@ It is intentionally safe at step 0:
 
 - Server PC: Docker Desktop stack from
   `experiments/qi-fl-ids-iot-final/deployment/docker-compose.final.yml`.
-- VM1: `iot-rpi-weak`, raspberry-like weak node, server-side inference.
+- VM1: `iot-drone-sitl`, simulated UAV SITL weak node, MAVLink/UDP, server-side inference.
 - VM2: `iot-smart-watch-medium`, smart-watch-like medium node, future edge inference.
 - VM disk location planned for later:
   `E:\VirtualBox VMs\qi-fl-ids-iot-live-lab\`.
@@ -29,4 +29,5 @@ Step 0 prepares code and docs for:
 
 The current runnable commands are dry-runs only. Live capture, VM creation, and
 Docker startup are reserved for later steps.
+
 

@@ -9,6 +9,8 @@ def assign_tier(cpu_count: int | float, ram_gb: int | float, device_type: str | 
     normalized_device_type = (device_type or "").strip().lower()
     if normalized_device_type == "raspberry_like":
         return "weak"
+    if normalized_device_type == "drone_sitl":
+        return "weak"
     if normalized_device_type == "smart_watch_like":
         return "medium"
 
