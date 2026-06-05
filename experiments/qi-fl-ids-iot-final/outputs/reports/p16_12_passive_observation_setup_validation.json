@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-05T11:00:04Z",
+  "generated_at": "2026-06-05T13:07:25Z",
   "files": {
     "ok": true,
     "missing": []
@@ -32,7 +32,7 @@
       "source_live": true,
       "default_vm1": true
     },
-    "stderr": "usage: 16_12_run_passive_observation_publish.py [-h] [--broker BROKER]\n                                                [--port PORT]\n                                                [--username USERNAME]\n                                                [--password PASSWORD]\n                                                [--node-id {iot-drone-sitl}]\n                                                [--interface INTERFACE]\n                                                [--node-ip NODE_IP]\n                                                [--peer-ip PEER_IP]\n                                                [--input-mode {selected_12_scaled,original_28_scaled}]\n                                                [--window-size WINDOW_SIZE]\n                                                [--max-windows MAX_WINDOWS]\n                                                [--timeout-seconds TIMEOUT_SECONDS]\n                                                [--dry-run] [--publish]\n                                                [--allow-live-capture]\n16_12_run_passive_observation_publish.py: error: passive live observation requires --allow-live-capture"
+    "stderr": "usage: 16_12_run_passive_observation_publish.py [-h] [--broker BROKER]\n                                                [--port PORT]\n                                                [--username USERNAME]\n                                                [--password PASSWORD]\n                                                [--node-id {iot-drone-sitl,iot-smart-watch-medium}]\n                                                [--interface INTERFACE]\n                                                [--node-ip NODE_IP]\n                                                [--peer-ip PEER_IP]\n                                                [--input-mode {selected_12_scaled,original_28_scaled}]\n                                                [--window-size WINDOW_SIZE]\n                                                [--max-windows MAX_WINDOWS]\n                                                [--timeout-seconds TIMEOUT_SECONDS]\n                                                [--dry-run] [--publish]\n                                                [--allow-live-capture]\n16_12_run_passive_observation_publish.py: error: passive live observation requires --allow-live-capture"
   },
   "docs": {
     "ok": true,

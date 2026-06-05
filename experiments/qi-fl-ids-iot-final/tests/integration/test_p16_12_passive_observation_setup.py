@@ -82,7 +82,7 @@ def test_passive_capture_importable_and_filter_safe() -> None:
 
 def test_wrapper_importable() -> None:
     module = load_module("test_p16_12_wrapper", WRAPPER)
-    assert module.SUPPORTED_NODES == ("iot-drone-sitl",)
+    assert module.SUPPORTED_NODES == ("iot-drone-sitl", "iot-smart-watch-medium")
     assert module.parse_args is not None
 
 
