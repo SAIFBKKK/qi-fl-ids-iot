@@ -279,6 +279,200 @@ def extract_recent_samples(
     return sorted(items, key=lambda item: item.get("received_at_unix") or 0, reverse=True)[:12]
 
 
+def count_topic(topic_counts: dict[str, Any], topic: str) -> int:
+    try:
+        return int(topic_counts.get(topic, 0) or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def count_node_samples(samples: list[dict[str, Any]], node_id: str) -> int:
+    return sum(1 for item in samples if item.get("node_id") == node_id)
+
+
+def payload_text_contains(samples: list[dict[str, Any]], node_id: str, *needles: str) -> bool:
+    lowered = [needle.lower() for needle in needles]
+    for item in samples:
+        if item.get("node_id") != node_id:
+            continue
+        payload = item.get("payload", {})
+        text = json.dumps(payload, sort_keys=True).lower() if isinstance(payload, dict) else str(payload).lower()
+        if any(needle in text for needle in lowered):
+            return True
+    return False
+
+
+def latest_alert_for_node(alerts: list[dict[str, Any]], node_id: str) -> dict[str, Any] | None:
+    return next((alert for alert in alerts if alert.get("node_id") == node_id), None)
+
+
+def severity_counts_for_node(alerts: list[dict[str, Any]], node_id: str) -> dict[str, int]:
+    counts = {"critical": 0, "high": 0, "medium": 0, "low": 0}
+    for alert in alerts:
+        if alert.get("node_id") != node_id:
+            continue
+        severity = str(alert.get("severity", "medium")).lower()
+        counts[severity] = counts.get(severity, 0) + 1
+    return counts
+
+
+def attack_predictions_for_node(predictions: list[dict[str, Any]], node_id: str) -> int:
+    total = 0
+    for prediction in predictions:
+        if prediction.get("node_id") != node_id:
+            continue
+        payload = prediction.get("payload", {})
+        label = first_present(payload, "predicted_label", "label", "prediction_label", default="")
+        if str(label).lower() == "attack":
+            total += 1
+    return total
+
+
+def node_metric_count(metrics: dict[str, Any], node_id: str, key: str) -> int:
+    try:
+        return int(metrics.get("nodes", {}).get(node_id, {}).get(key, 0) or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def incident_confidence(alert: dict[str, Any] | None, predictions: list[dict[str, Any]], node_id: str) -> float | None:
+    if alert and alert.get("confidence") is not None:
+        return alert.get("confidence")
+    for prediction in predictions:
+        if prediction.get("node_id") != node_id:
+            continue
+        confidence = normalize_confidence(prediction.get("payload", {}))
+        if confidence is not None:
+            return confidence
+    return None
+
+
+def build_node_incident(
+    *,
+    state: dict[str, Any],
+    metrics: dict[str, Any],
+    node_id: str,
+    incident_suffix: str,
+    scenario_label: str,
+    interpretation: str,
+    active: bool,
+) -> dict[str, Any] | None:
+    if not active:
+        return None
+    topic_counts = state.get("topic_counts", {})
+    recent_alerts = state.get("recent_alerts", [])
+    recent_predictions = state.get("recent_predictions", [])
+    recent_windows = state.get("recent_windows", [])
+    latest_alert = latest_alert_for_node(recent_alerts, node_id)
+    window_count = max(
+        count_topic(topic_counts, f"ids/windows/{node_id}"),
+        count_node_samples(recent_windows, node_id),
+    )
+    flows = max(
+        node_metric_count(metrics, node_id, "flows"),
+        count_topic(topic_counts, f"ids/flows/{node_id}"),
+        count_node_samples(state.get("recent_flows", []), node_id),
+    )
+    predictions_attack = max(
+        attack_predictions_for_node(recent_predictions, node_id),
+        node_metric_count(metrics, node_id, "predictions") if latest_alert else 0,
+    )
+    alerts_total = max(
+        count_node_samples(recent_alerts, node_id),
+        node_metric_count(metrics, node_id, "alerts"),
+        count_topic(topic_counts, f"ids/alerts/{node_id}"),
+    )
+    severity_counts = severity_counts_for_node(recent_alerts, node_id)
+    runtime_errors = (
+        int(metrics.get("errors", {}).get("final_ids_api_prediction_errors_total", 0) or 0)
+        + int(metrics.get("errors", {}).get("final_mqtt_bridge_prediction_errors_total", 0) or 0)
+    )
+    latest_flow_id = (
+        (latest_alert or {}).get("flow_id")
+        or next((item.get("flow_id") for item in recent_windows if item.get("node_id") == node_id), None)
+        or None
+    )
+    return {
+        "incident_id": f"incident-{node_id}-{incident_suffix}",
+        "node_id": node_id,
+        "scenario_label": scenario_label,
+        "status": "active" if alerts_total or predictions_attack or window_count else "observed",
+        "detection_windows": int(window_count),
+        "flows": int(flows),
+        "predictions_attack": int(predictions_attack),
+        "alerts_total": int(alerts_total),
+        "alert_windows": int(alerts_total),
+        "severity_counts": severity_counts,
+        "latest_confidence": incident_confidence(latest_alert, recent_predictions, node_id),
+        "latest_flow_id": latest_flow_id,
+        "runtime_errors": int(runtime_errors),
+        "interpretation": interpretation,
+        "badge": "Scenario-level incident",
+    }
+
+
+def incident_severity_score(incident: dict[str, Any]) -> tuple[int, int, int]:
+    counts = incident.get("severity_counts", {})
+    score = (
+        int(counts.get("critical", 0) or 0) * 4
+        + int(counts.get("high", 0) or 0) * 3
+        + int(counts.get("medium", 0) or 0) * 2
+        + int(counts.get("low", 0) or 0)
+    )
+    return (score, int(incident.get("alerts_total", 0) or 0), int(incident.get("detection_windows", 0) or 0))
+
+
+def build_incident_correlation(state: dict[str, Any], metrics: dict[str, Any]) -> dict[str, Any]:
+    recent_flows = state.get("recent_flows", [])
+    recent_status = state.get("recent_status", [])
+    recent_windows = state.get("recent_windows", [])
+    recent_alerts = state.get("recent_alerts", [])
+    recent_predictions = state.get("recent_predictions", [])
+
+    smartwatch_active = (
+        payload_text_contains(recent_windows, SMARTWATCH_NODE_ID, "last_icmp_count", "icmp")
+        or payload_text_contains(recent_status, SMARTWATCH_NODE_ID, "icmp/tcp/http-like")
+        or payload_text_contains(recent_flows, SMARTWATCH_NODE_ID, "smartwatch", "icmp")
+        or count_node_samples(recent_alerts, SMARTWATCH_NODE_ID) > 0
+        or count_node_samples(recent_predictions, SMARTWATCH_NODE_ID) > 0
+    )
+    drone_active = (
+        payload_text_contains(recent_windows, DRONE_NODE_ID, "udp", "mavlink")
+        or payload_text_contains(recent_status, DRONE_NODE_ID, "mavlink/udp")
+        or payload_text_contains(recent_flows, DRONE_NODE_ID, "mavlink")
+        or count_node_samples(recent_alerts, DRONE_NODE_ID) > 0
+        or count_node_samples(recent_predictions, DRONE_NODE_ID) > 0
+    )
+
+    candidates = [
+        build_node_incident(
+            state=state,
+            metrics=metrics,
+            node_id=SMARTWATCH_NODE_ID,
+            incident_suffix="icmp-flood-like",
+            scenario_label="ICMP flood-like traffic on smartwatch",
+            interpretation="One correlated ICMP scenario produced multiple sliding PacketWindow detections.",
+            active=smartwatch_active,
+        ),
+        build_node_incident(
+            state=state,
+            metrics=metrics,
+            node_id=DRONE_NODE_ID,
+            incident_suffix="mavlink-burst-like",
+            scenario_label="MAVLink burst-like traffic on drone",
+            interpretation="One correlated MAVLink/UDP scenario produced multiple sliding PacketWindow detections.",
+            active=drone_active,
+        ),
+    ]
+    incidents = [item for item in candidates if item is not None]
+    incidents.sort(key=incident_severity_score, reverse=True)
+    return {
+        "enabled": True,
+        "grouping_rule": "Sliding windows are grouped by node_id and scenario-level protocol signature.",
+        "incidents": incidents,
+    }
+
+
 def observer_runtime_status(sample: dict[str, Any] | None) -> tuple[str, float | None]:
     if not sample:
         return "STOPPED", None
@@ -468,6 +662,7 @@ def build_live_lab_state() -> dict[str, Any]:
         "assignments": assignments_payload.get("assignments", []),
         "model_profile": MODEL_DEFAULTS,
         "recent_alerts": extract_recent_alerts(summary_payload),
+        "recent_flows": extract_recent_samples(summary_payload, "flows"),
         "recent_predictions": extract_recent_samples(summary_payload, "predictions"),
         "recent_status": extract_recent_samples(summary_payload, "status"),
         "recent_windows": extract_recent_samples(summary_payload, "windows"),
@@ -751,6 +946,7 @@ def build_demo_state() -> dict[str, Any]:
     steps = build_demo_steps(state, devices, metrics)
     platform = demo_platform_status(steps, state)
     recent_events = build_demo_events(state, devices, metrics)
+    incident_correlation = build_incident_correlation(state, metrics)
 
     return {
         "generated_at": state.get("generated_at"),
@@ -763,6 +959,7 @@ def build_demo_state() -> dict[str, Any]:
         "latest_alert": state.get("recent_alerts", [None])[0] if state.get("recent_alerts") else None,
         "drone_observer": build_drone_observer_state(state),
         "smartwatch_observer": build_smartwatch_observer_state(state),
+        "incident_correlation": incident_correlation,
         "metrics": metrics,
         "recent_events": recent_events,
         "services": state.get("services", {}),

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-05T14:13:23Z",
+  "generated_at": "2026-06-05T14:52:12Z",
   "files": {
     "ok": true,
     "missing": []
@@ -22,6 +22,7 @@
         "devices",
         "drone_observer",
         "generated_at",
+        "incident_correlation",
         "latest_alert",
         "metrics",
         "model_profile",

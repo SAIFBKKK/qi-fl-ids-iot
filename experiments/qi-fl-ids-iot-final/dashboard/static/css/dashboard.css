@@ -678,6 +678,42 @@ code {
   color: var(--muted);
 }
 
+.incident-panel {
+  border-left: 7px solid var(--accent);
+}
+
+.incident-panel.severity-critical,
+.incident-panel.severity-high {
+  border-left-color: var(--critical);
+}
+
+.incident-panel.severity-medium {
+  border-left-color: var(--amber);
+}
+
+.incident-panel.severity-low {
+  border-left-color: var(--green);
+}
+
+.incident-title {
+  margin-bottom: 12px;
+  color: var(--critical);
+  font-size: 1.45rem;
+  font-weight: 950;
+  line-height: 1.15;
+}
+
+.incident-detail p,
+.incident-empty p {
+  margin: 10px 0 0;
+  color: var(--muted);
+  line-height: 1.48;
+}
+
+.incident-facts {
+  margin-bottom: 12px;
+}
+
 .demo-window-panel {
   border-left: 7px solid var(--blue);
 }

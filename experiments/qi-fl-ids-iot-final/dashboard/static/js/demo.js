@@ -3,6 +3,8 @@
   const refreshMs = 3500;
   const seenDevices = new Set();
   const seenAlerts = new Set();
+  const seenIncidents = new Set();
+  let initialNotificationScanComplete = false;
 
   function byId(id) {
     return document.getElementById(id);
@@ -170,6 +172,70 @@
         <div><dt>timestamp</dt><dd>${fmt(alert.timestamp)}</dd></div>
         <div><dt>source topic</dt><dd><code>${fmt(alert.source_topic)}</code></dd></div>
       </dl>
+    `;
+  }
+
+  function severityBreakdown(counts) {
+    const values = counts || {};
+    return ["critical", "high", "medium", "low"]
+      .filter((severity) => Number(values[severity] || 0) > 0)
+      .map((severity) => `${Number(values[severity] || 0)} ${severity}`)
+      .join(", ") || "none";
+  }
+
+  function mostVisibleIncident(incidents) {
+    if (!incidents || !incidents.length) {
+      return null;
+    }
+    return incidents[0];
+  }
+
+  function renderIncidentCorrelation(state) {
+    const target = byId("demo-incident-content");
+    const badge = byId("demo-incident-badge");
+    const panel = byId("demo-incident-panel");
+    if (!target || !badge || !panel) {
+      return;
+    }
+    const incident = mostVisibleIncident(state?.incident_correlation?.incidents || []);
+    if (!incident) {
+      panel.className = "panel incident-panel";
+      badge.className = "badge badge-info";
+      badge.textContent = "Scenario-level incident";
+      target.className = "incident-empty";
+      target.innerHTML = `
+        <strong>No correlated incident yet.</strong>
+        <p>The dashboard groups multiple sliding-window alerts into one scenario-level incident.</p>
+        <p>Sliding windows are grouped to avoid counting one continuous scenario as multiple independent attacks.</p>
+      `;
+      return;
+    }
+    const incident_key = `${incident.incident_id}:${incident.alerts_total}:${incident.latest_flow_id || "none"}`;
+    seenIncidents.add(incident_key);
+    const counts = incident.severity_counts || {};
+    const topSeverity =
+      Number(counts.critical || 0) > 0 ? "critical" :
+      Number(counts.high || 0) > 0 ? "high" :
+      Number(counts.medium || 0) > 0 ? "medium" : "low";
+    panel.className = `panel incident-panel ${severityClass(topSeverity)}`;
+    badge.className = `badge ${severityClass(topSeverity)}`;
+    badge.textContent = incident.badge || "Scenario-level incident";
+    target.className = "incident-detail";
+    target.innerHTML = `
+      <div class="incident-title">Incident: ${fmt(incident.scenario_label)}</div>
+      <dl class="compact-facts incident-facts">
+        <div><dt>Node</dt><dd>${fmt(incident.node_id)}</dd></div>
+        <div><dt>Detection windows</dt><dd>${fmt(incident.detection_windows, "0")}</dd></div>
+        <div><dt>Attack predictions</dt><dd>${fmt(incident.predictions_attack, "0")}</dd></div>
+        <div><dt>Correlated alerts</dt><dd>${fmt(incident.alerts_total, "0")}</dd></div>
+        <div><dt>Alert windows</dt><dd>${fmt(incident.alert_windows, "0")}</dd></div>
+        <div><dt>Severity</dt><dd>${esc(severityBreakdown(counts))}</dd></div>
+        <div><dt>Latest confidence</dt><dd>${fmtConfidence(incident.latest_confidence)}</dd></div>
+        <div><dt>Latest flow</dt><dd>${fmt(incident.latest_flow_id)}</dd></div>
+        <div><dt>Runtime errors</dt><dd><span class="badge ${Number(incident.runtime_errors || 0) === 0 ? "badge-success" : "badge-danger"}">${fmt(incident.runtime_errors, "0")}</span></dd></div>
+      </dl>
+      <p>${esc(incident.interpretation || "The dashboard groups multiple sliding-window alerts into one scenario-level incident.")}</p>
+      <p>Sliding windows are grouped to avoid counting one continuous scenario as multiple independent attacks.</p>
     `;
   }
 
@@ -363,6 +429,9 @@
           `${device.device_type || device.display_device_type}, tier ${device.assigned_tier}, model ${device.model_id}, mask ${device.selected_mask_id}`,
           "device"
         );
+        if (initialNotificationScanComplete && window.P1618Audio) {
+          window.P1618Audio.playDeviceConnectedSound();
+        }
       }
     });
     const alert = state.latest_alert;
@@ -375,7 +444,13 @@
           `${alert.severity || "medium"} severity, label ${alert.predicted_label || "unknown"}, confidence ${fmtConfidence(alert.confidence)}, flow ${alert.flow_id || "n/a"}`,
           "alert"
         );
+        if (initialNotificationScanComplete && window.P1618Audio) {
+          window.P1618Audio.playAttackDetectedSound();
+        }
       }
+    }
+    if (!initialNotificationScanComplete) {
+      initialNotificationScanComplete = true;
     }
   }
 
@@ -385,6 +460,7 @@
     renderDevices(state.devices);
     renderModel(state.model_profile);
     renderLatestAlert(state.latest_alert);
+    renderIncidentCorrelation(state);
     renderDroneObserver(state.drone_observer);
     renderSmartwatchObserver(state.smartwatch_observer);
     renderMetrics(state.metrics);
@@ -442,6 +518,9 @@
           button.click();
         }
       });
+    }
+    if (window.P1618Audio) {
+      window.P1618Audio.bindControls();
     }
   }
 

@@ -28,6 +28,8 @@
       <button id="demo-clear-notifications" class="control-button" type="button">Clear local notifications</button>
       <button id="demo-focus-alert" class="control-button" type="button">Focus last alert</button>
       <button id="demo-toggle-theme" class="control-button" type="button">Toggle dark mode</button>
+      <button id="demo-enable-sound" class="control-button" type="button">Enable sound</button>
+      <button id="demo-mute-sound" class="control-button" type="button">Mute sound</button>
       <a class="control-button" href="/">Open main dashboard</a>
       <a class="control-button" href="http://192.168.56.1:3000" target="_blank" rel="noreferrer">Open Grafana</a>
       <a class="control-button" href="http://192.168.56.1:8014/model/info" target="_blank" rel="noreferrer">Open API model info</a>
@@ -79,6 +81,21 @@
           <div id="demo-latest-alert" class="latest-alert-empty">
             <strong>No alert detected yet.</strong>
             <p>Publish a controlled PacketWindow(30) flow from VM1 or VM2 to show the live IDS alert path.</p>
+          </div>
+        </section>
+
+        <section id="demo-incident-panel" class="panel incident-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Correlated Security Incident</p>
+              <h2>Scenario-Level Detection</h2>
+            </div>
+            <span id="demo-incident-badge" class="badge badge-info">Scenario-level incident</span>
+          </div>
+          <div id="demo-incident-content" class="incident-empty">
+            <strong>No correlated incident yet.</strong>
+            <p>The dashboard groups multiple sliding-window alerts into one scenario-level incident.</p>
+            <p>Sliding windows are grouped to avoid counting one continuous scenario as multiple independent attacks.</p>
           </div>
         </section>
 
@@ -299,6 +316,7 @@
 
   <script src="/static/js/theme.js"></script>
   <script src="/static/js/notifications.js"></script>
+  <script src="/static/js/audio_signals.js"></script>
   <script src="/static/js/demo.js"></script>
 </body>
 </html>
