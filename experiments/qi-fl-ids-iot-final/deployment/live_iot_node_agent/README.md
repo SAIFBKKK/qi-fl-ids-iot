@@ -7,7 +7,7 @@ vectors to MQTT, and prints received alerts from `ids/alerts/{node_id}`.
 Target command:
 
 ```bash
-python agent.py --node-id iot-rpi-weak --server-url http://SERVER_IP:8020 --mqtt-host SERVER_IP --input-mode original_28_scaled
+python agent.py --node-id iot-drone-sitl --server-url http://SERVER_IP:8020 --mqtt-host SERVER_IP --input-mode original_28_scaled
 ```
 
 Supported input modes:
@@ -18,4 +18,5 @@ Supported input modes:
 
 The agent does not generate network traffic. It only publishes JSON feature
 payloads to the local MQTT broker configured for the isolated lab.
+
 

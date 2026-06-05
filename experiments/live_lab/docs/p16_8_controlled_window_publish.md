@@ -9,7 +9,7 @@ cd ~/qi-fl-ids-iot
 git pull
 python3 experiments/qi-fl-ids-iot-final/src/scripts/16_8_run_controlled_window_publish.py \
   --broker 192.168.56.1 \
-  --node-id iot-rpi-weak \
+  --node-id iot-drone-sitl \
   --input-mode selected_12_scaled \
   --window-size 30 \
   --max-windows 1 \
@@ -21,7 +21,7 @@ python3 experiments/qi-fl-ids-iot-final/src/scripts/16_8_run_controlled_window_p
 ```bash
 python3 experiments/qi-fl-ids-iot-final/src/scripts/16_8_run_controlled_window_publish.py \
   --broker 192.168.56.1 \
-  --node-id iot-rpi-weak \
+  --node-id iot-drone-sitl \
   --input-mode selected_12_scaled \
   --window-size 30 \
   --max-windows 1 \
@@ -59,7 +59,7 @@ python3 experiments/qi-fl-ids-iot-final/src/scripts/16_8_run_controlled_window_p
 VM1:
 
 ```bash
-mosquitto_sub -h 192.168.56.1 -p 1883 -u ids_user -P changeme_in_dotenv -t 'ids/flows/iot-rpi-weak' -t 'ids/predictions/iot-rpi-weak' -t 'ids/alerts/iot-rpi-weak' -v
+mosquitto_sub -h 192.168.56.1 -p 1883 -u ids_user -P changeme_in_dotenv -t 'ids/flows/iot-drone-sitl' -t 'ids/predictions/iot-drone-sitl' -t 'ids/alerts/iot-drone-sitl' -v
 ```
 
 VM2:
@@ -77,7 +77,7 @@ python experiments/qi-fl-ids-iot-final/src/scripts/16_8_collect_window_publish_e
 
 ## Interpretation
 
-- VM1 should publish 12 selected scaled features to `ids/flows/iot-rpi-weak`.
+- VM1 should publish 12 selected scaled features to `ids/flows/iot-drone-sitl`.
 - VM2 should publish 28 scaled features to `ids/flows/iot-smart-watch-medium`.
 - final-ids-api applies the QGA mask for VM2 inside the API path.
 - The MQTT bridge should publish predictions and alerts on the node-specific topics.
@@ -95,3 +95,4 @@ python experiments/qi-fl-ids-iot-final/src/scripts/16_8_collect_window_publish_e
 ## Scope
 
 P16.8 uses only synthetic packet windows and controlled MQTT publication. It does not use live capture, pcap files, Kali scenarios, training, or Flower.
+

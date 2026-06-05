@@ -35,7 +35,7 @@ python3 experiments/live_lab/nodes/iot_smart_watch_medium/run_node.py --server-u
 
 ```bash
 cd ~/qi-fl-ids-iot
-python3 experiments/qi-fl-ids-iot-final/src/scripts/16_8_run_controlled_window_publish.py --broker 192.168.56.1 --node-id iot-rpi-weak --input-mode selected_12_scaled --window-size 30 --max-windows 1 --publish
+python3 experiments/qi-fl-ids-iot-final/src/scripts/16_8_run_controlled_window_publish.py --broker 192.168.56.1 --node-id iot-drone-sitl --input-mode selected_12_scaled --window-size 30 --max-windows 1 --publish
 ```
 
 ## 6. VM2 Controlled PacketWindow Publish
@@ -57,3 +57,4 @@ http://192.168.56.1:3000
 ## Safety Reminder
 
 No live capture, no lab scenario workstation, no attack traffic, no training, and no Flower process are used in this runbook.
+

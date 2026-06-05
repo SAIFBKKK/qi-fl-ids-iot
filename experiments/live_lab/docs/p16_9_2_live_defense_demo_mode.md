@@ -46,7 +46,7 @@ python3 experiments/live_lab/nodes/iot_smart_watch_medium/run_node.py --server-u
 
 4. Explain the assigned tiers:
 
-- `iot-rpi-weak` is assigned to tier `weak`.
+- `iot-drone-sitl` is assigned to tier `weak`.
 - `iot-smart-watch-medium` is assigned to tier `medium`.
 
 5. Explain the final model assignment:
@@ -59,7 +59,7 @@ python3 experiments/live_lab/nodes/iot_smart_watch_medium/run_node.py --server-u
 6. Publish VM1 controlled PacketWindow(30) evidence:
 
 ```bash
-python3 experiments/qi-fl-ids-iot-final/src/scripts/16_8_run_controlled_window_publish.py --broker 192.168.56.1 --node-id iot-rpi-weak --input-mode selected_12_scaled --window-size 30 --max-windows 1 --publish
+python3 experiments/qi-fl-ids-iot-final/src/scripts/16_8_run_controlled_window_publish.py --broker 192.168.56.1 --node-id iot-drone-sitl --input-mode selected_12_scaled --window-size 30 --max-windows 1 --publish
 ```
 
 7. Show the VM1 prediction and alert in the dashboard.
@@ -93,3 +93,4 @@ The live dashboard separates scientific evaluation from runtime deployment evide
 - P16.9.2 does not evaluate detection performance.
 - P16.9.2 does not use live packet capture.
 - P16.9.2 does not run lab attack scenarios.
+

@@ -42,12 +42,12 @@ def dry_run(node_id: str, input_mode: str) -> dict:
 
 
 def test_controlled_window_publish_dry_run_vm1_returns_12_features() -> None:
-    payload = dry_run("iot-rpi-weak", "selected_12_scaled")
+    payload = dry_run("iot-drone-sitl", "selected_12_scaled")
     assert payload["ok"] is True
     assert payload["dry_run"] is True
     assert payload["published"] is False
-    assert payload["node_id"] == "iot-rpi-weak"
-    assert payload["topic"] == "ids/flows/iot-rpi-weak"
+    assert payload["node_id"] == "iot-drone-sitl"
+    assert payload["topic"] == "ids/flows/iot-drone-sitl"
     assert payload["features_count"] == 12
     assert len(payload["payload"]["features"]) == 12
 
@@ -95,3 +95,4 @@ def test_p16_8_files_contain_no_command_terms() -> None:
         text = path.read_text(encoding="utf-8", errors="ignore").lower()
         for term in terms:
             assert term not in text, f"{term} found in {path}"
+

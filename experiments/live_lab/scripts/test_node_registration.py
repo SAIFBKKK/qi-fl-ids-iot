@@ -16,6 +16,13 @@ from hardware_profiler import get_hardware_profile  # noqa: E402
 
 
 def default_declared_profile(node_id: str) -> dict[str, object]:
+    if node_id == "iot-drone-sitl":
+        return {
+            "cpu_count": 1,
+            "ram_gb": 1.0,
+            "device_type": "drone_sitl",
+            "mqtt_topic": "ids/flows/iot-drone-sitl",
+        }
     if node_id == "iot-smart-watch-medium":
         return {
             "cpu_count": 1,
@@ -26,7 +33,7 @@ def default_declared_profile(node_id: str) -> dict[str, object]:
     return {
         "cpu_count": 1,
         "ram_gb": 1.0,
-        "device_type": "raspberry_like",
+        "device_type": "unknown",
         "mqtt_topic": f"ids/flows/{node_id}",
     }
 
@@ -70,7 +77,7 @@ def post_registration(server_url: str, payload: dict[str, object]) -> dict[str, 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Build or send a live-lab-controller node registration payload.")
     parser.add_argument("--server-url", default="http://192.168.56.1:8020")
-    parser.add_argument("--node-id", default="iot-rpi-weak")
+    parser.add_argument("--node-id", default="iot-drone-sitl")
     parser.add_argument("--hostname")
     parser.add_argument("--cpu-count", type=int)
     parser.add_argument("--ram-gb", type=float)
@@ -100,3 +107,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

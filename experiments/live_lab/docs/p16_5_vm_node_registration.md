@@ -11,17 +11,17 @@ No new endpoint is introduced.
 - `SERVER_IP=192.168.56.1`
 - Controller URL: `http://192.168.56.1:8020`
 
-## VM1: iot-rpi-weak
+## VM1: iot-drone-sitl
 
 Expected registration payload:
 
 ```json
 {
-  "node_id": "iot-rpi-weak",
+  "node_id": "iot-drone-sitl",
   "cpu_count": 1,
   "ram_gb": 1.0,
-  "device_type": "raspberry_like",
-  "mqtt_topic": "ids/flows/iot-rpi-weak"
+  "device_type": "drone_sitl",
+  "mqtt_topic": "ids/flows/iot-drone-sitl"
 }
 ```
 
@@ -74,11 +74,12 @@ curl http://192.168.56.1:8020/assignments
 Expected:
 
 - `/nodes` count includes both nodes.
-- `/assignments` includes `iot-rpi-weak` with `weak`.
+- `/assignments` includes `iot-drone-sitl` with `weak`.
 - `/assignments` includes `iot-smart-watch-medium` with `medium`.
 
 ## Scope
 
 P16.5 performs registration only. It does not start packet capture, Kali
 scenarios, replay, training, or Flower.
+
 

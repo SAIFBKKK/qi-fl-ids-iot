@@ -31,7 +31,7 @@ def run_python(path: Path, *args: str) -> subprocess.CompletedProcess[str]:
     )
 
 
-def run_cli(input_mode: str, node_id: str = "iot-rpi-weak") -> dict:
+def run_cli(input_mode: str, node_id: str = "iot-drone-sitl") -> dict:
     result = run_python(
         CLI_PATH,
         "--node-id",
@@ -70,13 +70,13 @@ def test_extract_28_features_from_window_returns_28_values() -> None:
 
 
 def test_selected_12_scaled_dry_run_returns_12_features() -> None:
-    payload = run_cli("selected_12_scaled", "iot-rpi-weak")
+    payload = run_cli("selected_12_scaled", "iot-drone-sitl")
     window = payload["windows"][0]
     mqtt_payload = window["publish_result"]["payload"]
     assert payload["dry_run"] is True
     assert window["feature_count"] == 12
     assert len(mqtt_payload["features"]) == 12
-    assert mqtt_payload["node_id"] == "iot-rpi-weak"
+    assert mqtt_payload["node_id"] == "iot-drone-sitl"
 
 
 def test_original_28_unscaled_dry_run_returns_28_features() -> None:
@@ -125,3 +125,4 @@ def test_p16_7_files_contain_no_command_terms() -> None:
         text = path.read_text(encoding="utf-8", errors="ignore").lower()
         for term in terms:
             assert term not in text, f"{term} found in {path}"
+

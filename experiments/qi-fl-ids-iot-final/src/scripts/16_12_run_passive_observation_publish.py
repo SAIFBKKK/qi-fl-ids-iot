@@ -15,7 +15,7 @@ if str(REALTIME_AGENT_ROOT) not in sys.path:
 from run_realtime_window_agent import run_agent  # noqa: E402
 
 
-SUPPORTED_NODES = ("iot-rpi-weak",)
+SUPPORTED_NODES = ("iot-drone-sitl",)
 SUPPORTED_INPUT_MODES = ("selected_12_scaled", "original_28_scaled")
 
 
@@ -75,7 +75,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--port", type=int, default=1883)
     parser.add_argument("--username", default="ids_user")
     parser.add_argument("--password", default="changeme_in_dotenv")
-    parser.add_argument("--node-id", choices=SUPPORTED_NODES, default="iot-rpi-weak")
+    parser.add_argument("--node-id", choices=SUPPORTED_NODES, default="iot-drone-sitl")
     parser.add_argument("--interface", default="enp0s8")
     parser.add_argument("--node-ip", default="192.168.56.101")
     parser.add_argument("--peer-ip", default="192.168.56.103")
@@ -109,3 +109,4 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

@@ -15,7 +15,7 @@ if str(REALTIME_AGENT_ROOT) not in sys.path:
 from run_realtime_window_agent import run_agent  # noqa: E402
 
 
-SUPPORTED_NODES = ("iot-rpi-weak", "iot-smart-watch-medium")
+SUPPORTED_NODES = ("iot-drone-sitl", "iot-smart-watch-medium")
 SUPPORTED_INPUT_MODES = ("selected_12_scaled", "original_28_scaled")
 
 
@@ -99,3 +99,4 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

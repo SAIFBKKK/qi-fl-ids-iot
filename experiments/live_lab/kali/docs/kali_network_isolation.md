@@ -7,7 +7,7 @@ The Kali workstation should use the VirtualBox host-only network for live lab ob
 ## Lab IPs
 
 - Server Windows host: `192.168.56.1`
-- VM1 `iot-rpi-weak`: `192.168.56.101`
+- VM1 `iot-drone-sitl`: `192.168.56.101`
 - VM2 `iot-smart-watch-medium`: `192.168.56.102`
 - VM3 `lab-attacker-kali`: `192.168.56.103`
 - Subnet: `255.255.255.0`
@@ -26,3 +26,4 @@ For future controlled scenario windows, disable NAT on the Kali VM unless packag
 ## Safety Boundary
 
 Do not scan the network. Do not broaden checks to a subnet. P16.10 only uses fixed lab IPs and fixed server endpoints for readiness evidence.
+

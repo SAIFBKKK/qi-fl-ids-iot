@@ -41,7 +41,7 @@ P16.7 computes safe CICIoT2023-like approximations from normalized packets. It d
 cd ~/qi-fl-ids-iot
 git pull
 python3 experiments/live_lab/realtime_agent/run_realtime_window_agent.py \
-  --node-id iot-rpi-weak \
+  --node-id iot-drone-sitl \
   --broker 192.168.56.1 \
   --input-mode selected_12_scaled \
   --window-size 30 \
@@ -74,3 +74,4 @@ Do this only when the server stack and observers are ready.
 ## Scope Reminder
 
 P16.7 does not start Kali scenarios, does not generate active traffic, does not train models, and does not modify P8-P16 results.
+

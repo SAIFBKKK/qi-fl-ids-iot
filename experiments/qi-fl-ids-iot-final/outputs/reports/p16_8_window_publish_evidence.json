@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-27T14:34:10.727333Z",
+  "generated_at": "2026-05-27T15:16:46.083728Z",
   "server_url": "http://192.168.56.1",
   "scope": "P16.8 controlled SyntheticPacketSource window publication evidence",
   "note": "Run this collector after controlled P16.8 publishes for final runtime evidence; otherwise counters reflect the current server state.",
@@ -8,13 +8,13 @@
       "ok": true,
       "url": "http://192.168.56.1:8016/metrics",
       "status": 200,
-      "bytes": 3487
+      "bytes": 3661
     },
     "online_validator_summary": {
       "ok": true,
       "url": "http://192.168.56.1:8015/summary",
       "status": 200,
-      "bytes": 12268
+      "bytes": 12337
     },
     "final_ids_api_metrics": {
       "ok": true,
@@ -38,20 +38,20 @@
   "evidence": {
     "nodes": {
       "iot-rpi-weak": {
-        "flows_received_total": 1.0,
-        "predictions_published_total": 1.0,
-        "alerts_published_total": 1.0,
-        "validator_flow_topic_count": 1,
-        "validator_prediction_topic_count": 1,
-        "validator_alert_topic_count": 1
+        "flows_received_total": 4.0,
+        "predictions_published_total": 4.0,
+        "alerts_published_total": 4.0,
+        "validator_flow_topic_count": 4,
+        "validator_prediction_topic_count": 4,
+        "validator_alert_topic_count": 4
       },
       "iot-smart-watch-medium": {
-        "flows_received_total": 1.0,
-        "predictions_published_total": 1.0,
-        "alerts_published_total": 1.0,
-        "validator_flow_topic_count": 1,
-        "validator_prediction_topic_count": 1,
-        "validator_alert_topic_count": 1
+        "flows_received_total": 3.0,
+        "predictions_published_total": 3.0,
+        "alerts_published_total": 3.0,
+        "validator_flow_topic_count": 3,
+        "validator_prediction_topic_count": 3,
+        "validator_alert_topic_count": 3
       }
     },
     "errors": {

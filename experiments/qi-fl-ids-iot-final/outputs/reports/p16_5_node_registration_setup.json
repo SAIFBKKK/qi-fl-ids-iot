@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-27T01:46:06.400894Z",
+  "generated_at": "2026-06-05T09:19:29.818542Z",
   "files": {
     "ok": true,
     "missing": []
@@ -8,6 +8,7 @@
     "ok": true,
     "checks": {
       "raspberry_like_to_weak": true,
+      "drone_sitl_to_weak": true,
       "smart_watch_like_to_medium": true,
       "unknown_low_resource_to_weak": true
     }
@@ -25,12 +26,12 @@
       "medium_mqtt_topic": true
     },
     "weak_payload": {
-      "node_id": "iot-rpi-weak",
+      "node_id": "iot-drone-sitl",
       "hostname": "weak-host",
       "cpu_count": 1,
       "ram_gb": 1.0,
-      "device_type": "raspberry_like",
-      "mqtt_topic": "ids/flows/iot-rpi-weak"
+      "device_type": "drone_sitl",
+      "mqtt_topic": "ids/flows/iot-drone-sitl"
     },
     "medium_payload": {
       "node_id": "iot-smart-watch-medium",

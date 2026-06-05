@@ -1,6 +1,6 @@
 # P16.8 Controlled Window Publish Validation
 
-- Generated at: `2026-05-27T14:34:23.225829Z`
+- Generated at: `2026-06-05T09:19:25.265978Z`
 - Overall status: `OK`
 - Required files: `True`
 - Dry-run checks: `True`
@@ -10,5 +10,5 @@
 
 | Node | Mode | Expected | Observed | OK |
 |---|---|---:|---:|---|
-| `iot-rpi-weak` | `selected_12_scaled` | 12 | 12 | `True` |
+| `iot-drone-sitl` | `selected_12_scaled` | 12 | 12 | `True` |
 | `iot-smart-watch-medium` | `original_28_scaled` | 28 | 28 | `True` |

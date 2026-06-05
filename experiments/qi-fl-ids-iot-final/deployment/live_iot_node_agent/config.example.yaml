@@ -1,4 +1,4 @@
-node_id: iot-rpi-weak
+node_id: iot-drone-sitl
 server_url: http://SERVER_IP:8020
 mqtt_host: SERVER_IP
 mqtt_port: 1883
@@ -6,5 +6,6 @@ input_mode: original_28_scaled
 scenario: benign
 count: 10
 interval_sec: 1.0
-device_type: raspberry_like
+device_type: drone_sitl
+
 

@@ -28,7 +28,7 @@ Target path:
 
 ```bash
 python experiments/live_lab/realtime_agent/run_realtime_window_agent.py \
-  --node-id iot-rpi-weak \
+  --node-id iot-drone-sitl \
   --input-mode selected_12_scaled \
   --window-size 30 \
   --max-windows 1 \
@@ -54,3 +54,4 @@ python experiments/live_lab/realtime_agent/run_realtime_window_agent.py \
 ## Limits
 
 The feature values are safe approximations for live-lab plumbing. They do not claim equivalence with the original CICIoT2023 feature extraction pipeline.
+

@@ -15,7 +15,7 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 FINAL_ROOT = REPO_ROOT / "experiments" / "qi-fl-ids-iot-final"
 REPORT_DIR = FINAL_ROOT / "outputs" / "reports"
 
-NODES = ("iot-rpi-weak", "iot-smart-watch-medium")
+NODES = ("iot-drone-sitl", "iot-smart-watch-medium")
 QUERY_SPECS = {
     "final_mqtt_bridge_metrics": (8016, "/metrics"),
     "online_validator_summary": (8015, "/summary"),
@@ -25,11 +25,11 @@ QUERY_SPECS = {
 }
 
 MANUAL_RUNTIME_OBSERVATIONS: dict[str, Any] = {
-    "iot-rpi-weak": {
+    "iot-drone-sitl": {
         "input_mode": "selected_12_scaled",
-        "flow_topic": "ids/flows/iot-rpi-weak",
-        "prediction_topic": "ids/predictions/iot-rpi-weak",
-        "alert_topic": "ids/alerts/iot-rpi-weak",
+        "flow_topic": "ids/flows/iot-drone-sitl",
+        "prediction_topic": "ids/predictions/iot-drone-sitl",
+        "alert_topic": "ids/alerts/iot-drone-sitl",
         "bridge_flows_received_total": 1,
         "bridge_predictions_published_total": 1,
         "bridge_alerts_published_total": 1,
@@ -53,9 +53,9 @@ MANUAL_RUNTIME_OBSERVATIONS: dict[str, Any] = {
         "final_mqtt_bridge_prediction_errors_total": 0,
     },
     "online_validator_topic_counts": {
-        "ids/flows/iot-rpi-weak": 1,
-        "ids/predictions/iot-rpi-weak": 1,
-        "ids/alerts/iot-rpi-weak": 1,
+        "ids/flows/iot-drone-sitl": 1,
+        "ids/predictions/iot-drone-sitl": 1,
+        "ids/alerts/iot-drone-sitl": 1,
         "ids/flows/iot-smart-watch-medium": 1,
         "ids/predictions/iot-smart-watch-medium": 1,
         "ids/alerts/iot-smart-watch-medium": 1,
@@ -307,3 +307,4 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

@@ -7,10 +7,11 @@ server:
   online_validator_port: 8015
 vms:
   weak_node:
-    name: iot-rpi-weak
-    planned_virtualbox_path: E:\VirtualBox VMs\qi-fl-ids-iot-live-lab\iot-rpi-weak
+    name: iot-drone-sitl
+    planned_virtualbox_path: E:\VirtualBox VMs\qi-fl-ids-iot-live-lab\iot-drone-sitl
   medium_node:
     name: iot-smart-watch-medium
     planned_virtualbox_path: E:\VirtualBox VMs\qi-fl-ids-iot-live-lab\iot-smart-watch-medium
 network_scope: local_isolated_lab_only
+
 

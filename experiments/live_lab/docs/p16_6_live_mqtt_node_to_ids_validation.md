@@ -23,15 +23,15 @@ cd ~/qi-fl-ids-iot
 git pull
 python3 experiments/qi-fl-ids-iot-final/src/scripts/16_6_publish_safe_mqtt_payloads.py \
   --broker 192.168.56.1 \
-  --node-id iot-rpi-weak \
+  --node-id iot-drone-sitl \
   --input-mode selected_12_scaled
 ```
 
 Expected path:
 
-- Publish to `ids/flows/iot-rpi-weak`.
-- Receive prediction on `ids/predictions/iot-rpi-weak`.
-- Receive alert on `ids/alerts/iot-rpi-weak`.
+- Publish to `ids/flows/iot-drone-sitl`.
+- Receive prediction on `ids/predictions/iot-drone-sitl`.
+- Receive alert on `ids/alerts/iot-drone-sitl`.
 
 ## VM2 Publication
 
@@ -83,3 +83,4 @@ P16.6 uses controlled JSON flow payloads only. It does not validate scientific m
 ## Remaining Limit
 
 The live lab still needs P16.7 real-time packet window feature extraction before raw local packets can become 28-feature IDS inputs.
+

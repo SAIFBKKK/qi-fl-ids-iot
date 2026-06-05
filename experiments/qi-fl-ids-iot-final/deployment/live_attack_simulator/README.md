@@ -18,15 +18,15 @@ Allowed scenario labels:
 Example:
 
 ```bash
-python scenario_publisher.py --node-id iot-rpi-weak --mqtt-host SERVER_IP --scenario recon_like --input-mode original_28_scaled
+python scenario_publisher.py --node-id iot-drone-sitl --mqtt-host SERVER_IP --scenario recon_like --input-mode original_28_scaled
 ```
 
 Payload contract:
 
 ```json
 {
-  "flow_id": "sim-iot-rpi-weak-recon_like-original_28_scaled-000001",
-  "node_id": "iot-rpi-weak",
+  "flow_id": "sim-iot-drone-sitl-recon_like-original_28_scaled-000001",
+  "node_id": "iot-drone-sitl",
   "timestamp": "2026-05-24T12:00:00Z",
   "input_mode": "selected_12_scaled",
   "scenario": "recon_like",
@@ -35,3 +35,4 @@ Payload contract:
 ```
 
 For `original_28_scaled`, the `features` array contains 28 scaled values.
+

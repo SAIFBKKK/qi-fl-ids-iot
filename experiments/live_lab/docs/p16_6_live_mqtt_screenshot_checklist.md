@@ -5,12 +5,12 @@ Capture these screenshots for the final live lab evidence package.
 ## Server Runtime
 
 - `docker compose ps` showing the required services up.
-- `http://192.168.56.1:8020/nodes` with `iot-rpi-weak` and `iot-smart-watch-medium`.
-- `http://192.168.56.1:8020/assignments` with `iot-rpi-weak` as `weak` and `iot-smart-watch-medium` as `medium`.
+- `http://192.168.56.1:8020/nodes` with `iot-drone-sitl` and `iot-smart-watch-medium`.
+- `http://192.168.56.1:8020/assignments` with `iot-drone-sitl` as `weak` and `iot-smart-watch-medium` as `medium`.
 
 ## MQTT Observability
 
-- A terminal observing `ids/flows/iot-rpi-weak`, `ids/predictions/iot-rpi-weak`, and `ids/alerts/iot-rpi-weak`.
+- A terminal observing `ids/flows/iot-drone-sitl`, `ids/predictions/iot-drone-sitl`, and `ids/alerts/iot-drone-sitl`.
 - A terminal observing `ids/flows/iot-smart-watch-medium`, `ids/predictions/iot-smart-watch-medium`, and `ids/alerts/iot-smart-watch-medium`.
 
 ## Metrics
@@ -29,3 +29,4 @@ Capture these screenshots for the final live lab evidence package.
 - The screenshots document a technical pipeline validation using controlled JSON flow payloads.
 - They do not replace the scientific model evaluation from P12/P13.
 - No packet capture or lab scenario is required for P16.6 screenshots.
+

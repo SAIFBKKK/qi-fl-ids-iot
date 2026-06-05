@@ -72,12 +72,12 @@ def test_dashboard_uses_probability_attack_fallback() -> None:
         {
             "samples": [
                 {
-                    "topic": "ids/alerts/iot-rpi-weak",
+                    "topic": "ids/alerts/iot-drone-sitl",
                     "family": "alerts",
                     "flow_id": "flow-fallback",
                     "received_at_unix": 2.0,
                     "payload": {
-                        "node_id": "iot-rpi-weak",
+                        "node_id": "iot-drone-sitl",
                         "label": "attack",
                         "probability_attack": 0.875,
                         "severity": "high",
@@ -103,3 +103,4 @@ def test_validation_script_generates_ok_true() -> None:
     report = FINAL_ROOT / "outputs" / "reports" / "p16_9_1_dashboard_alert_parsing_validation.json"
     assert report.exists()
     assert json.loads(report.read_text(encoding="utf-8"))["ok"] is True
+

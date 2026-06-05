@@ -116,7 +116,7 @@ def run_cli(input_mode: str, node_id: str) -> dict[str, Any]:
 
 
 def check_dry_runs() -> dict[str, Any]:
-    selected = run_cli("selected_12_scaled", "iot-rpi-weak")
+    selected = run_cli("selected_12_scaled", "iot-drone-sitl")
     scaled = run_cli("original_28_scaled", "iot-smart-watch-medium")
     unscaled = run_cli("original_28_unscaled", "iot-smart-watch-medium")
     checks = {
@@ -209,3 +209,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

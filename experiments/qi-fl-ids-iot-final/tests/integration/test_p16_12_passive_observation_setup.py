@@ -82,7 +82,7 @@ def test_passive_capture_importable_and_filter_safe() -> None:
 
 def test_wrapper_importable() -> None:
     module = load_module("test_p16_12_wrapper", WRAPPER)
-    assert module.SUPPORTED_NODES == ("iot-rpi-weak",)
+    assert module.SUPPORTED_NODES == ("iot-drone-sitl",)
     assert module.parse_args is not None
 
 
@@ -90,7 +90,7 @@ def test_source_live_requires_allow_live_capture() -> None:
     result = run_python(
         RUN_AGENT,
         "--node-id",
-        "iot-rpi-weak",
+        "iot-drone-sitl",
         "--source",
         "live",
         "--interface",
@@ -107,7 +107,7 @@ def test_source_synthetic_remains_available() -> None:
     result = run_python(
         RUN_AGENT,
         "--node-id",
-        "iot-rpi-weak",
+        "iot-drone-sitl",
         "--source",
         "synthetic",
         "--input-mode",
@@ -143,3 +143,4 @@ def test_no_offensive_commands_in_p16_12_files() -> None:
                 if any(pattern.search(line) for pattern in command_like_patterns(term)):
                     violations.append((path, line_no, term, line.strip()))
     assert violations == []
+

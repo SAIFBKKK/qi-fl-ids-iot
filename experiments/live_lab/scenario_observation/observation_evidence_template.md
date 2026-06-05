@@ -17,7 +17,7 @@
 
 ## target node
 
-- Node ID: `<iot-rpi-weak | iot-smart-watch-medium>`
+- Node ID: `<iot-drone-sitl | iot-smart-watch-medium>`
 - Node IP: `<192.168.56.101 | 192.168.56.102>`
 - Assigned tier: `<weak | medium>`
 
@@ -72,3 +72,4 @@ Explain what the live deployment evidence shows. Keep scientific performance cla
 ## limits
 
 Document approximation, unsupported features, runtime warnings, and safety boundaries.
+

@@ -9,6 +9,7 @@ lab.
 Example:
 
 ```bash
-python scenario_publisher.py --dry-run --node-id iot-rpi-weak --scenario benign
+python scenario_publisher.py --dry-run --node-id iot-drone-sitl --scenario benign
 ```
+
 

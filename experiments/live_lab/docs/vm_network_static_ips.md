@@ -5,7 +5,7 @@ Use a VirtualBox Host-Only Network for the local live lab.
 ## Static Addresses
 
 - PC server: `192.168.56.1`
-- VM1 `iot-rpi-weak`: `192.168.56.101`
+- VM1 `iot-drone-sitl`: `192.168.56.101`
 - VM2 `iot-smart-watch-medium`: `192.168.56.102`
 - VM3 `lab-attacker-kali`: `192.168.56.103`
 - Subnet: `255.255.255.0`
@@ -25,4 +25,5 @@ Adapter 2 NAT may be enabled temporarily for OS package installation only.
 - `3000`: Grafana
 
 No VM is created in P16.3.
+
 

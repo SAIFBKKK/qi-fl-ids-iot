@@ -21,7 +21,7 @@ Future VM storage location:
 
 Planned VMs:
 
-- `iot-rpi-weak`
+- `iot-drone-sitl`
 - `iot-smart-watch-medium`
 
 ## Ports to Open in Windows Firewall
@@ -82,4 +82,5 @@ curl http://SERVER_IP:8013/health
 
 MQTT checks will be added after credentials and broker reachability are
 confirmed. No VM creation happens in P16.2.
+
 

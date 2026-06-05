@@ -17,7 +17,7 @@ from typing import Any
 EXPECTED_KALI_IP = "192.168.56.103"
 LAB_HOSTS = {
     "server": "192.168.56.1",
-    "iot-rpi-weak": "192.168.56.101",
+    "iot-drone-sitl": "192.168.56.101",
     "iot-smart-watch-medium": "192.168.56.102",
 }
 SERVER_ENDPOINTS = {
@@ -232,3 +232,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

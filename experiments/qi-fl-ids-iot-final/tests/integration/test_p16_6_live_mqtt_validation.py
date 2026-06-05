@@ -40,10 +40,10 @@ def dry_run_payload(node_id: str, input_mode: str) -> dict:
 
 
 def test_publish_safe_payload_dry_run_vm1_has_12_features() -> None:
-    output = dry_run_payload("iot-rpi-weak", "selected_12_scaled")
+    output = dry_run_payload("iot-drone-sitl", "selected_12_scaled")
     payload = output["payload"]
-    assert output["topic"] == "ids/flows/iot-rpi-weak"
-    assert payload["node_id"] == "iot-rpi-weak"
+    assert output["topic"] == "ids/flows/iot-drone-sitl"
+    assert payload["node_id"] == "iot-drone-sitl"
     assert payload["input_mode"] == "selected_12_scaled"
     assert len(payload["features"]) == 12
     assert payload["metadata"]["selected_mask_id"] == "conservative_seed_42"
@@ -84,3 +84,4 @@ def test_p16_6_files_contain_no_offensive_commands() -> None:
         text = path.read_text(encoding="utf-8", errors="ignore").lower()
         for term in terms:
             assert term not in text, f"{term} found in {path}"
+

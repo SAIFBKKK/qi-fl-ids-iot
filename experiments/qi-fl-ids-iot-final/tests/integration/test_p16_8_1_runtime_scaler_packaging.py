@@ -71,7 +71,7 @@ def test_run_agent_uses_json_scaler_for_selected_mode() -> None:
     result = run_python(
         RUN_AGENT_PATH,
         "--node-id",
-        "iot-rpi-weak",
+        "iot-drone-sitl",
         "--input-mode",
         "selected_12_scaled",
         "--window-size",
@@ -97,3 +97,4 @@ def test_validation_script_generates_ok_true() -> None:
     report = FINAL_ROOT / "outputs" / "reports" / "p16_8_1_runtime_scaler_packaging_validation.json"
     assert report.exists()
     assert json.loads(report.read_text(encoding="utf-8"))["ok"] is True
+

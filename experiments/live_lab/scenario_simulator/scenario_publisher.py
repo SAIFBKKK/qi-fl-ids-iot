@@ -24,7 +24,7 @@ def build_dry_run_scenario(node_id: str, input_mode: str, scenario: str) -> dict
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Dry-run scenario publisher placeholder.")
-    parser.add_argument("--node-id", default="iot-rpi-weak")
+    parser.add_argument("--node-id", default="iot-drone-sitl")
     parser.add_argument("--input-mode", choices=["selected_12_scaled", "original_28_scaled"], default="selected_12_scaled")
     parser.add_argument("--scenario", choices=scenario_names(), default="benign")
     parser.add_argument("--dry-run", action="store_true")
@@ -42,4 +42,5 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
 

@@ -13,7 +13,7 @@ scenarios:
       - "Rate may increase."
       - "IAT may decrease."
       - "Number may increase depending on window density."
-    target_observation_node: "iot-rpi-weak or iot-smart-watch-medium"
+    target_observation_node: "iot-drone-sitl or iot-smart-watch-medium"
     mqtt_topic_expected: "ids/flows/{node_id}"
     dashboard_expected_evidence:
       - "scenario label visible in the future evidence template"
@@ -34,7 +34,7 @@ scenarios:
       - "syn_flag_number should increase."
       - "syn_count should increase."
       - "Rate may increase."
-    target_observation_node: "iot-rpi-weak or iot-smart-watch-medium"
+    target_observation_node: "iot-drone-sitl or iot-smart-watch-medium"
     mqtt_topic_expected: "ids/flows/{node_id}"
     dashboard_expected_evidence:
       - "scenario label visible in the future evidence template"
@@ -65,3 +65,4 @@ scenarios:
       - "runtime errors remain zero"
     safety_boundary: "Design only in P16.11; no scenario activation, no web traffic generation, no live capture, no executable command."
     activation_status: "design_only"
+

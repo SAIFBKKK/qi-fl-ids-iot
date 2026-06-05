@@ -9,7 +9,7 @@ This phase is design only. It does not activate Kali scenarios.
 ## Architecture
 
 - Server Windows host: `192.168.56.1`
-- VM1 `iot-rpi-weak`: `192.168.56.101`
+- VM1 `iot-drone-sitl`: `192.168.56.101`
 - VM2 `iot-smart-watch-medium`: `192.168.56.102`
 - VM3 `lab-attacker-kali`: `192.168.56.103`
 - Dashboard demo: `http://192.168.56.1:8013/demo`
@@ -27,7 +27,7 @@ This phase is design only. It does not activate Kali scenarios.
 
 The IoT nodes remain the observable deployment targets:
 
-- `iot-rpi-weak`: weak tier, `selected_12_scaled` path.
+- `iot-drone-sitl`: weak tier, `selected_12_scaled` path.
 - `iot-smart-watch-medium`: medium tier, `original_28_scaled` path with QGA mask applied inside the API.
 
 ## PacketWindow(30) Role
@@ -79,3 +79,4 @@ In P16.11, this flow is a design target only.
 - No traffic generation.
 - No scientific result changes.
 - Scientific model evaluation remains P12/P13.
+

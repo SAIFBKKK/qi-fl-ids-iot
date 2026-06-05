@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-26T16:03:38.158467Z",
+  "generated_at": "2026-06-05T09:19:45.490069Z",
   "docs": {
     "ok": true,
     "missing": []
@@ -9,13 +9,13 @@
     "server_ip": "192.168.56.1",
     "server_ip_ok": true,
     "vm_names": [
-      "iot-rpi-weak",
+      "iot-drone-sitl",
       "iot-smart-watch-medium",
       "lab-attacker-kali"
     ],
     "all_vms_defined": true,
     "vm_ips": {
-      "iot-rpi-weak": "192.168.56.101",
+      "iot-drone-sitl": "192.168.56.101",
       "iot-smart-watch-medium": "192.168.56.102",
       "lab-attacker-kali": "192.168.56.103"
     },

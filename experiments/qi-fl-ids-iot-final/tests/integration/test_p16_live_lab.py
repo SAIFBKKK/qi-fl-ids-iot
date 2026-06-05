@@ -48,12 +48,12 @@ def test_node_registration_with_testclient() -> None:
     response = client.post(
         "/register-node",
         json={
-            "node_id": "iot-rpi-weak",
-            "hostname": "iot-rpi-weak-node",
+            "node_id": "iot-drone-sitl",
+            "hostname": "iot-drone-sitl-node",
             "cpu_count": 2,
             "ram_gb": 2,
-            "device_type": "raspberry_like",
-            "mqtt_topic": "ids/flows/iot-rpi-weak",
+            "device_type": "drone_sitl",
+            "mqtt_topic": "ids/flows/iot-drone-sitl",
         },
     )
     assert response.status_code == 200
@@ -61,7 +61,7 @@ def test_node_registration_with_testclient() -> None:
     assert payload["assigned_tier"] == "weak"
     assert payload["selected_mask_id"] == "conservative_seed_42"
     assert payload["supported_input_modes"] == ["selected_12_scaled", "original_28_scaled"]
-    assert payload["mqtt_publish_topic"] == "ids/flows/iot-rpi-weak"
+    assert payload["mqtt_publish_topic"] == "ids/flows/iot-drone-sitl"
 
 
 def test_scenario_profiles_do_not_contain_offensive_commands() -> None:
@@ -109,4 +109,5 @@ def test_validation_reports_generable() -> None:
     assert result["no_offensive_commands"]["ok"]
     assert (FINAL_ROOT / "outputs" / "reports" / "p16_live_lab_validation.json").exists()
     assert (FINAL_ROOT / "outputs" / "reports" / "p16_live_lab_validation.md").exists()
+
 

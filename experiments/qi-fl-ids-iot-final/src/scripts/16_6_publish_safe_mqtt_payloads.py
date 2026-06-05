@@ -12,7 +12,7 @@ from uuid import uuid4
 
 
 SELECTED_MASK_ID = "conservative_seed_42"
-SUPPORTED_NODES = ("iot-rpi-weak", "iot-smart-watch-medium")
+SUPPORTED_NODES = ("iot-drone-sitl", "iot-smart-watch-medium")
 SUPPORTED_INPUT_MODES = ("selected_12_scaled", "original_28_scaled")
 
 
@@ -163,3 +163,4 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

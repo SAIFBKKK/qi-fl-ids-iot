@@ -69,9 +69,9 @@ def test_weak_run_node_dry_run_contains_registration_payload() -> None:
     result = run_python(LIVE_LAB_ROOT / "nodes" / "iot_rpi_weak" / "run_node.py", "--dry-run")
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["node_id"] == "iot-rpi-weak"
+    assert payload["node_id"] == "iot-drone-sitl"
     assert payload["registration_payload"]["ram_gb"] == 1.0
-    assert payload["registration_payload"]["device_type"] == "raspberry_like"
+    assert payload["registration_payload"]["device_type"] == "drone_sitl"
 
 
 def test_medium_run_node_dry_run_contains_registration_payload() -> None:
@@ -90,12 +90,12 @@ def test_controller_assigns_expected_tiers_and_schema_stays_compatible() -> None
     weak_response = client.post(
         "/register-node",
         json={
-            "node_id": "iot-rpi-weak",
+            "node_id": "iot-drone-sitl",
             "hostname": "weak-host",
             "cpu_count": 1,
             "ram_gb": 1.0,
-            "device_type": "raspberry_like",
-            "mqtt_topic": "ids/flows/iot-rpi-weak",
+            "device_type": "drone_sitl",
+            "mqtt_topic": "ids/flows/iot-drone-sitl",
         },
     )
     medium_response = client.post(
@@ -131,4 +131,5 @@ def test_validation_script_generates_ok_true() -> None:
     report = FINAL_ROOT / "outputs" / "reports" / "p16_5_node_registration_setup.json"
     assert report.exists()
     assert json.loads(report.read_text(encoding="utf-8"))["ok"] is True
+
 

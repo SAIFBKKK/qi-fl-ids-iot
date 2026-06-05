@@ -9,7 +9,7 @@ P16.3 is a plan only. Do not create VMs automatically in this step.
 
 ## VM Creation
 
-- Create VM1 `iot-rpi-weak`.
+- Create VM1 `iot-drone-sitl`.
 - Create VM2 `iot-smart-watch-medium`.
 - Create VM3 `lab-attacker-kali`.
 
@@ -20,7 +20,7 @@ P16.3 is a plan only. Do not create VMs automatically in this step.
 
 ## OS Setup
 
-- Install Ubuntu Server minimal on `iot-rpi-weak`.
+- Install Ubuntu Server minimal on `iot-drone-sitl`.
 - Install Ubuntu Server minimal on `iot-smart-watch-medium`.
 - Install Kali Linux on `lab-attacker-kali`.
 - Set hostname for each VM.
@@ -35,4 +35,5 @@ P16.3 is a plan only. Do not create VMs automatically in this step.
 ## Boundary
 
 Do not launch packet capture or scenarios in this step.
+
 

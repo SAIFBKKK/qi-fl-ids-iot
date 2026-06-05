@@ -9,7 +9,7 @@ Planned VM root:
 
 Planned VMs:
 
-- `iot-rpi-weak`: raspberry-like weak node.
+- `iot-drone-sitl`: simulated UAV SITL weak node.
 - `iot-smart-watch-medium`: smart-watch-like medium node.
 
 Recommended later setup:
@@ -18,4 +18,5 @@ Recommended later setup:
 - keep the server PC reachable on the configured lab IP;
 - clone the repository or copy `experiments/live_lab/` into each VM;
 - run only dry-run checks first.
+
 

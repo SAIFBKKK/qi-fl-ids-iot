@@ -34,8 +34,8 @@ def test_three_vms_exist_with_expected_ips() -> None:
     module = load_module("p16_3_validate_vm_plan_ips", SCRIPT_PATH)
     inventory = module.parse_vm_inventory()
     by_name = {vm["name"]: vm for vm in inventory["vms"]}
-    assert set(by_name) == {"iot-rpi-weak", "iot-smart-watch-medium", "lab-attacker-kali"}
-    assert by_name["iot-rpi-weak"]["ip"] == "192.168.56.101"
+    assert set(by_name) == {"iot-drone-sitl", "iot-smart-watch-medium", "lab-attacker-kali"}
+    assert by_name["iot-drone-sitl"]["ip"] == "192.168.56.101"
     assert by_name["iot-smart-watch-medium"]["ip"] == "192.168.56.102"
     assert by_name["lab-attacker-kali"]["ip"] == "192.168.56.103"
 
@@ -74,4 +74,5 @@ def test_validation_script_generates_ok_true() -> None:
     report = FINAL_ROOT / "outputs" / "reports" / "p16_3_vm_plan_validation.json"
     assert report.exists()
     assert json.loads(report.read_text(encoding="utf-8"))["ok"] is True
+
 

@@ -128,7 +128,7 @@ def check_wrapper_guard() -> dict[str, Any]:
             sys.executable,
             str(WRAPPER_PATH),
             "--node-id",
-            "iot-rpi-weak",
+            "iot-drone-sitl",
             "--dry-run",
         ],
         cwd=REPO_ROOT,
@@ -223,3 +223,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

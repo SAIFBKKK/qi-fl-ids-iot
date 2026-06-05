@@ -72,6 +72,7 @@ def check_tier_rules() -> dict[str, Any]:
     module = load_module("p16_5_tier_assignment", TIER_ASSIGNMENT_PATH)
     checks = {
         "raspberry_like_to_weak": module.assign_tier(99, 99, "raspberry_like") == "weak",
+        "drone_sitl_to_weak": module.assign_tier(99, 99, "drone_sitl") == "weak",
         "smart_watch_like_to_medium": module.assign_tier(1, 1.5, "smart_watch_like") == "medium",
         "unknown_low_resource_to_weak": module.assign_tier(1, 1.0, "unknown") == "weak",
     }
@@ -87,8 +88,8 @@ def check_registration_payloads() -> dict[str, Any]:
     checks = {
         "weak_cpu_count": weak_payload.get("cpu_count") == 1,
         "weak_ram_gb": weak_payload.get("ram_gb") == 1.0,
-        "weak_device_type": weak_payload.get("device_type") == "raspberry_like",
-        "weak_mqtt_topic": weak_payload.get("mqtt_topic") == "ids/flows/iot-rpi-weak",
+        "weak_device_type": weak_payload.get("device_type") == "drone_sitl",
+        "weak_mqtt_topic": weak_payload.get("mqtt_topic") == "ids/flows/iot-drone-sitl",
         "medium_cpu_count": medium_payload.get("cpu_count") == 1,
         "medium_ram_gb": medium_payload.get("ram_gb") == 1.5,
         "medium_device_type": medium_payload.get("device_type") == "smart_watch_like",
@@ -167,6 +168,7 @@ def write_reports(result: dict[str, Any]) -> None:
         "## Expected Tiers",
         "",
         "- `raspberry_like` -> `weak`",
+        "- `drone_sitl` -> `weak`",
         "- `smart_watch_like` -> `medium`",
         "- unknown low-resource nodes -> `weak` fallback",
         "",
@@ -185,4 +187,5 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
 

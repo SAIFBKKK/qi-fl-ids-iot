@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-27T14:34:23.225829Z",
+  "generated_at": "2026-06-05T09:19:25.265978Z",
   "files": {
     "ok": true,
     "missing": []
@@ -16,7 +16,7 @@
         "returncode": 0,
         "stderr": "",
         "features_count": 12,
-        "topic": "ids/flows/iot-rpi-weak",
+        "topic": "ids/flows/iot-drone-sitl",
         "published": false,
         "dry_run": true
       },

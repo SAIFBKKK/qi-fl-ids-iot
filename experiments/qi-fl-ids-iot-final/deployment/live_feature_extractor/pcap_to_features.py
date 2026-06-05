@@ -3,226 +3,262 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-import socket
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable
 
-from feature_schema import align_feature_row, schema_summary, selected_from_original
-from flow_window import PacketObservation, completed_windows
-from scaler_adapter import apply_scaler
+from ciciot_feature_mapper import FeatureMappingResult, map_flows
+from feature_gap_report import write_gap_report
+from feature_schema import INPUT_MODES, FeatureSchema, load_schema, schema_summary, selected_from_original
+from nfstream_adapter import FlowStats, dry_run_flow_stats, extract_flows_from_pcap
+from scaler_adapter import scale_original_28_rows, scaler_exists
 
 
-APP_PORTS = {
-    80: "HTTP",
-    443: "HTTPS",
-    53: "DNS",
-    22: "SSH",
-}
+DEFAULT_CSV_NAME = "p16_extracted_features.csv"
+DEFAULT_JSON_NAME = "p16_extracted_features.json"
+DEFAULT_GAP_REPORT_NAME = "p16_feature_extraction_gap_report.md"
 
 
 @dataclass
 class ExtractionRecord:
     flow_id: str
     input_mode: str
+    feature_order: list[str]
     features: list[float | None]
     unsupported_features: list[str] = field(default_factory=list)
-    approximations: list[str] = field(default_factory=list)
+    approximated_features: dict[str, str] = field(default_factory=dict)
+    source: str = "nfstream"
 
-    def as_api_payload(self, node_id: str = "pcap-extractor") -> dict[str, object]:
+    def as_json(self) -> dict[str, object]:
         return {
             "flow_id": self.flow_id,
-            "node_id": node_id,
             "input_mode": self.input_mode,
+            "feature_order": self.feature_order,
             "features": self.features,
             "unsupported_features": self.unsupported_features,
-            "approximations": self.approximations,
+            "approximated_features": self.approximated_features,
+            "source": self.source,
         }
 
 
 @dataclass
 class ExtractionResult:
+    output_mode: str
+    feature_order: list[str]
+    selected_mask_id: str
     records: list[ExtractionRecord]
     gaps: list[str]
-    scaled: bool = False
+    scaler_available: bool
+    scaler_used: bool
+    projection_error: str | None = None
 
     def to_payloads(self, node_id: str = "pcap-extractor") -> list[dict[str, object]]:
-        return [record.as_api_payload(node_id=node_id) for record in self.records]
+        return [
+            {
+                "flow_id": record.flow_id,
+                "node_id": node_id,
+                "input_mode": record.input_mode,
+                "features": record.features,
+                "unsupported_features": record.unsupported_features,
+                "approximated_features": record.approximated_features,
+            }
+            for record in self.records
+        ]
 
 
-def inet_to_str(raw: bytes) -> str:
+class ProjectionError(ValueError):
+    pass
+
+
+def _unsupported_for_feature_order(mapping: FeatureMappingResult, feature_order: list[str]) -> list[str]:
+    unsupported = set(mapping.unsupported_features)
+    return [feature for feature in feature_order if feature in unsupported]
+
+
+def project_mappings(
+    mappings: list[FeatureMappingResult],
+    output_mode: str,
+    schema: FeatureSchema | None = None,
+    scaler_path: str | Path | None = None,
+) -> tuple[list[ExtractionRecord], bool]:
+    feature_schema = schema or load_schema()
+    if output_mode not in INPUT_MODES:
+        raise ProjectionError(f"unsupported output mode: {output_mode}")
+    if not mappings:
+        return [], False
+
+    original_rows = [mapping.values for mapping in mappings]
+    scaler_used = False
+    scaled_rows: list[list[float]] = []
+    if output_mode in {"original_28_scaled", "selected_12_scaled"}:
+        scaled_rows, scaler_used = scale_original_28_rows(original_rows, scaler_path)
+        if not scaler_used:
+            raise ProjectionError("scaled output requested but the L1 robust scaler is not available")
+
+    records: list[ExtractionRecord] = []
+    for index, mapping in enumerate(mappings):
+        if output_mode == "original_28_unscaled":
+            feature_order = feature_schema.feature_names
+            features: list[float | None] = mapping.values
+        elif output_mode == "original_28_scaled":
+            feature_order = feature_schema.feature_names
+            features = scaled_rows[index]
+        else:
+            feature_order = feature_schema.selected_feature_names
+            features = selected_from_original(scaled_rows[index], feature_schema.selected_indices)
+
+        records.append(
+            ExtractionRecord(
+                flow_id=mapping.flow_id,
+                input_mode=output_mode,
+                feature_order=feature_order,
+                features=features,
+                unsupported_features=_unsupported_for_feature_order(mapping, feature_order),
+                approximated_features={
+                    name: note for name, note in mapping.approximated_features.items() if name in set(feature_order)
+                },
+                source=mapping.source,
+            )
+        )
+    return records, scaler_used
+
+
+def result_from_mappings(
+    mappings: list[FeatureMappingResult],
+    output_mode: str,
+    schema: FeatureSchema | None = None,
+    scaler_path: str | Path | None = None,
+    empty_message: str | None = None,
+) -> ExtractionResult:
+    feature_schema = schema or load_schema()
     try:
-        return socket.inet_ntop(socket.AF_INET, raw)
-    except ValueError:
-        return socket.inet_ntop(socket.AF_INET6, raw)
+        records, scaler_used = project_mappings(mappings, output_mode, feature_schema, scaler_path)
+        projection_error = None
+    except ProjectionError as exc:
+        records = []
+        scaler_used = False
+        projection_error = str(exc)
+    except ValueError as exc:
+        records = []
+        scaler_used = False
+        projection_error = str(exc)
 
+    gaps = [
+        "NFStream-first experimental prototype; exact CICIoT2023 feature equivalence is not claimed.",
+        "Missing features remain unsupported and are not imputed.",
+    ]
+    if empty_message:
+        gaps.append(empty_message)
+    if projection_error:
+        gaps.append(projection_error)
 
-def app_protocol(src_port: int, dst_port: int) -> str | None:
-    return APP_PORTS.get(src_port) or APP_PORTS.get(dst_port)
-
-
-def packet_observations_from_pcap(path: str | Path) -> Iterable[PacketObservation]:
-    try:
-        import dpkt  # type: ignore
-    except ImportError as exc:
-        raise RuntimeError("dpkt is required for passive local pcap extraction") from exc
-
-    with Path(path).open("rb") as handle:
-        reader = dpkt.pcap.Reader(handle)
-        for timestamp, buffer in reader:
-            try:
-                ethernet = dpkt.ethernet.Ethernet(buffer)
-            except (dpkt.dpkt.NeedData, dpkt.dpkt.UnpackError):
-                continue
-
-            if isinstance(ethernet.data, dpkt.arp.ARP):
-                src = inet_to_str(ethernet.data.spa)
-                dst = inet_to_str(ethernet.data.tpa)
-                yield PacketObservation(
-                    timestamp=float(timestamp),
-                    flow_key=(src, dst, 0, 0, "ARP"),
-                    length=len(buffer),
-                    header_length=28,
-                    protocol_number=0,
-                    app_protocol=None,
-                    is_arp=1,
-                )
-                continue
-
-            ip = ethernet.data
-            if not isinstance(ip, (dpkt.ip.IP, dpkt.ip6.IP6)):
-                continue
-            src = inet_to_str(ip.src)
-            dst = inet_to_str(ip.dst)
-            proto = int(getattr(ip, "p", getattr(ip, "nxt", 0)))
-            transport = ip.data
-            header_length = int(getattr(ip, "hl", 5)) * 4 if hasattr(ip, "hl") else 40
-
-            if isinstance(transport, dpkt.tcp.TCP):
-                src_port = int(transport.sport)
-                dst_port = int(transport.dport)
-                flags = int(transport.flags)
-                yield PacketObservation(
-                    timestamp=float(timestamp),
-                    flow_key=(src, dst, src_port, dst_port, "TCP"),
-                    length=len(buffer),
-                    header_length=header_length + int(transport.off) * 4,
-                    protocol_number=proto,
-                    app_protocol=app_protocol(src_port, dst_port),
-                    fin=1 if flags & dpkt.tcp.TH_FIN else 0,
-                    syn=1 if flags & dpkt.tcp.TH_SYN else 0,
-                    rst=1 if flags & dpkt.tcp.TH_RST else 0,
-                    psh=1 if flags & dpkt.tcp.TH_PUSH else 0,
-                    ack=1 if flags & dpkt.tcp.TH_ACK else 0,
-                    urg=1 if flags & dpkt.tcp.TH_URG else 0,
-                    is_tcp=1,
-                )
-                continue
-
-            if isinstance(transport, dpkt.udp.UDP):
-                src_port = int(transport.sport)
-                dst_port = int(transport.dport)
-                yield PacketObservation(
-                    timestamp=float(timestamp),
-                    flow_key=(src, dst, src_port, dst_port, "UDP"),
-                    length=len(buffer),
-                    header_length=header_length + 8,
-                    protocol_number=proto,
-                    app_protocol=app_protocol(src_port, dst_port),
-                    is_udp=1,
-                )
-                continue
-
-            if isinstance(transport, dpkt.icmp.ICMP):
-                yield PacketObservation(
-                    timestamp=float(timestamp),
-                    flow_key=(src, dst, 0, 0, "ICMP"),
-                    length=len(buffer),
-                    header_length=header_length + 8,
-                    protocol_number=proto,
-                    is_icmp=1,
-                )
+    return ExtractionResult(
+        output_mode=output_mode,
+        feature_order=records[0].feature_order if records else feature_schema.feature_names,
+        selected_mask_id=feature_schema.selected_mask_id,
+        records=records,
+        gaps=gaps,
+        scaler_available=scaler_exists(scaler_path),
+        scaler_used=scaler_used,
+        projection_error=projection_error,
+    )
 
 
 def extract_pcap_to_records(
     pcap_path: str | Path | None,
-    input_mode: str = "original_28_scaled",
-    window_size: int = 10,
-    scale: bool = False,
+    output_mode: str = "original_28_unscaled",
     scaler_path: str | Path | None = None,
+    dry_run: bool = False,
+    limit: int | None = None,
 ) -> ExtractionResult:
-    gaps = [
-        "Experimental prototype: CICIoT2023 feature semantics are approximated from passive local packets.",
-        "Labels are not inferred from pcap; scenario labels must come from controlled replay metadata.",
-    ]
-    if pcap_path is None:
-        return ExtractionResult(records=[], gaps=gaps + ["No pcap_path supplied; interface/schema check only."], scaled=False)
-
-    windows = completed_windows(packet_observations_from_pcap(pcap_path), window_size=window_size)
-    original_rows: list[list[float | None]] = []
-    unsupported_by_row: list[list[str]] = []
-    for window in windows:
-        row, unsupported = align_feature_row(window.extract_features())
-        original_rows.append(row)
-        unsupported_by_row.append(unsupported)
-
-    scaled_rows = original_rows
-    scaled = False
-    if scale and original_rows:
-        scaled_rows, scaled = apply_scaler(original_rows, scaler_path)
-
-    records: list[ExtractionRecord] = []
-    for index, row in enumerate(scaled_rows, start=1):
-        features = selected_from_original(row) if input_mode == "selected_12_scaled" else row
-        unsupported = unsupported_by_row[index - 1]
-        selected_unsupported = []
-        if input_mode == "selected_12_scaled":
-            selected_unsupported = [name for name in unsupported if name in {"flow_duration", "Protocol Type", "Duration", "Rate", "syn_flag_number", "urg_count", "rst_count", "TCP", "UDP", "Std", "IAT", "Number"}]
-        records.append(
-            ExtractionRecord(
-                flow_id=f"pcap-window-{index:06d}",
-                input_mode=input_mode,
-                features=features,
-                unsupported_features=selected_unsupported if input_mode == "selected_12_scaled" else unsupported,
-                approximations=[
-                    "Header_Length, Duration, flag counters, Rate, and IAT are local prototype derivations.",
-                    "Application protocol indicators are inferred from common ports only.",
-                ],
-            )
+    schema = load_schema()
+    flows: list[FlowStats]
+    if dry_run:
+        flows = dry_run_flow_stats()
+    elif pcap_path is None:
+        return ExtractionResult(
+            output_mode=output_mode,
+            feature_order=schema.feature_names,
+            selected_mask_id=schema.selected_mask_id,
+            records=[],
+            gaps=["No pcap_path supplied; dry_run=False, so no flows were extracted."],
+            scaler_available=scaler_exists(scaler_path),
+            scaler_used=False,
         )
-    return ExtractionResult(records=records, gaps=gaps, scaled=scaled)
+    else:
+        flows = extract_flows_from_pcap(pcap_path, limit=limit)
+
+    mappings = map_flows(flows, schema)
+    return result_from_mappings(mappings, output_mode, schema, scaler_path)
+
+
+def run_extraction(
+    pcap_path: str | Path | None,
+    output_mode: str,
+    output_dir: str | Path,
+    scaler_path: str | Path | None = None,
+    dry_run: bool = False,
+    limit: int | None = None,
+) -> ExtractionResult:
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
+    schema = load_schema()
+    flows = dry_run_flow_stats() if dry_run else extract_flows_from_pcap(pcap_path, limit=limit) if pcap_path else []
+    mappings = map_flows(flows, schema)
+    empty_message = "No pcap_path supplied; dry_run=False, so no flows were extracted." if not dry_run and not pcap_path else None
+    result = result_from_mappings(mappings, output_mode, schema, scaler_path, empty_message=empty_message)
+    write_csv(output_path / DEFAULT_CSV_NAME, result)
+    write_json(output_path / DEFAULT_JSON_NAME, result)
+    write_gap_report(
+        output_path / DEFAULT_GAP_REPORT_NAME,
+        mappings=mappings,
+        schema=schema,
+        output_mode=output_mode,
+        pcap_path=str(pcap_path) if pcap_path else None,
+        scaler_available=result.scaler_available,
+        scaler_used=result.scaler_used,
+        projection_error=result.projection_error,
+    )
+    return result
 
 
 def write_json(path: str | Path, result: ExtractionResult) -> None:
-    payload = {"scaled": result.scaled, "gaps": result.gaps, "records": result.to_payloads()}
+    payload = {
+        "schema_version": "p16_feature_extraction_v1",
+        "output_mode": result.output_mode,
+        "feature_order": result.feature_order,
+        "selected_mask_id": result.selected_mask_id,
+        "scaler_available": result.scaler_available,
+        "scaler_used": result.scaler_used,
+        "gaps": result.gaps,
+        "records": [record.as_json() for record in result.records],
+    }
     Path(path).write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
 def write_csv(path: str | Path, result: ExtractionResult) -> None:
     with Path(path).open("w", encoding="utf-8", newline="") as handle:
         writer = csv.writer(handle)
-        writer.writerow(["flow_id", "input_mode", "features_json", "unsupported_features_json", "approximations_json"])
+        writer.writerow(["flow_id", "input_mode", "unsupported_features", "approximated_features", *result.feature_order])
         for record in result.records:
             writer.writerow(
                 [
                     record.flow_id,
                     record.input_mode,
-                    json.dumps(record.features),
                     json.dumps(record.unsupported_features),
-                    json.dumps(record.approximations),
+                    json.dumps(record.approximated_features),
+                    *["" if value is None else value for value in record.features],
                 ]
             )
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Experimental passive pcap-to-final-IDS feature extractor.")
+    parser = argparse.ArgumentParser(description="NFStream-first P16 pcap-to-feature extractor prototype.")
     parser.add_argument("--pcap")
-    parser.add_argument("--input-mode", choices=["selected_12_scaled", "original_28_scaled"], default="original_28_scaled")
-    parser.add_argument("--window-size", type=int, default=10)
-    parser.add_argument("--scale", action="store_true")
+    parser.add_argument("--output-mode", choices=list(INPUT_MODES), default="original_28_unscaled")
+    parser.add_argument("--output-dir", default=".")
     parser.add_argument("--scaler-path")
-    parser.add_argument("--output-json")
-    parser.add_argument("--output-csv")
+    parser.add_argument("--limit", type=int)
+    parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--schema", action="store_true")
     return parser.parse_args()
 
@@ -232,16 +268,28 @@ def main() -> int:
     if args.schema:
         print(json.dumps(schema_summary(), indent=2))
         return 0
-    result = extract_pcap_to_records(args.pcap, args.input_mode, args.window_size, args.scale, args.scaler_path)
-    if args.output_json:
-        write_json(args.output_json, result)
-    if args.output_csv:
-        write_csv(args.output_csv, result)
-    if not args.output_json and not args.output_csv:
-        print(json.dumps({"scaled": result.scaled, "gaps": result.gaps, "records": result.to_payloads()}, indent=2))
-    return 0
+    result = run_extraction(
+        pcap_path=args.pcap,
+        output_mode=args.output_mode,
+        output_dir=args.output_dir,
+        scaler_path=args.scaler_path,
+        dry_run=args.dry_run,
+        limit=args.limit,
+    )
+    print(
+        json.dumps(
+            {
+                "records": len(result.records),
+                "output_mode": result.output_mode,
+                "scaler_used": result.scaler_used,
+                "projection_error": result.projection_error,
+                "output_dir": str(Path(args.output_dir).resolve()),
+            },
+            indent=2,
+        )
+    )
+    return 0 if result.projection_error is None else 2
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

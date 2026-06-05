@@ -15,7 +15,7 @@ INVENTORY_PATH = LIVE_LAB_ROOT / "configs" / "vm_inventory.yaml"
 
 EXPECTED_SERVER_IP = "192.168.56.1"
 EXPECTED_VM_IPS = {
-    "iot-rpi-weak": "192.168.56.101",
+    "iot-drone-sitl": "192.168.56.101",
     "iot-smart-watch-medium": "192.168.56.102",
     "lab-attacker-kali": "192.168.56.103",
 }
@@ -225,3 +225,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

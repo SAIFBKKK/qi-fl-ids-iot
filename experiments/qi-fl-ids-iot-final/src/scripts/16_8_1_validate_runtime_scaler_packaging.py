@@ -126,7 +126,7 @@ def run_dry_run(node_id: str, input_mode: str) -> dict[str, Any]:
 
 
 def check_dry_runs(scaler_json_exists: bool) -> dict[str, Any]:
-    selected = run_dry_run("iot-rpi-weak", "selected_12_scaled")
+    selected = run_dry_run("iot-drone-sitl", "selected_12_scaled")
     original = run_dry_run("iot-smart-watch-medium", "original_28_scaled")
     checks = {
         "selected_12_scaled_count": selected["ok"] and selected["feature_count"] == 12,
@@ -220,3 +220,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

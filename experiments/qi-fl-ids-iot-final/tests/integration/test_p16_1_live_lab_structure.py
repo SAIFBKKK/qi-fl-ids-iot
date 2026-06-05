@@ -63,7 +63,7 @@ def test_dry_run_weak_node_works() -> None:
     result = run_python(LIVE_LAB_ROOT / "nodes" / "iot_rpi_weak" / "run_node.py", "--dry-run")
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["node_id"] == "iot-rpi-weak"
+    assert payload["node_id"] == "iot-drone-sitl"
     assert payload["input_mode"] == "selected_12_scaled"
     assert len(payload["sample_payload"]["features"]) == 12
 
@@ -99,4 +99,5 @@ def test_no_offensive_tools_in_live_lab() -> None:
             if term in text:
                 violations.append((str(path), term))
     assert violations == []
+
 

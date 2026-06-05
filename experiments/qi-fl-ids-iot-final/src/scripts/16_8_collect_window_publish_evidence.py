@@ -14,7 +14,7 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 FINAL_ROOT = REPO_ROOT / "experiments" / "qi-fl-ids-iot-final"
 REPORT_DIR = FINAL_ROOT / "outputs" / "reports"
 
-NODES = ("iot-rpi-weak", "iot-smart-watch-medium")
+NODES = ("iot-drone-sitl", "iot-smart-watch-medium")
 QUERY_SPECS = {
     "final_mqtt_bridge_metrics": (8016, "/metrics"),
     "online_validator_summary": (8015, "/summary"),
@@ -244,3 +244,4 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

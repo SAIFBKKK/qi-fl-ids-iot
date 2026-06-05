@@ -18,12 +18,12 @@ a hardware tier and returns the MQTT topics expected by the final online path:
 
 ```json
 {
-  "node_id": "iot-rpi-weak",
-  "hostname": "iot-rpi-weak-node",
+  "node_id": "iot-drone-sitl",
+  "hostname": "iot-drone-sitl-node",
   "cpu_count": 2,
   "ram_gb": 2,
-  "device_type": "raspberry_like",
-  "mqtt_topic": "ids/flows/iot-rpi-weak"
+  "device_type": "drone_sitl",
+  "mqtt_topic": "ids/flows/iot-drone-sitl"
 }
 ```
 
@@ -37,4 +37,5 @@ The controller advertises both final API input modes:
 
 - `selected_12_scaled`
 - `original_28_scaled`
+
 

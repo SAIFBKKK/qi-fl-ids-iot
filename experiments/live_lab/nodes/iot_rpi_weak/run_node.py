@@ -18,10 +18,10 @@ from qga_mask import selected_features, selected_mask_id  # noqa: E402
 from utils import load_simple_yaml  # noqa: E402
 
 
-NODE_ID = "iot-rpi-weak"
+NODE_ID = "iot-drone-sitl"
 DECLARED_CPU_COUNT = 1
 DECLARED_RAM_GB = 1.0
-DEVICE_TYPE = "raspberry_like"
+DEVICE_TYPE = "drone_sitl"
 
 
 def build_registration_payload(hostname: str | None = None) -> dict[str, object]:
@@ -70,7 +70,7 @@ def build_dry_run_summary(config_path: str | Path | None = None) -> dict[str, ob
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Dry-run weak IoT node placeholder.")
+    parser = argparse.ArgumentParser(description="Dry-run compatibility wrapper for the iot-drone-sitl VM1 node.")
     parser.add_argument("--config", default=str(Path(__file__).with_name("config.yaml")))
     parser.add_argument("--server-url", default="http://192.168.56.1:8020")
     parser.add_argument("--register", action="store_true", help="Register this node with live-lab-controller.")
@@ -93,3 +93,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

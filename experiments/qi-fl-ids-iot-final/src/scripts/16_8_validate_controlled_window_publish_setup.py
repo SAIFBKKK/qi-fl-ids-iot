@@ -97,7 +97,7 @@ def run_dry_run(node_id: str, input_mode: str) -> dict[str, Any]:
 
 
 def check_dry_runs() -> dict[str, Any]:
-    vm1 = run_dry_run("iot-rpi-weak", "selected_12_scaled")
+    vm1 = run_dry_run("iot-drone-sitl", "selected_12_scaled")
     vm2 = run_dry_run("iot-smart-watch-medium", "original_28_scaled")
     checks = {
         "vm1_selected_12_scaled": vm1["ok"] and vm1["features_count"] == 12 and vm1["dry_run"] is True,
@@ -153,7 +153,7 @@ def write_reports(result: dict[str, Any]) -> None:
         "| Node | Mode | Expected | Observed | OK |",
         "|---|---|---:|---:|---|",
         (
-            "| `iot-rpi-weak` | `selected_12_scaled` | 12 | "
+            "| `iot-drone-sitl` | `selected_12_scaled` | 12 | "
             f"{result['dry_runs']['runs']['vm1'].get('features_count')} | "
             f"`{result['dry_runs']['checks']['vm1_selected_12_scaled']}` |"
         ),
@@ -177,3 +177,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
