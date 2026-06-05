@@ -160,13 +160,13 @@ def test_dashboard_references_audio_and_incident_ui() -> None:
     assert "Correlated Security Incident" in html
     assert "demo-enable-sound" in html
     assert "demo-sound-status" in html
-    assert "Sound: blocked" in html
+    assert "Sound: enabled" in html
     assert "/static/js/audio_signals.js" in html
     assert "renderIncidentCorrelation" in js
     assert "incident_key" in js or "incident.incident_id" in js
     assert "window.LiveLabAudio" in audio
     assert "unlock" in audio
-    assert "always armed" in audio
+    assert "always enabled" in audio
     assert "pointerdown" in audio
     assert "keydown" in audio
     assert "playNodeConnected" in audio

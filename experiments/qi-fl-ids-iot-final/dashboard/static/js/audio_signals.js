@@ -2,7 +2,7 @@
   const storageKey = "dashboardAudioEnabled";
   const alertThrottleMs = 3000;
   let audioContext = null;
-  let status = "disabled";
+  let status = "enabled";
   let muted = false;
   let unlocked = false;
   let lastAlertSoundAt = 0;
@@ -68,11 +68,11 @@
     }
     window.localStorage.setItem(storageKey, "true");
     bindAutoUnlockHandlers();
-    console.debug("LiveLabAudio init: always armed; waiting for browser unlock if needed");
-    setStatus("blocked");
+    console.debug("LiveLabAudio init: always enabled; waiting for browser unlock if needed");
+    setStatus("enabled");
     unlock().then((unlockStatus) => {
-      if (unlockStatus === "blocked") {
-        console.info("LiveLabAudio auto unlock blocked; click anywhere on the dashboard to enable sound");
+      if (unlockStatus !== "enabled") {
+        console.info("LiveLabAudio is enabled but browser unlock is pending; click anywhere on the dashboard if silent");
       }
     });
     return status;
@@ -101,7 +101,8 @@
       const ctx = await ensureContext();
       if (!ctx || ctx.state !== "running") {
         console.info(`LiveLabAudio unlock blocked: state=${ctx ? ctx.state : "none"}`);
-        return setStatus("blocked");
+        bindAutoUnlockHandlers();
+        return setStatus("enabled");
       }
       unlocked = true;
       muted = false;
@@ -111,7 +112,8 @@
       return setStatus("enabled");
     } catch (error) {
       console.info(`LiveLabAudio unlock blocked: ${error}`);
-      return setStatus("blocked");
+      bindAutoUnlockHandlers();
+      return setStatus("enabled");
     }
   }
 
@@ -125,7 +127,8 @@
 
   function canPlay() {
     if (!unlocked || status !== "enabled") {
-      console.debug(`LiveLabAudio blocked/disabled: status=${status}, unlocked=${unlocked}`);
+      console.debug(`LiveLabAudio enabled but browser unlock pending: status=${status}, unlocked=${unlocked}`);
+      bindAutoUnlockHandlers();
       return false;
     }
     if (muted) {
@@ -155,8 +158,8 @@
     }
     const ctx = audioContext;
     if (!ctx || ctx.state !== "running") {
-      console.info("LiveLabAudio blocked/unsupported while playing");
-      setStatus(ctx ? "blocked" : "unsupported");
+      console.info("LiveLabAudio enabled but browser context is not running");
+      setStatus(ctx ? "enabled" : "unsupported");
       return false;
     }
     notes.forEach((note) => scheduleTone(ctx, note.frequency, note.start, note.duration, volume));
