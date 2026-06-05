@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-05T11:00:06Z",
+  "generated_at": "2026-06-05T14:13:23Z",
   "files": {
     "ok": true,
     "missing": []
@@ -28,6 +28,7 @@
         "platform_status",
         "recent_events",
         "services",
+        "smartwatch_observer",
         "step_details",
         "steps",
         "warnings"

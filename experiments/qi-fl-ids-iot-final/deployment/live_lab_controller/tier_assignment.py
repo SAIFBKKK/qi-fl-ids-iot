@@ -11,7 +11,7 @@ def assign_tier(cpu_count: int | float, ram_gb: int | float, device_type: str | 
         return "weak"
     if normalized_device_type == "drone_sitl":
         return "weak"
-    if normalized_device_type == "smart_watch_like":
+    if normalized_device_type in {"smart_watch", "smart_watch_like"}:
         return "medium"
 
     cpu = float(cpu_count)
