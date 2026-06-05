@@ -542,6 +542,36 @@ code {
   outline: none;
 }
 
+.sound-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--panel);
+  color: var(--muted);
+  box-shadow: var(--shadow);
+  font-size: 0.88rem;
+  font-weight: 900;
+}
+
+.sound-enabled {
+  color: var(--green);
+  background: var(--green-soft);
+}
+
+.sound-disabled,
+.sound-blocked {
+  color: var(--amber);
+  background: var(--amber-soft);
+}
+
+.sound-unsupported {
+  color: var(--critical);
+  background: var(--critical-soft);
+}
+
 .demo-step-timeline {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

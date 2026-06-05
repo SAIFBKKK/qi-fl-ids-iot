@@ -159,13 +159,26 @@ def test_dashboard_references_audio_and_incident_ui() -> None:
     css = read(CSS_PATH)
     assert "Correlated Security Incident" in html
     assert "demo-enable-sound" in html
+    assert "demo-sound-status" in html
+    assert "Sound: blocked" in html
     assert "/static/js/audio_signals.js" in html
     assert "renderIncidentCorrelation" in js
     assert "incident_key" in js or "incident.incident_id" in js
-    assert "playDeviceConnectedSound" in audio
-    assert "playAttackDetectedSound" in audio
-    assert "Web Audio" not in audio or "AudioContext" in audio
+    assert "window.LiveLabAudio" in audio
+    assert "unlock" in audio
+    assert "always armed" in audio
+    assert "pointerdown" in audio
+    assert "keydown" in audio
+    assert "playNodeConnected" in audio
+    assert "playAttackAlert" in audio
+    assert "AudioContext" in audio
+    assert "demo-enable-sound" in js
+    assert "initialNotificationScanComplete" in js
+    assert "if (initialNotificationScanComplete)" in js
+    assert "triggerNodeSound" in js
+    assert "triggerAlertSound" in js
     assert ".incident-panel" in css
+    assert ".sound-enabled" in css
 
 
 def test_dashboard_js_and_css_files_exist() -> None:

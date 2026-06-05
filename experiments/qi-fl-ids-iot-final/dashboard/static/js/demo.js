@@ -210,8 +210,6 @@
       `;
       return;
     }
-    const incident_key = `${incident.incident_id}:${incident.alerts_total}:${incident.latest_flow_id || "none"}`;
-    seenIncidents.add(incident_key);
     const counts = incident.severity_counts || {};
     const topSeverity =
       Number(counts.critical || 0) > 0 ? "critical" :
@@ -416,6 +414,43 @@
       .join("");
   }
 
+  function updateSoundStatus() {
+    const statusNode = byId("demo-sound-status");
+    const enableButton = byId("demo-enable-sound");
+    const status = window.LiveLabAudio ? window.LiveLabAudio.getStatus() : "unsupported";
+    if (statusNode) {
+      statusNode.textContent = `Sound: ${status}`;
+      statusNode.className = `sound-status sound-${status}`;
+    }
+    if (enableButton && status === "enabled") {
+      enableButton.textContent = "Sound enabled";
+    }
+  }
+
+  function triggerNodeSound(nodeId) {
+    if (!window.LiveLabAudio) {
+      console.info("Audio blocked/unsupported: LiveLabAudio unavailable");
+      return;
+    }
+    const played = window.LiveLabAudio.playNodeConnected();
+    if (played) {
+      console.info(`Node sound triggered: ${nodeId}`);
+    }
+    updateSoundStatus();
+  }
+
+  function triggerAlertSound(key) {
+    if (!window.LiveLabAudio) {
+      console.info("Audio blocked/unsupported: LiveLabAudio unavailable");
+      return;
+    }
+    const played = window.LiveLabAudio.playAttackAlert();
+    if (played) {
+      console.info(`Alert sound triggered: ${key}`);
+    }
+    updateSoundStatus();
+  }
+
   function detectNotifications(state) {
     (state.devices || []).forEach((device) => {
       if (!device.connected) {
@@ -429,8 +464,8 @@
           `${device.device_type || device.display_device_type}, tier ${device.assigned_tier}, model ${device.model_id}, mask ${device.selected_mask_id}`,
           "device"
         );
-        if (initialNotificationScanComplete && window.P1618Audio) {
-          window.P1618Audio.playDeviceConnectedSound();
+        if (initialNotificationScanComplete) {
+          triggerNodeSound(device.node_id);
         }
       }
     });
@@ -444,11 +479,20 @@
           `${alert.severity || "medium"} severity, label ${alert.predicted_label || "unknown"}, confidence ${fmtConfidence(alert.confidence)}, flow ${alert.flow_id || "n/a"}`,
           "alert"
         );
-        if (initialNotificationScanComplete && window.P1618Audio) {
-          window.P1618Audio.playAttackDetectedSound();
+        if (initialNotificationScanComplete) {
+          triggerAlertSound(key);
         }
       }
     }
+    (state.incident_correlation?.incidents || []).forEach((incident) => {
+      const incident_key = `${incident.incident_id}:${incident.alerts_total}:${incident.latest_flow_id || "none"}`;
+      if (!seenIncidents.has(incident_key)) {
+        seenIncidents.add(incident_key);
+        if (initialNotificationScanComplete) {
+          triggerAlertSound(incident_key);
+        }
+      }
+    });
     if (!initialNotificationScanComplete) {
       initialNotificationScanComplete = true;
     }
@@ -519,8 +563,31 @@
         }
       });
     }
-    if (window.P1618Audio) {
-      window.P1618Audio.bindControls();
+    if (window.LiveLabAudio) {
+      window.LiveLabAudio.init();
+      updateSoundStatus();
+    }
+    const enableSound = byId("demo-enable-sound");
+    if (enableSound) {
+      enableSound.addEventListener("click", async () => {
+        if (!window.LiveLabAudio) {
+          console.info("Audio unlock status: unsupported");
+          updateSoundStatus();
+          return;
+        }
+        const status = await window.LiveLabAudio.unlock();
+        console.info(`Audio unlock status: ${status}`);
+        updateSoundStatus();
+      });
+    }
+    const muteSound = byId("demo-mute-sound");
+    if (muteSound) {
+      muteSound.addEventListener("click", () => {
+        if (window.LiveLabAudio) {
+          window.LiveLabAudio.toggleMute();
+          updateSoundStatus();
+        }
+      });
     }
   }
 
