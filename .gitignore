@@ -21,6 +21,9 @@ __pypackages__/
 
 # --- Environments ---
 .env
+.env.*
+!.env.example
+!**/.env.example
 .envrc
 services/.env
 services/mosquitto/passwords
@@ -38,6 +41,8 @@ ENV/
 *.npz
 *.npy
 *.pkl
+*.pickle
+*.joblib
 *.h5
 *.hdf5
 *.safetensors
@@ -45,6 +50,8 @@ ENV/
 *.pt
 *.pth
 *.onnx
+*.ckpt
+*.bin
 
 # --- Datasets & données réseau (JAMAIS versionnés) ---
 *.csv
@@ -54,9 +61,33 @@ ENV/
 *.pcapng
 *.pcap.csv
 *.zip
+*.tar
 *.tar.gz
+*.tgz
 *.gz
+*.rar
+*.bz2
+*.xz
 *.7z
+
+# --- Credentials / local secrets ---
+kaggle.json
+.kaggle/
+**/kaggle.json
+**/.kaggle/
+**/secrets/
+**/credentials/
+**/*secret*.json
+**/*secret*.yaml
+**/*secret*.yml
+**/*credentials*.json
+**/*credentials*.yaml
+**/*credentials*.yml
+*.pem
+*.key
+id_rsa
+id_rsa.pub
+*.ppk
 
 # --- Project-local generated assets ---
 mlruns/
@@ -78,6 +109,10 @@ experiments/**/checkpoints/
 data/balancing_v3_fixed300k_outputs/
 data/Federated-Learning-Based-Intrusion-Detection-System-main/data/
 data/UNSW_NB15-dataset.zip
+external_artifacts/*
+!external_artifacts/
+!external_artifacts/README.md
+_cleanup_quarantine/
 
 # --- Microservices P1 data policy ---
 # Dataset volumineux existant ailleurs.
@@ -87,8 +122,15 @@ data/balancing_v3_fixed300k_outputs/
 !data/cic-iot-2023/
 !data/cic-iot-2023/demo_subsets/
 !data/cic-iot-2023/demo_subsets/*.parquet
+!data/README.md
+!data/samples/
+!data/samples/**
+!tests/fixtures/
+!tests/fixtures/**
 
 # --- Logs & outputs ---
+*.log
+logs/
 outputs/logs/*.log
 outputs/checkpoints/
 outputs/metrics/
@@ -112,6 +154,10 @@ experiments/**/outputs/reports/**
 !experiments/fl-iot-ids-v3/outputs/reports/qi_benchmark_reduced/
 !experiments/fl-iot-ids-v3/outputs/reports/qi_benchmark_reduced/**
 experiments/fl-iot-ids-v3/outputs/reports/qi_benchmark_reduced/logs/*.log
+**/figures/generated/
+**/generated_figures/
+**/generated_reports/
+**/reports/generated/
 
 # --- Tests / coverage ---
 .tox/
@@ -126,6 +172,7 @@ htmlcov/
 # --- IDE ---
 .idea/
 .vscode/
+.claude/
 .cursorignore
 .cursorindexingignore
 .ruff_cache/
@@ -139,10 +186,22 @@ cython_debug/
 .DS_Store
 Thumbs.db
 desktop.ini
+$RECYCLE.BIN/
 
 # --- DVC (si utilisé plus tard) ---
 # /data.dvc
 # .dvc/tmp/
+
+# --- Docker local runtime state ---
+docker-compose.override.yml
+services/**/volumes/
+services/**/data/
+services/**/logs/
+services/**/tmp/
+services/**/.env
+services/mosquitto/data/
+services/mosquitto/log/
+services/mosquitto/passwords
 
 # ================================================================
 # EXCEPTIONS — ne jamais ignorer ces fichiers
@@ -150,6 +209,12 @@ desktop.ini
 !**/README.md
 !**/.gitkeep
 !configs/**/*.yaml
+!configs/**/*.yml
+!**/selected_model.json
+!**/selected_features.json
+!**/feature_mask.json
+!**/deployment_manifest.json
+!**/feature_schema.json
 !experiments/**/results*/*.json
 !experiments/**/figures/*.png
 !experiments/**/figures/*.svg

@@ -1,6 +1,17 @@
 # Data Directory
 
-This directory contains **no raw dataset files** — all datasets are excluded from version control due to licensing restrictions and file size constraints. Only `.gitkeep` placeholder files and this documentation are tracked.
+The public GitHub repository should not store full raw or processed datasets. Large dataset files are excluded from version control due to licensing restrictions, size constraints, and reproducibility concerns.
+
+This local working tree may contain ignored dataset files for development, experiments, or audit purposes. Treat those files as local-only until they are packaged for the planned Kaggle dataset release.
+
+Only tiny curated samples, placeholders, and documentation should be tracked in GitHub.
+
+## Public Dataset Strategy
+
+- Full CICIoT2023-derived processed files will be staged for Kaggle, not committed to GitHub.
+- Raw upstream CICIoT2023 data should be obtained from the original dataset provider and cited properly.
+- Small demo subsets may remain in GitHub only when they are required for README examples, CI smoke tests, or unit tests.
+- Label mappings, feature names, selected QGA features, and preprocessing summaries may be kept in GitHub when they are small JSON/Markdown metadata files.
 
 ---
 
