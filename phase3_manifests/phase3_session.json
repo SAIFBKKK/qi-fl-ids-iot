@@ -1,0 +1,12 @@
+{
+  "created_at": "2026-06-12T14:09:55",
+  "phase_name": "phase3_20260612_140955",
+  "repo_root": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot",
+  "external_base": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot-external-artifacts",
+  "kaggle_base": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot-kaggle-dataset",
+  "release_base": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot-release-manifests",
+  "external_path": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot-external-artifacts\\phase3_20260612_140955",
+  "kaggle_path": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot-kaggle-dataset\\phase3_20260612_140955",
+  "release_path": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot-release-manifests\\phase3_20260612_140955",
+  "archive_path": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot-external-artifacts\\qi-fl-ids-iot-artifacts-v1-20260612.zip"
+}

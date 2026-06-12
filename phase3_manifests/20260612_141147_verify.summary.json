@@ -1,0 +1,25 @@
+{
+  "timestamp": "2026-06-12T14:12:01",
+  "mode": "Verify",
+  "session": "phase3_20260612_140955",
+  "external_path": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot-external-artifacts\\phase3_20260612_140955",
+  "kaggle_path": "C:\\Users\\saifb\\dev\\qi-fl-ids-iot-kaggle-dataset\\phase3_20260612_140955",
+  "remaining_kaggle_candidates": 0,
+  "remaining_external_candidates": 12092,
+  "manual_review_candidates": 6,
+  "staged_kaggle_size_mb": 6525.964,
+  "staged_external_size_mb": 0.0,
+  "kaggle_json_found_in_repo": 0,
+  "git_status": [
+    "## cleanup/phase3-external-artifacts",
+    " D experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/manifest.json",
+    " D experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/sampling_report.json",
+    " D experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/distribution_report.json",
+    " D experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/family_mapping.json",
+    " D experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/manifest.json",
+    " D experiments/qi-fl-ids-iot-final/outputs/qga_feature_selection/final_selected_mask/feature_mask.json",
+    " D experiments/qi-fl-ids-iot-final/outputs/qga_feature_selection/final_selected_mask/selected_features.json",
+    "?? phase3_manifests/",
+    "?? scripts/externalize_phase3_artifacts.ps1"
+  ]
+}

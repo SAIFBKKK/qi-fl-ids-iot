@@ -8,10 +8,19 @@ Only tiny curated samples, placeholders, and documentation should be tracked in 
 
 ## Public Dataset Strategy
 
+- Kaggle dataset: `COMING_SOON`.
 - Full CICIoT2023-derived processed files will be staged for Kaggle, not committed to GitHub.
 - Raw upstream CICIoT2023 data should be obtained from the original dataset provider and cited properly.
 - Small demo subsets may remain in GitHub only when they are required for README examples, CI smoke tests, or unit tests.
 - Label mappings, feature names, selected QGA features, and preprocessing summaries may be kept in GitHub when they are small JSON/Markdown metadata files.
+
+Phase 3 staged the local Kaggle package outside the repository:
+
+```text
+../qi-fl-ids-iot-kaggle-dataset/phase3_20260612_140955/
+```
+
+The package contains staged files, manifests, and checksums. The public upload link will be added after review.
 
 ---
 

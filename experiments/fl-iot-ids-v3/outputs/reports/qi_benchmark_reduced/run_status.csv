@@ -1,9 +1,0 @@
-experiment_id,experiment_name,action,status,completed_rounds,exit_code,log_path
-E1,exp_bench30_normal_fedavg_28f,parsed_existing_run,success,30,,
-E2,exp_bench30_normal_qifa_28f,parsed_existing_run,success,30,,
-E3,exp_bench30_normal_fedavg_qga15,parsed_existing_run,success,30,,
-E4,exp_bench30_normal_qifa_qga15,parsed_existing_run,success,30,,
-E5,exp_bench30_absent_fedavg_28f,parsed_existing_run,success,30,,
-E6,exp_bench30_absent_qifa_28f,parsed_existing_run,success,30,,
-E7,exp_bench30_absent_fedavg_qga15,parsed_existing_run,success,30,,
-E8,exp_bench30_absent_qifa_qga15,parsed_existing_run,success,30,,
