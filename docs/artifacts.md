@@ -1,43 +1,52 @@
 # External Artifacts
 
-Heavy generated artifacts were externalized during Phase 3 so the GitHub repository can stay readable and lightweight.
+External artifacts archive: `COMING_SOON`
 
-External artifacts archive: COMING_SOON
+Heavy generated artifacts were externalized during Phase 3 so the GitHub repository can remain focused on source, configs, docs, scripts, Docker files, tests, selected metadata, and tiny samples.
 
-The local Phase 3 staging folder is outside the repository:
-
-```text
-../qi-fl-ids-iot-external-artifacts/phase3_20260612_140955/
-```
-
-The compressed local archive is:
+Local developer archive name:
 
 ```text
-../qi-fl-ids-iot-external-artifacts/qi-fl-ids-iot-artifacts-v1-20260612.zip
+qi-fl-ids-iot-artifacts-v1-20260612.zip
 ```
 
-The archive contains generated or runtime-specific material such as:
+Archive SHA256:
 
-- model checkpoints and deployment binaries
-- scalers, encoders, and preprocessing binaries
+```text
+582163c484d070aa7dbf3d8600254465513158bed75f8012d8094aaa8813342d
+```
+
+The public URL is not available yet.
+
+Artifacts include:
+
+- model checkpoints
+- scalers and preprocessing binaries
+- logs
+- generated reports
+- generated figures
 - MLflow runs
-- generated logs, figures, reports, and experiment outputs
-- legacy raw experiment splits and intermediate artifacts
-
-These files are not required to inspect the source code. They are useful for reproducing exact reported results or restoring the live-demo/deployment state.
+- deployment bundles
+- raw experiment evidence
 
 ## Restore Workflow
 
-After downloading the artifact archive, extract it at the repository root so original relative paths are restored.
+Restore only in a local working copy:
 
 ```powershell
-Expand-Archive -Path qi-fl-ids-iot-artifacts-v1-20260612.zip -DestinationPath .
+Expand-Archive -Path <ARTIFACTS_DIR>/qi-fl-ids-iot-artifacts-v1-20260612.zip -DestinationPath <REPO_ROOT>
 ```
 
-Then verify checksums with the archive-provided `checksums.sha256` file.
+Verify the archive checksum before extraction:
 
-## Public Release Notes
+```powershell
+Get-FileHash <ARTIFACTS_DIR>/qi-fl-ids-iot-artifacts-v1-20260612.zip -Algorithm SHA256
+```
 
-- Do not upload `.env` files, password files, private keys, Kaggle credentials, or private lab inventories.
-- Review live-lab logs and reports before publication because they may include local paths or private IP addresses.
-- Keep only curated documentation assets under `docs/` in GitHub.
+Compare the result with:
+
+```text
+582163c484d070aa7dbf3d8600254465513158bed75f8012d8094aaa8813342d
+```
+
+Do not commit restored artifacts back into GitHub.

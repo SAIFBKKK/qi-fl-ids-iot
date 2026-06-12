@@ -1,443 +1,287 @@
-# Quantum-Inspired Federated Learning for IoT Intrusion Detection
+# QI-FL-IDS-IoT
 
-[![CI](https://github.com/SAIFBKKK/qi-fl-ids-iot/actions/workflows/ci.yml/badge.svg)](https://github.com/SAIFBKKK/qi-fl-ids-iot/actions)
+[![CI](https://github.com/SAIFBKKK/qi-fl-ids-iot/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/SAIFBKKK/qi-fl-ids-iot/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.2%2B-EE4C2C.svg)](https://pytorch.org/)
-[![Flower](https://img.shields.io/badge/Flower-1.x-FF6B6B.svg)](https://flower.ai/)
-[![MLflow](https://img.shields.io/badge/MLflow-Tracking-0194E2.svg)](https://mlflow.org/)
-[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg)](https://www.docker.com/)
-[![Research](https://img.shields.io/badge/Research-Quantum--Inspired-6f42c1.svg)](#quantum-inspired-roadmap)
-[![Status](https://img.shields.io/badge/Status-Stable-brightgreen.svg)](#reproducibility)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.x-EE4C2C.svg)](https://pytorch.org/)
+[![Flower](https://img.shields.io/badge/Flower-Federated%20Learning-FF6B6B.svg)](https://flower.ai/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg)](https://docs.docker.com/compose/)
+[![Dataset](https://img.shields.io/badge/Dataset-Kaggle%20COMING_SOON-20BEFF.svg)](#dataset)
+[![Artifacts](https://img.shields.io/badge/Artifacts-External%20COMING_SOON-6f42c1.svg)](#external-artifacts)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-Research%20Framework-orange.svg)](#project-status)
 
-Final-year engineering project for a distributed IoT Intrusion Detection System (IDS) based on Federated Learning (FL), with a quantum-inspired optimization roadmap. The repository combines a centralized CICIoT2023 baseline, earlier FL iterations, and a final experiment stack designed for reproducible research, MLflow tracking, lightweight reporting, and MLOps-ready execution.
+**Quantum-Inspired Federated Framework for Dynamic IoT Networks: Intrusion Detection System for IoT/WSN Security**
 
-The production-facing delivery path is:
+QI-FL-IDS-IoT is a research framework for privacy-preserving intrusion detection in IoT and wireless sensor networks. It combines Federated Learning, quantum-inspired feature selection, adaptive aggregation research, compression analysis, Docker microservices, MQTT traffic flow, and monitoring with Prometheus/Grafana.
 
-```text
-experiments/fl-iot-ids-v3
-```
-
-Multi-tier FL development is isolated on `feat/multitier-fl`, starting from the stable `baseline-fl-v1` snapshot. See `docs/MULTITIER_BRANCH.md` for the branch contract and recovery path.
-
----
+The final selected practical model is **FedAvg + QGA** using **12 QGA-selected features** on a CICIoT2023-derived processed dataset.
 
 ## Project Status
 
-| Component | Status |
-|---|---|
-| Federated Learning baseline (FedAvg) | ✅ Validated |
-| Multi-tier Static HeteroFL | ✅ Frozen v1 (US1-US6) |
-| Per-tier model export | 📋 Phase 5 perspective |
-| Microservices architecture | 🔄 In progress (US10+) |
-| Quantum-Inspired modules | 📋 After microservices |
-| Demo + slides | 📋 May 12-15 |
+This repository is being prepared as a public research framework. It is not a certified production security product.
 
----
+- Academic context: final year engineering project, National Engineering Degree in Computer Engineering, Military Academy, Tunisia.
+- Author: SLt Saif Eddinne Boukhatem.
+- Defense date: 11 June 2026.
+- Grade: 16/20.
+- Kaggle dataset: `COMING_SOON`.
+- External artifacts archive: `COMING_SOON`.
 
-## Project Overview
+Full datasets and generated artifacts are intentionally not stored in GitHub. Local Phase 3 staging paths exist only for the developer and are not public download URLs.
 
-Modern IoT networks generate sensitive network traffic that is difficult to centralize safely. This project studies how to train an IDS without moving raw traffic data out of local nodes. Each client trains on its own partition, sends model updates to a Flower server, and receives the next global model after aggregation.
+## Key Features
 
-The current validated delivery stack is classical FL (`FedAvg` and `FedProx`) over CICIoT2023. The quantum-inspired part is positioned as the next research layer: feature selection, communication compression, and adaptive resource management for constrained IoT/edge environments.
+- Privacy-preserving federated IDS training with Flower.
+- Raw IoT traffic remains local; only model updates are exchanged.
+- Final FedAvg baseline and FedAvg + QGA feature-selection path.
+- QGA feature selection reducing the final L1 binary model to 12 features.
+- QIFA adaptive aggregation research path.
+- FedTN/MPS structural compression analysis.
+- CICIoT2023 preprocessing and federated partitioning.
+- Docker Compose deployment with IDS API, MQTT, monitoring, and dashboard services.
+- Prometheus/Grafana observability and live-lab demonstration flow.
 
-The final project is built around four engineering goals:
+## Final Selected Model
 
-- Privacy-preserving learning: raw CICIoT2023 samples remain local to simulated IoT nodes.
-- Non-IID robustness: experiments cover realistic client drift and missing-class scenarios.
-- Reproducibility: experiment definitions are frozen in YAML and launched through a registry.
-- MLOps traceability: MLflow stores parameters, metrics, artifacts, and generated reports.
-- Quantum-inspired evolution: future modules target feature selection, update compression, and resource-aware FL orchestration.
+The final practical model is **FedAvg + QGA**.
 
-## Repository Positioning
+| Metric | Value |
+| --- | ---: |
+| Macro-F1 | 0.9480 |
+| Attack Recall | 0.9550 |
+| FPR | 0.0594 |
+| Features | 12 |
+| Bandwidth | 7,236,000 B |
 
-| Area | Role | Path |
-| --- | --- | --- |
-| Centralized baseline | Single-machine reference model and comparison point | `experiments/baseline-CIC_IOT_2023` |
-| FL v1 | Initial Flower-based federated implementation | `experiments/fl-iot-ids-v1` |
-| FL v2 | Intermediate and quantum-inspired exploration layer kept for comparison | `experiments/fl-iot-ids-v2` |
-| FL v3 | Final delivery stack with registry-driven experiments, reports, and MLflow | `experiments/fl-iot-ids-v3` |
+The model keeps the federated learning deployment simple while improving feature efficiency and selected metrics over the 28-feature FedAvg baseline.
 
-The root README focuses on the final system and keeps earlier versions as historical and scientific context.
-
----
-
-## System Architecture
-
-The final setup follows a cross-silo FL architecture with one server and three logical clients.
+## Architecture
 
 ```text
-                 +--------------------------------+
-                 |          FL Server             |
-                 |  Round orchestration           |
-                 |  FedAvg / FedProx aggregation  |
-                 |  Metrics, artifacts, MLflow    |
-                 +---------------+----------------+
-                                 |
-          -------------------------------------------------
-          |                       |                       |
-    +-----+------+          +-----+------+          +-----+------+
-    |   node1    |          |   node2    |          |   node3    |
-    | local fit  |          | local fit  |          | local fit  |
-    | local eval |          | local eval |          | local eval |
-    +------------+          +------------+          +------------+
+IoT / WSN clients
+  -> local preprocessing
+  -> local IDS model training
+  -> Flower federated rounds
+  -> global model aggregation
+  -> final IDS API and live monitoring
 
-Data boundary: raw traffic stays inside each node.
-Communication boundary: only model parameters and metrics are exchanged.
-Tracking boundary: run metadata and reports are exported to MLflow/output folders.
+Quantum-inspired research modules:
+  QGA  -> feature selection
+  QIFA -> adaptive aggregation research
+  FedTN/MPS -> structural compression analysis
 ```
 
-### MLOps and DevOps View
+The deployment layer uses Docker services for traffic generation/replay, MQTT transport, feature extraction, IDS inference, FL components, monitoring, and dashboarding.
 
-| Layer | Responsibility | Implementation |
-| --- | --- | --- |
-| Data layer | CICIoT2023 preprocessing, scaling, and scenario partitions | `src/data`, `src/scripts/generate_scenarios.py` |
-| Experiment layer | Named experiment bundles and reproducible launches | `configs/experiment_registry.yaml`, `src/scripts/run_experiment.py` |
-| Training layer | Flower server/client execution, local training, aggregation | `src/fl`, `src/model`, `src/scripts/run_server.py`, `src/scripts/run_client.py` |
-| Tracking layer | MLflow runs, resolved configs, summaries, round metrics | `src/tracking`, `src/utils/mlflow_logger.py`, `outputs/mlruns` |
-| Reporting layer | CSV, Markdown, and HTML result exports | `src/scripts/build_ablation_table.py`, `outputs/reports` |
-| Runtime layer | Local Python execution and Docker Compose orchestration | `requirements.txt`, `environment.yml`, `deployments/docker` |
-| Quality layer | Unit/smoke tests and CI workflow | `tests`, `.github/workflows/ci.yml` |
-
----
-
-## Final Experiment Stack
-
-`fl-iot-ids-v3` is the retained delivery stack. It contains:
-
-- a Flower-based FL server,
-- three logical clients: `node1`, `node2`, and `node3`,
-- registry-driven experiment definitions,
-- scenario-specific non-IID dataset generation,
-- PyTorch tabular MLP models,
-- class weighting and focal-loss variants,
-- MLflow tracking with local file backend,
-- lightweight result exports for delivery and reporting.
-
-### Federated Strategies
-
-| Strategy | Status | Purpose |
-| --- | --- | --- |
-| `FedAvg` | Main baseline | Weighted average of local client updates. |
-| `FedProx` | Validated alternative | Adds a proximal term to reduce client drift under severe non-IID data. |
-| `SCAFFOLD` | Investigated / unstable | Studied as a drift-correction method, but not retained as the default final pipeline. |
-
-### Data Scenarios
-
-| Scenario | Goal |
-| --- | --- |
-| `normal_noniid` | Clients keep broad class coverage but with different class proportions. |
-| `absent_local` | Some classes are missing from some clients to simulate stronger local blind spots. |
-| `rare_expert` | Rare attack knowledge is concentrated on one expert client, exposing bias and specialization issues. |
-
-### Model
-
-The main classifier is a compact MLP for engineered CICIoT2023 tabular features:
-
-```text
-Input (28 features)
-  -> Linear(28, 256) + ReLU
-  -> Linear(256, 128) + ReLU
-  -> Dropout(0.2)
-  -> Linear(128, 34)
-  -> Output logits
-```
-
-An alternate `flat_34_v1style` configuration with `[128, 64]` hidden layers is also available for selected focal-loss experiments.
-
----
-
-## Quantum-Inspired Roadmap
-
-The repository name and long-term research direction are intentionally quantum-inspired. The validated `fl-iot-ids-v3` stack establishes the reproducible FL/MLOps base first; quantum-inspired modules are then added as controlled research extensions instead of being mixed into the baseline without evidence.
-
-| Objective | Purpose | Target Engineering Outcome |
-| --- | --- | --- |
-| Quantum Genetic Algorithm (QGA) | Select compact and discriminative CICIoT2023 feature subsets | Reduce input dimensionality and training cost while preserving IDS metrics. |
-| Federated Tensor Network (FedTN) | Compress client model updates before aggregation | Lower communication overhead per FL round for bandwidth-limited IoT nodes. |
-| Quantum-Inspired Adaptive Resource Management (QIARM) | Rank or schedule clients by resource state and contribution value | Make FL rounds more robust under CPU, latency, and bandwidth constraints. |
-| Hybrid FL strategy benchmarking | Compare classical FL against quantum-inspired variants | Keep scientific conclusions measurable and reproducible. |
-| Privacy enhancement | Add formal privacy mechanisms such as DP-SGD or update clipping | Move beyond data locality toward quantified privacy guarantees. |
-
-### Next Objectives
-
-The next development objectives are:
-
-1. Complete and freeze the final `fl-iot-ids-v3` benchmark across all registry entries.
-2. Extend CI so the final v3 tests and smoke checks run automatically, not only legacy stacks.
-3. Add a model/artifact registry convention for scalers, class weights, checkpoints, and reports.
-4. Implement QGA as an isolated feature-selection module with before/after ablation results.
-5. Prototype FedTN-style update compression and measure bytes per round, latency, and Macro-F1 impact.
-6. Design QIARM client scheduling around node health, dataset value, bandwidth, and convergence contribution.
-7. Prepare a deployment path from Docker Compose toward edge/Kubernetes orchestration with monitoring.
-
----
-
-## Pipeline
-
-1. Data preparation
-   - Start from the fixed CICIoT2023 export.
-   - Fit or reuse the global scaler.
-   - Generate label mappings, feature names, and class weights.
-
-2. Scenario generation
-   - Build `node1`, `node2`, and `node3` partitions.
-   - Apply the selected non-IID strategy.
-   - Export raw and processed node data under the experiment-local `data` folder.
-
-3. Federated training
-   - Resolve the experiment bundle from `experiment_registry.yaml`.
-   - Run Flower simulation with the configured strategy, model, data scenario, and imbalance method.
-   - Log run parameters, round metrics, and generated artifacts.
-
-4. Evaluation and reporting
-   - Track accuracy, macro metrics, benign recall, false-positive rate, and rare-class recall.
-   - Export Markdown, CSV, and HTML reports for final delivery.
-
----
-
-## Experimental Results
-
-Lightweight exported reports are available under `experiments/fl-iot-ids-v3/outputs/reports/`:
-
-- [Experiment comparison HTML](experiments/fl-iot-ids-v3/outputs/reports/fl_v3_experiment_comparison.html)
-- [Full ablation table HTML](experiments/fl-iot-ids-v3/outputs/reports/fl_v3_full_ablation_table.html)
-- [10-round summary HTML](experiments/fl-iot-ids-v3/outputs/reports/fl_v3_results_10rounds.html)
-- [Ablation table CSV](experiments/fl-iot-ids-v3/outputs/reports/fl_v3_ablation_table.csv)
-- [Ablation table Markdown](experiments/fl-iot-ids-v3/outputs/reports/fl_v3_ablation_table.md)
-
-Latest lightweight export currently includes:
-
-| Experiment | Strategy | Scenario | Rounds | Macro-F1 | Accuracy | Rare Recall |
-| --- | --- | --- | --- | --- | --- | --- |
-| `exp_v3_fedavg_normal_classweights` | `fedavg` | `normal_noniid` | 10 | 0.6521 | 0.7651 | 0.4055 |
-
-### Key Findings
-
-- FedAvg remains the main reference strategy for stable comparison.
-- FedProx is valuable when heterogeneity becomes severe, especially in `absent_local`.
-- SCAFFOLD was explored but is not considered stable enough for the retained delivery pipeline.
-- `rare_expert` shows why sample weighting and rare-class recall must be monitored, not only global accuracy.
-- Macro metrics are more informative than accuracy alone because CICIoT2023 classes remain difficult and imbalanced after partitioning.
-
----
-
-## Reproducibility
-
-The final delivery is configured around fixed experiment assumptions:
-
-- Python version: `3.11`
-- random seed: `42`
-- final stack: `experiments/fl-iot-ids-v3`
-- dataset export expected locally under `data/balancing_v3_fixed300k_outputs`
-- main registry: `experiments/fl-iot-ids-v3/configs/experiment_registry.yaml`
-- global runtime configuration: `experiments/fl-iot-ids-v3/configs/global.yaml`
-- MLflow tracking URI: `experiments/fl-iot-ids-v3/outputs/mlruns`
-- heavy datasets, checkpoints, MLflow runs, and serialized models are excluded from Git
-
-For consistent reruns, keep the same dataset export, the same YAML configuration files, and the same Python environment.
-
----
-
-## How to Run
-
-### Option 1: Conda environment
-
-```powershell
-conda env create -f environment.yml
-conda activate qfl
-```
-
-### Option 2: Local venv for the final stack
-
-```powershell
-cd experiments\fl-iot-ids-v3
-python -m venv .venv
-.\.venv\Scripts\activate
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-```
-
-### Run a registry-driven experiment
-
-```powershell
-cd experiments\fl-iot-ids-v3
-python -m src.scripts.run_experiment --experiment exp_v3_fedavg_normal_classweights
-```
-
-Useful registry entries:
-
-- `exp_v3_fedavg_normal_classweights`
-- `exp_v3_fedavg_normal_focal`
-- `exp_v3_fedavg_normal_focal_weighted`
-- `exp_v3_fedprox_absentlocal_classweights`
-- `exp_v3_fedavg_rareexpert_focal_weighted`
-
-### Start MLflow UI
-
-```powershell
-cd experiments\fl-iot-ids-v3
-mlflow ui --backend-store-uri outputs\mlruns --port 5000
-```
-
-Open `http://localhost:5000`.
-
-### Generate the ablation table
-
-```powershell
-cd experiments\fl-iot-ids-v3
-python -m src.scripts.build_ablation_table
-```
-
-### Docker Compose execution
-
-```powershell
-cd experiments\fl-iot-ids-v3
-docker compose -f deployments\docker\docker-compose.yml up --build
-```
-
-### Tests
-
-```powershell
-cd experiments\fl-iot-ids-v3
-python -m pytest tests -v
-```
-
----
-
-## Project Structure
+## Repository Structure
 
 ```text
 qi-fl-ids-iot/
-|-- data/                           # local datasets and fixed exports, not tracked
-|-- docs/                           # diagrams and supporting report material
-|-- experiments/
-|   |-- baseline-CIC_IOT_2023/      # centralized baseline experiments
-|   |-- fl-iot-ids-v1/              # initial FL reference version
-|   |-- fl-iot-ids-v2/              # intermediate version kept for comparison
-|   `-- fl-iot-ids-v3/              # final FL system for delivery
-|       |-- configs/                # experiment, model, data, FL, and runtime configs
-|       |-- deployments/docker/     # Docker Compose and Dockerfiles
-|       |-- outputs/reports/        # lightweight exported reports
-|       |-- src/                    # data, model, FL, scripts, tracking, services
-|       `-- tests/                  # smoke and unit tests
-|-- outputs/                        # shared root-level outputs if needed
-|-- CHANGELOG.md
-|-- CONTRIBUTING.md
-|-- LICENSE
-`-- README.md
+  README.md
+  LICENSE
+  CITATION.cff
+  SECURITY.md
+  data/
+  docs/
+  experiments/
+  external_artifacts/
+  scripts/
+  services/
+  shared/
+  .github/workflows/
 ```
 
----
+Important paths:
+
+- `experiments/qi-fl-ids-iot-final/` - final scientific pipeline and selected model metadata.
+- `services/` - Docker/MQTT/API/monitoring microservices.
+- `docs/` - public documentation.
+- `scripts/` - repository maintenance and helper scripts.
+- `data/` - dataset policy and tiny samples only.
+- `external_artifacts/` - placeholder only; heavy artifacts live outside GitHub.
+
+## Installation
+
+Use Python 3.11.
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r experiments/qi-fl-ids-iot-final/requirements.txt
+```
+
+Some legacy experiments have their own requirements. Prefer the final pipeline path first.
+
+## Dataset
+
+Kaggle dataset: `COMING_SOON`
+
+The full dataset is not stored in GitHub. The intended public dataset package is a processed, CICIoT2023-derived package for reproducibility of preprocessing, L1 binary IDS training, federated partitions, and QGA feature analysis.
+
+Users must cite the original CICIoT2023 dataset:
+
+```text
+Neto, E. C. P., Dadkhah, S., Ferreira, R., Zohourian, A.,
+Lu, R., and Ghorbani, A. A. (2023).
+CICIoT2023: A Real-Time Dataset and Benchmark for Large-Scale Attacks
+in IoT Environments. Sensors, 23(13), 5941.
+DOI: 10.3390/s23135941
+```
+
+See [docs/03_dataset.md](docs/03_dataset.md) and [data/README.md](data/README.md).
+
+## Quick Start
+
+Inspect the project:
+
+```powershell
+git clone https://github.com/SAIFBKKK/qi-fl-ids-iot.git
+cd qi-fl-ids-iot
+```
+
+Run lightweight checks only after installing dependencies:
+
+```powershell
+python -m pytest tests
+```
+
+Run Docker services from `services/` only after creating a local `.env` from `.env.example` and replacing placeholders.
+
+## Training and Evaluation
+
+The final training/evaluation code is under:
+
+```text
+experiments/qi-fl-ids-iot-final/
+```
+
+Typical workflow:
+
+1. Obtain the processed dataset package when available.
+2. Restore dataset files into their expected relative paths.
+3. Run preprocessing validation.
+4. Run L1 binary IDS training/evaluation.
+5. Run federated experiments with Flower.
+6. Compare FedAvg, FedAvg + QGA, QIFA, and QIFA + QGA.
+
+Exact generated outputs are externalized and referenced through manifests.
+
+## Federated Learning Pipeline
+
+The FL pipeline uses Flower to simulate distributed IoT clients. Each client trains locally on its partition, sends model updates, and receives aggregated global model parameters.
+
+The final practical selection is FedAvg + QGA because it balances performance, bandwidth, and deployment simplicity.
+
+## Quantum-Inspired Modules
+
+- **QGA**: quantum-inspired genetic algorithm for feature selection. This is part of the final selected model.
+- **QIFA**: quantum-inspired adaptive aggregation research path. Useful for analysis, not the final deployed selection.
+- **FedTN/MPS**: tensor-network/MPS structural compression analysis. This is not full final FL training.
+
+Limitations:
+
+- QIARM is not part of the final validated implementation.
+- Secure aggregation/encrypted model updates are not implemented.
+- FedTN/MPS is a structural analysis path, not the final training pipeline.
+
+## Deployment and Live Lab
+
+Deployment assets live mainly under `services/` and the final experiment deployment folders.
+
+Components include:
+
+- MQTT traffic flow.
+- IDS API.
+- feature extraction.
+- Docker Compose services.
+- Prometheus/Grafana monitoring.
+- live-lab demonstration scripts and documentation.
+
+The live lab validates deployment flow and integration behavior. It does not establish new model accuracy claims.
+
+## Results Summary
+
+| Configuration | Features | Macro-F1 | Attack Recall | FPR | Bandwidth |
+| ------------- | -------: | -------: | ------------: | --: | --------: |
+| FedAvg | 28 | 0.9407 | 0.9474 | 0.0663 | 8,710,560 B |
+| FedAvg + QGA | 12 | 0.9480 | 0.9550 | 0.0594 | 7,236,000 B |
+| QIFA | 28 | 0.9454 | 0.9436 | 0.0524 | 8,710,560 B |
+| QIFA + QGA | 12 | 0.9471 | 0.9592 | 0.0658 | 7,236,000 B |
+
+The final selected configuration is **FedAvg + QGA**.
+
+## External Artifacts
+
+External artifacts archive: `COMING_SOON`
+
+Generated artifacts were moved outside GitHub during cleanup. They include model checkpoints, scalers, logs, reports, figures, MLflow runs, and deployment bundles.
+
+Local developer archive name:
+
+```text
+qi-fl-ids-iot-artifacts-v1-20260612.zip
+```
+
+Archive SHA256:
+
+```text
+582163c484d070aa7dbf3d8600254465513158bed75f8012d8094aaa8813342d
+```
+
+See [docs/artifacts.md](docs/artifacts.md).
 
 ## Documentation
 
-- [FL v3 experiment README](experiments/fl-iot-ids-v3/README.md)
-- [Baseline experiment README](experiments/baseline-CIC_IOT_2023/README.md)
-- [Global vision report](docs/report/global_vision.pdf)
-- [Architecture Mermaid diagram](docs/diaggant.mmd)
-- [Changelog](CHANGELOG.md)
-- [Contributing guide](CONTRIBUTING.md)
+Start here:
 
----
+- [docs/README.md](docs/README.md)
+- [docs/01_overview.md](docs/01_overview.md)
+- [docs/02_architecture.md](docs/02_architecture.md)
+- [docs/03_dataset.md](docs/03_dataset.md)
+- [docs/06_federated_learning.md](docs/06_federated_learning.md)
+- [docs/07_quantum_inspired_modules.md](docs/07_quantum_inspired_modules.md)
+- [docs/08_deployment.md](docs/08_deployment.md)
+- [docs/10_results.md](docs/10_results.md)
 
-## Contributing
+## Reproducibility
 
-Contributions should keep the project reproducible and easy to audit:
+For full reproduction:
 
-- use clear experiment names in `configs/experiment_registry.yaml`,
-- keep datasets, checkpoints, MLflow runs, and large artifacts out of Git,
-- add or update tests when changing model, data, or FL behavior,
-- document new experiments with their scenario, strategy, loss, and expected output,
-- prefer small, reviewable commits with explicit intent.
+1. Clone the repository.
+2. Install Python dependencies.
+3. Download the processed dataset package when available.
+4. Restore external artifacts only when exact reported outputs or deployment bundles are needed.
+5. Run documented scripts from the final experiment path.
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contribution guide.
+The repository should remain usable for code review and lightweight tests without full datasets.
 
----
+## Security and Publication Notes
 
-## Research & References
+Do not commit:
 
-### Key Publications
+- `.env` files.
+- MQTT password files.
+- Kaggle credentials.
+- private keys.
+- packet captures.
+- private lab inventories.
 
-1. McMahan, H. B., Moore, E., Ramage, D., Hampson, S., and Aguera y Arcas, B. (2017). *Communication-Efficient Learning of Deep Networks from Decentralized Data*. AISTATS 2017. [arXiv:1602.05629](https://arxiv.org/abs/1602.05629)
-
-2. Li, T., Sahu, A. K., Zaheer, M., Sanjabi, M., Talwalkar, A., and Smith, V. (2020). *Federated Optimization in Heterogeneous Networks*. MLSys 2020. [arXiv:1812.06127](https://arxiv.org/abs/1812.06127)
-
-3. Karimireddy, S. P., Kale, S., Mohri, M., Reddi, S. J., Stich, S. U., and Suresh, A. T. (2020). *SCAFFOLD: Stochastic Controlled Averaging for Federated Learning*. ICML 2020. [arXiv:1910.06378](https://arxiv.org/abs/1910.06378)
-
-4. Neto, E. C. P., Dadkhah, S., Ferreira, R., Zohourian, A., Lu, R., and Ghorbani, A. A. (2023). *CICIoT2023: A Real-Time Dataset and Benchmark for Large-Scale Attacks in IoT Environments*. Sensors, 23(13), 5941. [DOI:10.3390/s23135941](https://doi.org/10.3390/s23135941)
-
-5. Beutel, D. J., Topal, T., Mathur, A., Qiu, X., Parcollet, T., and Lane, N. D. (2022). *Flower: A Friendly Federated Learning Research Framework*. [arXiv:2007.14390](https://arxiv.org/abs/2007.14390)
-
-6. Han, K. H., and Kim, J. H. (2000). *Genetic Quantum Algorithm and its Application to Combinatorial Optimization Problem*. IEEE Congress on Evolutionary Computation. [DOI:10.1109/CEC.2000.870357](https://doi.org/10.1109/CEC.2000.870357)
-
-### Framework Documentation
-
-- [Flower Documentation](https://flower.ai/docs/)
-- [PyTorch Documentation](https://pytorch.org/docs/)
-- [MLflow Documentation](https://mlflow.org/docs/latest/index.html)
-- [Docker Documentation](https://docs.docker.com/)
-
----
-
-## License
-
-This project is distributed under the MIT License. See [LICENSE](LICENSE) for details.
-
----
-
-## Contact & Support
-
-- **Author:** Saif Eddinne Boukhatem
-- **Role:** Final Year Project (PFE) Student
-- **Specialization:** Networks and Artificial Intelligence
-- **Institution:** Military Academy
-- **Email:** saif.boukhatem2@gmail.com
-- **GitHub:** [@SAIFBKKK](https://github.com/SAIFBKKK)
-
-**Advisors:**
-
-- Mrs. Abir GALLAS
-- Mr. Med Hechmi Jridi
-
-**Support channels:**
-
-- [GitHub Issues](https://github.com/SAIFBKKK/qi-fl-ids-iot/issues)
-- [GitHub Discussions](https://github.com/SAIFBKKK/qi-fl-ids-iot/discussions)
-- For sensitive or academic inquiries, contact the author by email.
-
----
-
-## Acknowledgments
-
-- Military Academy for institutional support and project supervision.
-- Canadian Institute for Cybersecurity for the CICIoT2023 dataset.
-- Flower team for the federated learning framework.
-- PyTorch and MLflow communities for the deep learning and experiment tracking tooling.
-- Open-source contributors whose tools support reproducible ML engineering.
-
----
+This project does not implement encrypted model updates or production-grade secure aggregation. See [SECURITY.md](SECURITY.md) and [docs/security_publication_checklist.md](docs/security_publication_checklist.md).
 
 ## Citation
 
-If you use this work in academic research, please cite:
+If you use this project, cite it with [CITATION.cff](CITATION.cff) and cite CICIoT2023.
 
-```bibtex
-@thesis{boukhatem2026flidsiot,
-  author = {Boukhatem, Saif Eddinne},
-  title = {Quantum-Inspired Federated Learning for IoT Intrusion Detection},
-  school = {Military Academy},
-  year = {2026},
-  type = {Final Year Project}
-}
-```
+## License
 
----
+The root repository is released under the [MIT License](LICENSE).
 
-## Changelog
+Some nested legacy experiment metadata still declares Apache-2.0 and should be aligned before a formal public release. See [docs/release_notes_license.md](docs/release_notes_license.md).
 
-See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
+## Author and Acknowledgements
 
-- **Current delivery focus:** `experiments/fl-iot-ids-v3`
-- **Next research focus:** QGA, FedTN, QIARM, privacy enhancement, and edge deployment
-- **Last updated:** April 2026
+Author: **SLt Saif Eddinne Boukhatem**
+
+Academic context: final year engineering project, National Engineering Degree in Computer Engineering, Military Academy, Tunisia.
+
+Acknowledgements go to the academic supervisors, reviewers, open-source communities behind Flower, PyTorch, Docker, Prometheus, Grafana, and the CICIoT2023 dataset authors.

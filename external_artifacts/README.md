@@ -1,30 +1,42 @@
 # External Artifacts
 
-This directory is a placeholder for artifacts that are useful for reproduction, reporting, or demonstrations but should not be stored directly in GitHub.
+This directory is a GitHub placeholder only.
 
-The following artifact types belong outside GitHub:
+External artifacts archive: `COMING_SOON`
 
-- Model checkpoints and deployment bundles.
-- Scalers, encoders, class weights, and preprocessing binaries.
-- Generated figures and plots.
-- Training, Flower, Docker, MQTT, and live-lab logs.
-- Generated reports and experiment exports.
-- MLflow runs and tracking metadata.
-- Large validation outputs and raw experiment evidence.
+Heavy generated artifacts were externalized during Phase 3 and should not be committed back into GitHub.
 
-External artifacts archive: COMING_SOON
-
-During Phase 3, artifacts were staged locally outside the repository:
+Local developer archive name:
 
 ```text
-../qi-fl-ids-iot-external-artifacts/phase3_20260612_140955/
-../qi-fl-ids-iot-external-artifacts/qi-fl-ids-iot-artifacts-v1-20260612.zip
+qi-fl-ids-iot-artifacts-v1-20260612.zip
 ```
 
-Download links will be added after the archive is reviewed and uploaded to external storage.
+Archive SHA256:
 
-Artifacts are versioned separately from the source repository. Each published artifact bundle should include a manifest with original paths, file sizes, checksums, and the Git commit used to produce it.
+```text
+582163c484d070aa7dbf3d8600254465513158bed75f8012d8094aaa8813342d
+```
 
-Do not place secrets, private keys, raw credentials, or private live-lab inventories in artifact bundles.
+Artifacts include:
 
-To restore artifacts later, extract the archive at the repository root so original relative paths are recreated.
+- model checkpoints and deployment binaries
+- scalers, encoders, and preprocessing binaries
+- generated figures and reports
+- training, Flower, Docker, MQTT, and live-lab logs
+- MLflow runs and tracking metadata
+- deployment bundles
+
+Restore locally only:
+
+```powershell
+Expand-Archive -Path <ARTIFACTS_DIR>/qi-fl-ids-iot-artifacts-v1-20260612.zip -DestinationPath <REPO_ROOT>
+```
+
+Verify before extraction:
+
+```powershell
+Get-FileHash <ARTIFACTS_DIR>/qi-fl-ids-iot-artifacts-v1-20260612.zip -Algorithm SHA256
+```
+
+Do not place secrets, private keys, `.env` files, MQTT password files, Kaggle credentials, packet captures, or private lab inventories in artifact bundles.

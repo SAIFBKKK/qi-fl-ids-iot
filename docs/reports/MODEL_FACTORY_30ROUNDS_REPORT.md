@@ -46,7 +46,7 @@ Latence estimee: non mesuree dans ce run offline.
 
 ## 11. Emplacement des bundles
 
-`C:\Users\saifb\dev\qi-fl-ids-iot\experiments\fl-iot-ids-v3\outputs\model_factory_30rounds`
+`<REPO_ROOT>\experiments\fl-iot-ids-v3\outputs\model_factory_30rounds`
 
 ## 12. Utilisation future dans Mode A
 
