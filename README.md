@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/SAIFBKKK/qi-fl-ids-iot/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/SAIFBKKK/qi-fl-ids-iot/actions/workflows/ci.yml)
 [![Docs](https://github.com/SAIFBKKK/qi-fl-ids-iot/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/SAIFBKKK/qi-fl-ids-iot/actions/workflows/docs.yml)
-[![Docker Smoke](https://github.com/SAIFBKKK/qi-fl-ids-iot/actions/workflows/docker-smoke.yml/badge.svg)](https://github.com/SAIFBKKK/qi-fl-ids-iot/actions/workflows/docker-smoke.yml)
+![Docker Smoke](https://img.shields.io/badge/Docker%20Smoke-manual-blue)
 [![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.x-EE4C2C.svg)](https://pytorch.org/)
 [![Flower](https://img.shields.io/badge/Flower-Federated%20Learning-FF6B6B.svg)](https://flower.ai/)
