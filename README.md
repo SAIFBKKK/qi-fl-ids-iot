@@ -282,8 +282,8 @@ Some nested legacy experiment metadata still declares Apache-2.0 and should be a
 
 ## Author and Acknowledgements
 
-Author: **SLt Saif Eddinne Boukhatem**
+Author: ** Saif Eddinne Boukhatem**
 
-Academic context: final year engineering project, National Engineering Degree in Computer Engineering, Military Academy, Tunisia.
+Academic context: final year engineering project, National Engineering Degree in Computer Engineering .
 
 Acknowledgements go to the academic supervisors, reviewers, open-source communities behind Flower, PyTorch, Docker, Prometheus, Grafana, and the CICIoT2023 dataset authors.
