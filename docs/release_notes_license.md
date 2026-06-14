@@ -7,11 +7,10 @@ During Phase 4 documentation review, nested experiment package metadata was foun
 - `experiments/fl-iot-ids-v1/pyproject.toml` declares `Apache-2.0`.
 - `experiments/fl-iot-ids-v3/pyproject.toml` declares `Apache-2.0`.
 
-No package metadata was changed automatically in Phase 4.
+During Phase 5 release hardening, these project-owned nested metadata files were aligned to MIT to match the root repository license.
 
 Recommended release action:
 
-1. Decide whether the whole public repository should be MIT.
-2. If yes, align nested `pyproject.toml` license fields with the root MIT license.
-3. If legacy experiment packages intentionally remain Apache-2.0, document the multi-license scope clearly in the root README.
-4. Re-check badges and package metadata before tagging a public release.
+1. Re-check package metadata before tagging a public release.
+2. If future third-party copied packages are added, document their license scope separately.
+3. Keep the README and license badges aligned with the root `LICENSE`.

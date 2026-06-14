@@ -1,0 +1,60 @@
+name: Docs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  docs-links:
+    name: Documentation link check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Check required docs and local Markdown links
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          import sys
+
+          required = [
+              "README.md",
+              "CITATION.cff",
+              "docs/README.md",
+              "docs/03_dataset.md",
+              "docs/artifacts.md",
+              "docs/security_publication_checklist.md",
+          ]
+          missing = [path for path in required if not Path(path).exists()]
+
+          link_errors = []
+          files = [Path("README.md")] + list(Path("docs").glob("*.md"))
+          pattern = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
+          for file in files:
+              text = file.read_text(encoding="utf-8")
+              for match in pattern.finditer(text):
+                  target = match.group(1).strip()
+                  if target.startswith(("http://", "https://", "mailto:", "#")):
+                      continue
+                  if "COMING_SOON" in target:
+                      continue
+                  path = target.split("#", 1)[0]
+                  if not path:
+                      continue
+                  if not (file.parent / path).exists():
+                      link_errors.append(f"{file}: missing {target}")
+
+          if missing or link_errors:
+              print("Missing required docs:", missing)
+              print("Link errors:", link_errors)
+              sys.exit(1)

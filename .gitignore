@@ -113,6 +113,7 @@ external_artifacts/*
 !external_artifacts/
 !external_artifacts/README.md
 _cleanup_quarantine/
+_private_local_only/
 
 # --- Microservices P1 data policy ---
 # Dataset volumineux existant ailleurs.
