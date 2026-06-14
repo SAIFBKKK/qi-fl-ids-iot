@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+title: "QI-FL-IDS-IoT: Quantum-Inspired Federated Framework for Dynamic IoT Networks"
+message: "If you use this project, please cite it using the metadata from this file."
+type: software
+authors:
+  - family-names: "Boukhatem"
+    given-names: "Saif Eddinne"
+year: 2026
+license: "MIT"
+repository-code: "https://github.com/SAIFBKKK/qi-fl-ids-iot"
+abstract: "A Quantum-Inspired Federated Learning framework for IoT/WSN intrusion detection, combining FedAvg, QGA feature selection, QIFA aggregation research, FedTN/MPS compression analysis, and Docker/MQTT monitoring deployment."
+keywords:
+  - federated learning
+  - intrusion detection
+  - IoT security
+  - quantum-inspired optimization
+  - QGA
+  - QIFA
+  - CICIoT2023

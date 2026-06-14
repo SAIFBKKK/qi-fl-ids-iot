@@ -1,0 +1,53 @@
+{
+  "id": "demo_2",
+  "name": "Détection attaque DDoS",
+  "description": "Pic d'alertes simulé sur node-2 lors d'une attaque DDoS-SYN_Flood",
+  "duration_seconds": 45,
+  "events": [
+    {
+      "t": 0,
+      "type": "alert",
+      "node_id": "node2",
+      "attack_class": "DDoS-SYN_Flood",
+      "confidence": 0.94,
+      "severity": "high"
+    },
+    {
+      "t": 5,
+      "type": "alert",
+      "node_id": "node2",
+      "attack_class": "DDoS-SYN_Flood",
+      "confidence": 0.96,
+      "severity": "high"
+    },
+    {
+      "t": 8,
+      "type": "alert",
+      "node_id": "node2",
+      "attack_class": "DDoS-SYN_Flood",
+      "confidence": 0.91,
+      "severity": "high"
+    },
+    {
+      "t": 12,
+      "type": "alert",
+      "node_id": "node2",
+      "attack_class": "DDoS-SYN_Flood",
+      "confidence": 0.97,
+      "severity": "critical"
+    },
+    {
+      "t": 18,
+      "type": "alert",
+      "node_id": "node3",
+      "attack_class": "DDoS-ACK_Fragmentation",
+      "confidence": 0.88,
+      "severity": "high"
+    },
+    {
+      "t": 30,
+      "type": "info",
+      "message": "Mitigation déclenchée par fl-server"
+    }
+  ]
+}

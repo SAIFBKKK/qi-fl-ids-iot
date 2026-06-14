@@ -8,6 +8,7 @@ strategy:
   min_available_nodes: 3
   expert_factor: 1.0
   expert_node_id: node3
+  multitier_enabled: false
 
 train:
   local_epochs: 1

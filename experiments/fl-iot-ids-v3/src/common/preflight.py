@@ -53,6 +53,26 @@ def validate_required_artifacts(
                 f"Run: python -m src.scripts.generate_weights --scenario {scenario}"
             )
 
+    model_cfg = dict(config.get("model", {}))
+    feature_cfg = dict(config.get("feature_selection", {}))
+    feature_cfg.update(dict(model_cfg.get("feature_selection", {})))
+    if bool(feature_cfg.get("enabled", False)):
+        raw_path = str(
+            feature_cfg.get(
+                "artifact_path",
+                "artifacts/qi_feature_selection/{scenario}/selected_features.json",
+            )
+        ).format(scenario=scenario)
+        feature_path = Path(raw_path)
+        if not feature_path.is_absolute():
+            feature_path = data_dir.parent / feature_path
+        if not feature_path.exists():
+            raise FileNotFoundError(
+                f"Missing QGA selected-features artifact: {feature_path}. "
+                "Run: python -m src.scripts.run_qi_feature_selection "
+                f"--scenario {scenario} --config configs/qi/qga_feature_selection.yaml"
+            )
+
     if missing_paths:
         joined = ", ".join(missing_paths)
         raise FileNotFoundError(

@@ -1,0 +1,80 @@
+project_root: "."
+final_experiment_dir: "experiments/qi-fl-ids-iot-final"
+
+inputs:
+  partitions_root: "experiments/qi-fl-ids-iot-final/outputs/partitions/l1_binary"
+  centralized_l1_metrics: "experiments/qi-fl-ids-iot-final/outputs/centralized_l1/artifacts/metrics_test.json"
+  centralized_l1_threshold: "experiments/qi-fl-ids-iot-final/outputs/centralized_l1/artifacts/threshold.json"
+  centralized_l1_model_config: "experiments/qi-fl-ids-iot-final/outputs/centralized_l1/artifacts/model_config.json"
+  global_test_npz: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/test_scaled.npz"
+
+scenario:
+  default_alpha: 0.5
+  default_k: 3
+  alphas: [0.1, 0.5, 5.0]
+  clients: [3, 4, 5]
+  run_grid: false
+
+model:
+  name: "FedAvgL1MLP"
+  input_dim: 28
+  hidden_layers: [128, 64]
+  output_dim: 2
+  dropout: 0.2
+  activation: "relu"
+
+federated:
+  strategy: "FedAvg"
+  rounds: 30
+  local_epochs: 1
+  client_fraction: 1.0
+  min_fit_clients: null
+  min_eval_clients: null
+  min_available_clients: null
+  aggregation_weight: "num_examples"
+
+training:
+  seed: 42
+  device: "auto"
+  batch_size: 512
+  optimizer: "adam"
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  loss: "cross_entropy"
+  use_class_weights: false
+
+threshold:
+  tune_on: "validation"
+  start: 0.05
+  stop: 0.95
+  step: 0.05
+  also_evaluate_threshold_0_5: true
+  primary_objective: "f1_attack"
+
+monitoring:
+  track_round_metrics: true
+  track_client_metrics: true
+  track_bandwidth: true
+  track_latency: true
+  track_model_size: true
+  track_num_parameters: true
+  track_aggregation_time: true
+
+logging:
+  verbose_rounds: true
+  verbose_clients: false
+  flower_like_logs: true
+  log_every_round: 1
+
+execution:
+  mode: "verify"
+  smoke_rounds: 1
+  smoke_max_samples_per_client: 1000
+  full_run_requires_user_confirmation: false
+
+outputs:
+  run_dir: "experiments/qi-fl-ids-iot-final/outputs/fl_l1_fedavg"
+  reports_dir: "experiments/qi-fl-ids-iot-final/outputs/reports"
+  figures_training_dir: "experiments/qi-fl-ids-iot-final/outputs/figures/training"
+  figures_evaluation_dir: "experiments/qi-fl-ids-iot-final/outputs/figures/evaluation"
+  figures_fl_dir: "experiments/qi-fl-ids-iot-final/outputs/figures/fl_l1"

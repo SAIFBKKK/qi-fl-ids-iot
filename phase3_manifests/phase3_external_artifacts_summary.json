@@ -1,0 +1,35 @@
+{
+  "summary_type": "phase3_external_artifacts_public_summary",
+  "phase": "Phase 3",
+  "decision": "Full external artifact manifest JSON moved out of GitHub to ignored local-only storage during Phase 6A.",
+  "moved_full_manifest": {
+    "original_repo_path": "phase3_manifests/20260612_141457_external_artifacts.json",
+    "local_private_path": "_private_local_only/phase3_full_manifests/phase3_manifests/20260612_141457_external_artifacts.json",
+    "public_git_policy": "Do not track the full JSON manifest because it is large and duplicated by the external artifact package."
+  },
+  "external_artifacts": {
+    "files_moved": 12092,
+    "total_size_bytes": 9478111862,
+    "total_size_mb": 9039.032,
+    "archive_name": "qi-fl-ids-iot-artifacts-v1-20260612.zip",
+    "archive_size_bytes": 4922023425,
+    "archive_size_mb": 4694.007,
+    "archive_sha256": "582163c484d070aa7dbf3d8600254465513158bed75f8012d8094aaa8813342d"
+  },
+  "kaggle_staging": {
+    "files_moved": 238,
+    "total_size_bytes": 6842927015,
+    "total_size_mb": 6525.924,
+    "public_link": "COMING_SOON"
+  },
+  "traceability": {
+    "repo_kept_manifests": [
+      "phase3_manifests/20260612_141457_external_artifacts.summary.json",
+      "phase3_manifests/20260612_141032_kaggle_staging.summary.json",
+      "phase3_manifests/20260612_142207_archive.summary.json",
+      "phase3_manifests/phase3_external_artifacts_summary.json"
+    ],
+    "full_manifest_location_note": "The full manifest is retained in the external artifact staging package and in local ignored storage for the maintainer.",
+    "restore_docs": "docs/artifacts.md"
+  }
+}

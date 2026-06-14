@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Live Defense Demo Mode</title>
+  <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body class="demo-body">
+  <div id="toast-stack" class="toast-stack" aria-live="polite" aria-atomic="false"></div>
+
+  <header class="app-header demo-header">
+    <div class="header-copy">
+      <p class="eyebrow">P16.9.2 Live Defense Demo Mode</p>
+      <h1>Quantum-Inspired Federated IDS Live Lab</h1>
+      <p class="subtitle">A safe live defense path for the jury: VM registration, PacketWindow(30) features, runtime scaler JSON, MQTT inference, predictions, alerts, and zero-error deployment evidence.</p>
+    </div>
+    <div class="header-actions">
+      <div id="demo-status-pill" class="status-pill status-muted">Status: loading</div>
+      <div id="demo-last-refresh" class="status-pill status-muted">Last refresh: waiting</div>
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle light or dark theme">Dark mode</button>
+    </div>
+  </header>
+
+  <main class="dashboard-shell demo-shell">
+    <section class="demo-control-bar" aria-label="Presentation controls">
+      <button id="demo-refresh" class="control-button" type="button">Refresh now</button>
+      <button id="demo-clear-notifications" class="control-button" type="button">Clear local notifications</button>
+      <button id="demo-focus-alert" class="control-button" type="button">Focus last alert</button>
+      <button id="demo-toggle-theme" class="control-button" type="button">Toggle dark mode</button>
+      <button id="demo-enable-sound" class="control-button" type="button">Enable sound</button>
+      <button id="demo-mute-sound" class="control-button" type="button">Mute sound</button>
+      <span id="demo-sound-status" class="sound-status sound-enabled">Sound: enabled</span>
+      <a class="control-button" href="/">Open main dashboard</a>
+      <a class="control-button" href="http://192.168.56.1:3000" target="_blank" rel="noreferrer">Open Grafana</a>
+      <a class="control-button" href="http://192.168.56.1:8014/model/info" target="_blank" rel="noreferrer">Open API model info</a>
+    </section>
+
+    <section class="panel demo-timeline-panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Demo Progress Timeline</p>
+          <h2>Live Defense Path</h2>
+        </div>
+        <span class="badge badge-info">VM -> PacketWindow(30) -> scaler JSON -> MQTT -> IDS</span>
+      </div>
+      <div id="demo-step-timeline" class="demo-step-timeline" aria-label="Demo progress steps">
+        <article class="demo-step active"><span>Step 1 - Platform Ready</span><small>waiting for live state</small></article>
+        <article class="demo-step pending"><span>Step 2 - Devices Connected</span><small>waiting for live state</small></article>
+        <article class="demo-step pending"><span>Step 3 - Model Assigned</span><small>waiting for live state</small></article>
+        <article class="demo-step pending"><span>Step 4 - Packet Window Generated</span><small>waiting for live state</small></article>
+        <article class="demo-step pending"><span>Step 5 - MQTT Flow Received</span><small>waiting for live state</small></article>
+        <article class="demo-step pending"><span>Step 6 - IDS Prediction Produced</span><small>waiting for live state</small></article>
+        <article class="demo-step pending"><span>Step 7 - Alert Detected</span><small>waiting for live state</small></article>
+        <article class="demo-step pending"><span>Step 8 - Zero Runtime Errors</span><small>waiting for live state</small></article>
+      </div>
+    </section>
+
+    <section class="demo-grid">
+      <div class="demo-main-column">
+        <section class="demo-device-grid" id="demo-device-cards" aria-label="Live device cards">
+          <article class="panel demo-device-card waiting">
+            <p class="eyebrow">Live Device Card</p>
+            <h2>iot-drone-sitl</h2>
+            <p class="muted">Waiting for controller state.</p>
+          </article>
+          <article class="panel demo-device-card waiting">
+            <p class="eyebrow">Live Device Card</p>
+            <h2>iot-smart-watch-medium</h2>
+            <p class="muted">Waiting for controller state.</p>
+          </article>
+        </section>
+
+        <section id="demo-alert-focus" class="panel demo-alert-focus severity-medium">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Live Alert Focus Panel</p>
+              <h2>Alert Detected</h2>
+            </div>
+            <span id="demo-alert-severity" class="badge severity-medium">waiting</span>
+          </div>
+          <div id="demo-latest-alert" class="latest-alert-empty">
+            <strong>No alert detected yet.</strong>
+            <p>Publish a controlled PacketWindow(30) flow from VM1 or VM2 to show the live IDS alert path.</p>
+          </div>
+        </section>
+
+        <section id="demo-incident-panel" class="panel incident-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Correlated Security Incident</p>
+              <h2>Scenario-Level Detection</h2>
+            </div>
+            <span id="demo-incident-badge" class="badge badge-info">Scenario-level incident</span>
+          </div>
+          <div id="demo-incident-content" class="incident-empty">
+            <strong>No correlated incident yet.</strong>
+            <p>The dashboard groups multiple sliding-window alerts into one scenario-level incident.</p>
+            <p>Sliding windows are grouped to avoid counting one continuous scenario as multiple independent attacks.</p>
+          </div>
+        </section>
+
+        <section class="panel demo-window-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Live Packet Window</p>
+              <h2>UAV/MAVLink Observer</h2>
+            </div>
+            <span id="demo-observer-status" class="badge badge-warning">STOPPED</span>
+          </div>
+          <dl class="compact-facts">
+            <div><dt>Node</dt><dd id="demo-window-node">iot-drone-sitl</dd></div>
+            <div><dt>Protocol</dt><dd id="demo-window-protocol">MAVLink/UDP - Port 14551</dd></div>
+            <div><dt>Buffer fill</dt><dd><span id="demo-window-buffer">0 / 30 packets</span></dd></div>
+            <div><dt>Last window ID</dt><dd id="demo-window-id">n/a</dd></div>
+            <div><dt>Rate</dt><dd id="demo-window-rate">n/a</dd></div>
+            <div><dt>IAT</dt><dd id="demo-window-iat">n/a</dd></div>
+            <div><dt>Windows published</dt><dd id="demo-window-count">0</dd></div>
+            <div><dt>Packets received</dt><dd id="demo-window-packets">0</dd></div>
+            <div><dt>Last prediction</dt><dd id="demo-window-prediction">n/a</dd></div>
+          </dl>
+          <div class="packet-progress" aria-label="PacketWindow progress">
+            <div id="demo-window-progress-bar" class="packet-progress-bar" style="width: 0%"></div>
+          </div>
+          <p id="demo-window-progress-label" class="muted">PacketWindow(30): 0/30</p>
+        </section>
+
+        <section class="panel demo-window-panel smartwatch-window-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Smartwatch Live Observer</p>
+              <h2>Wearable ICMP/TCP/HTTP-like Window</h2>
+            </div>
+            <span id="demo-smartwatch-status" class="badge badge-warning">STOPPED</span>
+          </div>
+          <dl class="compact-facts">
+            <div><dt>Node</dt><dd id="demo-smartwatch-node">iot-smart-watch-medium</dd></div>
+            <div><dt>Device type</dt><dd id="demo-smartwatch-device">Wearable IoT / Smartwatch</dd></div>
+            <div><dt>Tier</dt><dd><span id="demo-smartwatch-tier" class="badge badge-success">medium</span></dd></div>
+            <div><dt>Protocol focus</dt><dd id="demo-smartwatch-protocol">ICMP / TCP / HTTP-like</dd></div>
+            <div><dt>Input mode</dt><dd id="demo-smartwatch-input-mode">original_28_scaled</dd></div>
+            <div><dt>PacketWindow fill</dt><dd><span id="demo-smartwatch-buffer">0 / 30 packets</span></dd></div>
+            <div><dt>Last window ID</dt><dd id="demo-smartwatch-window-id">n/a</dd></div>
+            <div><dt>Rate scaled</dt><dd id="demo-smartwatch-rate">n/a</dd></div>
+            <div><dt>IAT scaled</dt><dd id="demo-smartwatch-iat">n/a</dd></div>
+            <div><dt>ICMP count</dt><dd id="demo-smartwatch-icmp">0</dd></div>
+            <div><dt>Windows published</dt><dd id="demo-smartwatch-count">0</dd></div>
+            <div><dt>Last prediction</dt><dd id="demo-smartwatch-prediction">n/a</dd></div>
+            <div><dt>Last alert severity</dt><dd id="demo-smartwatch-alert-severity">n/a</dd></div>
+            <div><dt>Runtime errors</dt><dd><span id="demo-smartwatch-errors" class="badge badge-success">0</span></dd></div>
+          </dl>
+          <div class="packet-progress" aria-label="Smartwatch PacketWindow progress">
+            <div id="demo-smartwatch-progress-bar" class="packet-progress-bar" style="width: 0%"></div>
+          </div>
+          <p id="demo-smartwatch-progress-label" class="muted">PacketWindow(30): 0/30</p>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Normal vs Burst</p>
+              <h2>Feature Contrast</h2>
+            </div>
+            <span class="badge badge-info">MAVLink remains UDP</span>
+          </div>
+          <div class="table-wrap feature-contrast-wrap">
+            <table class="feature-contrast-table">
+              <thead>
+                <tr>
+                  <th>Feature</th>
+                  <th>Normal MAVLink</th>
+                  <th>Burst MAVLink</th>
+                  <th>Interpretation</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>UDP</td><td>30</td><td>30</td><td>Same protocol</td></tr>
+                <tr><td>Rate</td><td>about 1 pkt/s</td><td>about 333-517 pkt/s</td><td>Strong acceleration</td></tr>
+                <tr><td>IAT</td><td>about 1.0 s</td><td>about 0.002-0.003 s</td><td>Packets become very close</td></tr>
+                <tr><td>Number</td><td>30</td><td>30</td><td>Complete window</td></tr>
+                <tr><td>SYN</td><td>0</td><td>0</td><td>Expected because MAVLink is UDP</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Smartwatch ICMP Feature Contrast</p>
+              <h2>Low-rate vs Flood-like ICMP</h2>
+            </div>
+            <span class="badge badge-info">scaled Rate is not raw pkt/s</span>
+          </div>
+          <div class="table-wrap feature-contrast-wrap">
+            <table class="feature-contrast-table">
+              <thead>
+                <tr>
+                  <th>Feature</th>
+                  <th>Low-rate ICMP reference</th>
+                  <th>ICMP flood-like</th>
+                  <th>Interpretation</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>ICMP</td><td>30</td><td>30</td><td>Same protocol</td></tr>
+                <tr><td>Number</td><td>30</td><td>30</td><td>Complete PacketWindow</td></tr>
+                <tr><td>Rate scaled</td><td>about -0.35</td><td>about 1.38</td><td>Traffic acceleration</td></tr>
+                <tr><td>IAT scaled</td><td>reference timing</td><td>compressed timing</td><td>Packet timing changes</td></tr>
+                <tr><td>TCP</td><td>0</td><td>0</td><td>ICMP-only scenario</td></tr>
+                <tr><td>UDP</td><td>0</td><td>0</td><td>MAVLink is handled by drone node</td></tr>
+                <tr><td>SYN</td><td>0</td><td>0</td><td>ICMP has no TCP SYN flag</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel pipeline-panel smartwatch-pipeline-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Smartwatch Pipeline</p>
+              <h2>Live Wearable Defense Path</h2>
+            </div>
+          </div>
+          <ol class="pipeline-list">
+            <li><strong>Kali VM</strong><span>192.168.56.103, controlled lab workstation</span></li>
+            <li><strong>Smartwatch VM iot-smart-watch-medium</strong><span>192.168.56.102, passive PacketWindow(30) observer</span></li>
+            <li><strong>28 scaled CICIoT2023-like features</strong><span>runtime RobustScaler JSON, QGA mask applied by API</span></li>
+            <li><strong>MQTT Broker</strong><span>ids/flows/iot-smart-watch-medium</span></li>
+            <li><strong>Final IDS API</strong><span>P8 FedAvg + QGA, p8_fedavg_qga_l1</span></li>
+            <li><strong>Dashboard Alert</strong><span>prediction, confidence and severity shown live</span></li>
+          </ol>
+        </section>
+
+        <section class="panel pipeline-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Architecture Pipeline</p>
+              <h2>Live UAV Defense Path</h2>
+            </div>
+          </div>
+          <ol class="pipeline-list">
+            <li><strong>Kali VM</strong><span>192.168.56.103, controlled lab workstation</span></li>
+            <li><strong>Drone VM iot-drone-sitl</strong><span>192.168.56.101, passive MAVLink/UDP observer</span></li>
+            <li><strong>PacketWindow(30) sliding</strong><span>28 features -> scaler JSON -> QGA selected 12</span></li>
+            <li><strong>MQTT Broker</strong><span>ids/flows/iot-drone-sitl</span></li>
+            <li><strong>Final IDS API</strong><span>P8 FedAvg + QGA, p8_fedavg_qga_l1</span></li>
+            <li><strong>Dashboard Alert</strong><span>prediction and severity shown live</span></li>
+          </ol>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Live Event Stream</p>
+              <h2>Operational Timeline</h2>
+            </div>
+            <span class="badge badge-success">safe runtime evidence</span>
+          </div>
+          <div id="demo-event-stream" class="demo-event-stream empty-state">No live events observed yet.</div>
+        </section>
+      </div>
+
+      <aside class="demo-side-column">
+        <section class="panel demo-model-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Model Assignment Panel</p>
+              <h2>Final Model Profile</h2>
+            </div>
+          </div>
+          <dl class="model-facts demo-model-facts">
+            <div><dt>Final model</dt><dd id="demo-final-model">P8 FedAvg + QGA</dd></div>
+            <div><dt>model_id</dt><dd id="demo-model-id">p8_fedavg_qga_l1</dd></div>
+            <div><dt>selected_mask_id</dt><dd id="demo-mask-id">conservative_seed_42</dd></div>
+            <div><dt>threshold</dt><dd id="demo-threshold">0.4</dd></div>
+            <div><dt>scaler</dt><dd id="demo-scaler">JSON runtime scaler</dd></div>
+          </dl>
+          <div class="path-card"><strong>VM1 path</strong><p id="demo-vm1-path">12 selected scaled features.</p></div>
+          <div class="path-card"><strong>VM2 path</strong><p id="demo-vm2-path">28 scaled features, QGA mask inside API.</p></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Live Metrics Panel</p>
+              <h2>MQTT-to-IDS Counters</h2>
+            </div>
+          </div>
+          <div id="demo-metrics-grid" class="demo-metrics-grid"></div>
+        </section>
+
+        <section class="panel jury-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">What the jury is seeing</p>
+              <h2>Defense Narrative</h2>
+            </div>
+          </div>
+          <p>This live lab demonstrates that each IoT node is registered, assigned to a tier, linked to the final P8 FedAvg + QGA model, and able to send packet-window features through MQTT to obtain real IDS predictions and alerts.</p>
+          <p>The live dashboard separates scientific evaluation from runtime deployment evidence. Scientific metrics are from P12/P13, while this demo validates the operational path.</p>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Service Health</p>
+              <h2>Readiness Signals</h2>
+            </div>
+          </div>
+          <div id="demo-service-status" class="service-list"></div>
+          <div id="demo-warnings" class="demo-warnings"></div>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <script src="/static/js/theme.js"></script>
+  <script src="/static/js/notifications.js"></script>
+  <script src="/static/js/audio_signals.js"></script>
+  <script src="/static/js/demo.js"></script>
+</body>
+</html>
+

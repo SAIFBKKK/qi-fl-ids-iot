@@ -5,6 +5,8 @@ from typing import Any
 
 import torch.nn as nn
 
+SUPPORTED_MODEL_WIDTHS = {0.25, 0.5, 1.0}
+
 
 def resolve_num_classes(
     dataset_cfg: Mapping[str, Any],
@@ -49,3 +51,12 @@ def validate_model_output_dim(model: nn.Module, expected_num_classes: int) -> No
             f"{expected_num_classes} classes."
         )
 
+
+def validate_width_compatibility(width: float) -> float:
+    resolved = float(width)
+    if resolved not in SUPPORTED_MODEL_WIDTHS:
+        raise ValueError(
+            f"Unsupported model width {width!r}. "
+            f"Expected one of {sorted(SUPPORTED_MODEL_WIDTHS)}."
+        )
+    return resolved

@@ -19,7 +19,11 @@ class IoTLocalDataset(Dataset):
         y : int64 array   [n_samples]
     """
 
-    def __init__(self, npz_path: str | Path):
+    def __init__(
+        self,
+        npz_path: str | Path,
+        selected_feature_indices: list[int] | None = None,
+    ):
         self.npz_path = Path(npz_path)
 
         if not self.npz_path.exists():
@@ -27,10 +31,25 @@ class IoTLocalDataset(Dataset):
 
         data = np.load(self.npz_path, allow_pickle=True)
 
-        self.X = torch.tensor(data["X"], dtype=torch.float32)
+        X = data["X"]
+        feature_names = data.get("feature_names", None)
+        if selected_feature_indices is not None:
+            indices = np.asarray(selected_feature_indices, dtype=int)
+            if indices.ndim != 1 or indices.size == 0:
+                raise ValueError("selected_feature_indices must be a non-empty 1D list.")
+            if indices.min() < 0 or indices.max() >= X.shape[1]:
+                raise ValueError(
+                    f"Selected feature index out of bounds for X.shape={X.shape}: "
+                    f"{indices.tolist()}"
+                )
+            X = X[:, indices]
+            if feature_names is not None:
+                feature_names = feature_names[indices]
+
+        self.X = torch.tensor(X, dtype=torch.float32)
         self.y = torch.tensor(data["y"], dtype=torch.long)
 
-        self.feature_names = data.get("feature_names", None)
+        self.feature_names = feature_names
 
     def __len__(self) -> int:
         return len(self.X)

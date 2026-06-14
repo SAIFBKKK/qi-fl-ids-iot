@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import OrderedDict
 from collections.abc import Mapping
+import json
 from pathlib import Path
 import pickle
 from time import perf_counter
@@ -11,6 +12,7 @@ import numpy as np
 import torch
 from flwr.client import ClientApp
 from flwr.common import Context
+from torch.utils.data import ConcatDataset, DataLoader
 try:
     from flwr.common.constant import PARTITION_ID_KEY
 except ImportError:  # Flower <= 1.18 does not export the constant.
@@ -18,13 +20,20 @@ except ImportError:  # Flower <= 1.18 does not export the constant.
 
 from src.common.logger import get_logger
 from src.common.paths import ARTIFACTS_DIR, DATA_DIR, get_processed_path
+from src.common.schemas import NodeProfile
 from src.common.utils import get_expected_node_ids, resolve_node_id_from_partition
 from src.data.dataloader import create_dataloaders_for_node
+from src.data.dataset import IoTLocalDataset
 from src.model.evaluate import evaluate_model
 from src.model.network import MLPClassifier
+from src.model.supernet import SuperNet
 from src.model.train import train_one_epoch
 from src.model.losses import build_loss, load_class_weights
-from src.model.validation import resolve_num_classes, validate_model_output_dim
+from src.model.validation import (
+    resolve_num_classes,
+    validate_model_output_dim,
+    validate_width_compatibility,
+)
 
 
 logger = get_logger("fl_client")
@@ -93,6 +102,68 @@ def resolve_node_dir(node_id: str, scenario: str):
     )
 
 
+def resolve_selected_feature_indices(
+    config: Mapping[str, object],
+    scenario: str,
+) -> list[int] | None:
+    model_cfg = dict(config.get("model", {}))
+    feature_cfg = dict(config.get("feature_selection", {}))
+    feature_cfg.update(dict(model_cfg.get("feature_selection", {})))
+    if not bool(feature_cfg.get("enabled", False)):
+        return None
+
+    raw_path = str(
+        feature_cfg.get(
+            "artifact_path",
+            "artifacts/qi_feature_selection/{scenario}/selected_features.json",
+        )
+    ).format(scenario=scenario)
+    artifact_path = Path(raw_path)
+    if not artifact_path.is_absolute():
+        artifact_path = ARTIFACTS_DIR.parent / artifact_path
+    if not artifact_path.exists():
+        raise FileNotFoundError(
+            f"QGA selected features artifact not found: {artifact_path}. "
+            "Run: python -m src.scripts.run_qi_feature_selection "
+            f"--scenario {scenario} --config configs/qi/qga_feature_selection.yaml"
+        )
+
+    payload = json.loads(artifact_path.read_text(encoding="utf-8"))
+    indices = payload.get("selected_indices")
+    if not isinstance(indices, list) or not indices:
+        raise ValueError(f"Invalid selected_indices in {artifact_path}")
+    expected_k = feature_cfg.get("k_features")
+    if expected_k is not None and len(indices) != int(expected_k):
+        raise ValueError(
+            f"Selected feature count mismatch for {artifact_path}: "
+            f"expected {int(expected_k)}, got {len(indices)}."
+        )
+    return [int(index) for index in indices]
+
+
+def create_global_validation_loader(
+    scenario: str,
+    batch_size: int,
+    selected_feature_indices: list[int] | None = None,
+) -> DataLoader:
+    datasets = []
+    for node_id in ("node1", "node2", "node3"):
+        path = DATA_DIR / "processed" / scenario / node_id / "val_preprocessed.npz"
+        datasets.append(
+            IoTLocalDataset(
+                path,
+                selected_feature_indices=selected_feature_indices,
+            )
+        )
+    return DataLoader(
+        ConcatDataset(datasets),
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=0,
+        drop_last=False,
+    )
+
+
 class FlowerClient(fl.client.NumPyClient):
     def __init__(
         self,
@@ -111,6 +182,12 @@ class FlowerClient(fl.client.NumPyClient):
         benign_class_id: int = 1,
         rare_class_ids: tuple[int, ...] = (0, 3, 30, 31, 33),
         scaffold_state_dir: str | Path | None = None,
+        model_architecture: str = "MLPClassifier",
+        enable_submodel_training: bool = False,
+        model_width: float = 1.0,
+        multitier_enabled: bool = False,
+        selected_feature_indices: list[int] | None = None,
+        common_global_validation: bool = False,
     ):
         self.node_id = node_id
         self.scenario = scenario
@@ -125,6 +202,13 @@ class FlowerClient(fl.client.NumPyClient):
         self.num_classes = int(num_classes)
         self.benign_class_id = benign_class_id
         self.rare_class_ids = rare_class_ids
+        self.model_architecture = model_architecture
+        self.multitier_enabled = bool(multitier_enabled)
+        self.enable_submodel_training = bool(enable_submodel_training)
+        self.model_width = validate_width_compatibility(model_width)
+        self.selected_feature_indices = selected_feature_indices
+        self.common_global_validation = bool(common_global_validation)
+        self.global_eval_loader = None
         self.scaffold_state_dir = (
             Path(scaffold_state_dir) if scaffold_state_dir is not None else None
         )
@@ -136,11 +220,21 @@ class FlowerClient(fl.client.NumPyClient):
             node_dir=node_dir,
             batch_size=batch_size,
             num_workers=0,
+            selected_feature_indices=selected_feature_indices,
         )
+        if self.common_global_validation:
+            self.global_eval_loader = create_global_validation_loader(
+                scenario=scenario,
+                batch_size=batch_size,
+                selected_feature_indices=selected_feature_indices,
+            )
 
         sample_batch = next(iter(self.train_loader))
         X_sample, _ = sample_batch
         input_dim = X_sample.shape[1]
+        self.input_dim = int(input_dim)
+        self.hidden_dims = tuple(int(dim) for dim in hidden_dims)
+        self.dropout = float(dropout)
 
         base_dataset = getattr(self.train_loader.dataset, "dataset", self.train_loader.dataset)
         max_label = int(base_dataset.y.max().item())
@@ -150,12 +244,15 @@ class FlowerClient(fl.client.NumPyClient):
                 f"but dataset.num_classes={self.num_classes}."
             )
 
-        self.model = MLPClassifier(
-            input_dim=input_dim,
-            num_classes=self.num_classes,
-            hidden_dims=hidden_dims,
-            dropout=dropout,
-        ).to(self.device)
+        if self.model_architecture.lower() == "supernet":
+            self.model = self._build_supernet(self.model_width)
+        else:
+            self.model = MLPClassifier(
+                input_dim=self.input_dim,
+                num_classes=self.num_classes,
+                hidden_dims=self.hidden_dims,
+                dropout=self.dropout,
+            ).to(self.device)
         validate_model_output_dim(self.model, self.num_classes)
 
         class_weights = None
@@ -194,6 +291,73 @@ class FlowerClient(fl.client.NumPyClient):
                 self.node_id,
                 self._scaffold_state_dir(),
             )
+
+    def _build_supernet(self, width: float) -> SuperNet:
+        width = validate_width_compatibility(width)
+        return SuperNet(
+            width=width,
+            dropout=self.dropout,
+            input_dim=self.input_dim,
+            output_dim=self.num_classes,
+            max_hidden_1=int(self.hidden_dims[0]),
+            max_hidden_2=int(self.hidden_dims[1]),
+        ).to(self.device)
+
+    def _infer_received_width(self, parameters) -> float:
+        if not parameters:
+            return self.model_width
+        first_shape = tuple(parameters[0].shape)
+        if len(first_shape) != 2:
+            return self.model_width
+        width = float(first_shape[0]) / float(self.hidden_dims[0])
+        return validate_width_compatibility(width)
+
+    def _maybe_apply_tier_assignment(self, config: Mapping[str, object]) -> None:
+        assigned_tier = config.get("assigned_tier")
+        model_width = config.get("model_width")
+        if assigned_tier is None or model_width is None:
+            return
+
+        width = validate_width_compatibility(float(model_width))
+        logger.info(
+            "[%s] received tier assignment | tier=%s | model_width=%s | tier_local_epochs=%s | tier_batch_size=%s",
+            self.node_id,
+            assigned_tier,
+            width,
+            config.get("tier_local_epochs"),
+            config.get("tier_batch_size"),
+        )
+
+        if self.model_architecture.lower() != "supernet":
+            return
+        if not self.enable_submodel_training:
+            logger.info(
+                "[%s] SuperNet tier width %.2f validated; submodel training waits for US5 masked aggregation",
+                self.node_id,
+                width,
+            )
+            return
+        if width == self.model_width:
+            return
+
+        self.model_width = width
+        self.model = self._build_supernet(width)
+        validate_model_output_dim(self.model, self.num_classes)
+        self._reset_optimizer()
+
+    def _apply_received_width(self, received_width: float) -> None:
+        """Rebuild SuperNet to match received_width if it differs from current model_width."""
+        if not self.enable_submodel_training:
+            return
+        if self.model_architecture.lower() != "supernet":
+            return
+        width = validate_width_compatibility(received_width)
+        if width == self.model_width:
+            return
+        self.model_width = width
+        self.model = self._build_supernet(width)
+        validate_model_output_dim(self.model, self.num_classes)
+        self._reset_optimizer()
 
     def _train_fedprox_epoch(self, global_params):
         self.model.train()
@@ -334,12 +498,81 @@ class FlowerClient(fl.client.NumPyClient):
             weight_decay=self.weight_decay,
         )
 
+    def _ensure_global_eval_loader(self):
+        if self.global_eval_loader is None:
+            self.global_eval_loader = create_global_validation_loader(
+                scenario=self.scenario,
+                batch_size=self.batch_size,
+                selected_feature_indices=self.selected_feature_indices,
+            )
+        return self.global_eval_loader
+
+    def _evaluate_current_model(self, loader):
+        return evaluate_model(
+            model=self.model,
+            loader=loader,
+            criterion=self.criterion,
+            device=self.device,
+            benign_class_id=self.benign_class_id,
+            rare_class_ids=self.rare_class_ids,
+            num_classes=self.num_classes,
+        )
+
+    def get_node_profile(self) -> NodeProfile:
+        profiles = {
+            "node1": {
+                "cpu_cores": 1,
+                "ram_mb": 256,
+                "device_type": "raspberry_pi_zero",
+                "avg_latency_ms": 120.0,
+                "battery_powered": True,
+                "network_quality": "low",
+            },
+            "node2": {
+                "cpu_cores": 4,
+                "ram_mb": 1024,
+                "device_type": "raspberry_pi_4",
+                "avg_latency_ms": 60.0,
+                "battery_powered": False,
+                "network_quality": "medium",
+            },
+            "node3": {
+                "cpu_cores": 8,
+                "ram_mb": 4096,
+                "device_type": "edge_pc",
+                "avg_latency_ms": 15.0,
+                "battery_powered": False,
+                "network_quality": "high",
+            },
+        }
+        default_profile = profiles.get("node2", {})
+        payload = {"node_id": self.node_id, **profiles.get(self.node_id, default_profile)}
+        return NodeProfile.from_dict(payload)
+
     def get_parameters(self, config):
         logger.info("[%s] get_parameters()", self.node_id)
         return get_model_parameters(self.model)
 
     def fit(self, parameters, config):
         logger.info("[%s] fit() started", self.node_id)
+        assigned_tier = str(config.get("assigned_tier", "unknown"))
+        tier_width = validate_width_compatibility(float(config.get("tier_width", 1.0)))
+        received_width = validate_width_compatibility(
+            float(config.get("received_width", tier_width))
+        )
+        warmup_full_model = bool(config.get("server_round") == 1 and received_width == 1.0)
+
+        if self.multitier_enabled:
+            self._apply_received_width(received_width)
+            logger.info(
+                "[%s] received state with width=%.2f%s, tier=%s",
+                self.node_id,
+                received_width,
+                " (warm-up)" if warmup_full_model else "",
+                assigned_tier,
+            )
+        else:
+            self._maybe_apply_tier_assignment(config)
         set_model_parameters(self.model, parameters)
         self._reset_optimizer()
 
@@ -402,14 +635,37 @@ class FlowerClient(fl.client.NumPyClient):
             float(last["accuracy"]),
         )
 
+        profile = self.get_node_profile()
         metrics = {
             "node_id": self.node_id,
+            "node_profile_json": json.dumps(
+                profile.to_dict(),
+                sort_keys=True,
+            ),
+            "assigned_tier": assigned_tier,
+            "tier_width": float(tier_width),
+            "received_width": float(received_width),
+            "warmup_full_model": bool(warmup_full_model),
             "train_loss_last": float(last["loss"]),
             "train_accuracy_last": float(last["accuracy"]),
             "train_time_sec": float(train_time_sec),
             "update_size_bytes": int(update_size_bytes),
             "bytes_received": float(bytes_before),
         }
+        if self.common_global_validation:
+            local_val_metrics = self._evaluate_current_model(self.eval_loader)
+            global_val_metrics = self._evaluate_current_model(
+                self._ensure_global_eval_loader()
+            )
+            metrics.update(
+                {
+                    "local_val_macro_f1": float(local_val_metrics["macro_f1"]),
+                    "local_rare_recall": float(local_val_metrics["rare_class_recall"]),
+                    "global_val_macro_f1": float(global_val_metrics["macro_f1"]),
+                    "global_val_loss": float(global_val_metrics["loss"]),
+                    "global_rare_recall": float(global_val_metrics["rare_class_recall"]),
+                }
+            )
         if self.fl_strategy == "scaffold":
             metrics["scaffold_delta_c"] = pickle.dumps(
                 [dc.astype(np.float32) for dc in delta_c]
@@ -425,17 +681,11 @@ class FlowerClient(fl.client.NumPyClient):
 
     def evaluate(self, parameters, config):
         logger.info("[%s] evaluate() started", self.node_id)
+        if self.multitier_enabled:
+            self._apply_received_width(self._infer_received_width(parameters))
         set_model_parameters(self.model, parameters)
 
-        metrics = evaluate_model(
-            model=self.model,
-            loader=self.eval_loader,
-            criterion=self.criterion,
-            device=self.device,
-            benign_class_id=self.benign_class_id,
-            rare_class_ids=self.rare_class_ids,
-            num_classes=self.num_classes,
-        )
+        metrics = self._evaluate_current_model(self.eval_loader)
 
         logger.info(
             "[%s] evaluate() done | loss=%.4f | acc=%.4f | macro_f1=%.4f",
@@ -446,13 +696,25 @@ class FlowerClient(fl.client.NumPyClient):
         )
 
         metric_payload = {
+            "node_id": self.node_id,
             "accuracy": float(metrics["accuracy"]),
             "macro_f1": float(metrics["macro_f1"]),
             "recall_macro": float(metrics["recall_macro"]),
             "benign_recall": float(metrics["benign_recall"]),
             "false_positive_rate": float(metrics["false_positive_rate"]),
             "rare_class_recall": float(metrics["rare_class_recall"]),
+            "local_val_macro_f1": float(metrics["macro_f1"]),
+            "local_rare_recall": float(metrics["rare_class_recall"]),
         }
+        if bool(config.get("common_global_validation", self.common_global_validation)):
+            global_metrics = self._evaluate_current_model(self._ensure_global_eval_loader())
+            metric_payload.update(
+                {
+                    "global_val_macro_f1": float(global_metrics["macro_f1"]),
+                    "global_val_loss": float(global_metrics["loss"]),
+                    "global_rare_recall": float(global_metrics["rare_class_recall"]),
+                }
+            )
         metric_payload.update(
             {
                 key: float(value)
@@ -476,6 +738,8 @@ def make_client_fn(config: Mapping[str, object]):
     imbalance_cfg = dict(config.get("imbalance", {}))
     experiment_cfg = dict(config.get("experiment", {}))
     runtime_cfg = dict(config.get("runtime", {}))
+    strategy_cfg = dict(config.get("strategy", {}))
+    evaluation_cfg = dict(config.get("evaluation", {}))
 
     scenario = str(scenario_cfg.get("name", "normal_noniid"))
     batch_size = int(train_cfg.get("batch_size", 256))
@@ -487,7 +751,29 @@ def make_client_fn(config: Mapping[str, object]):
     proximal_mu = float(train_cfg.get("proximal_mu", 0.0))
     imbalance_strategy = str(imbalance_cfg.get("name", "class_weights"))
     focal_gamma = float(imbalance_cfg.get("focal_gamma", 2.0))
-    hidden_dims = tuple(model_cfg.get("hidden_dims", [128, 64]))
+    multitier_enabled = bool(strategy_cfg.get("multitier_enabled", False))
+    model_architecture = str(
+        model_cfg.get("architecture", model_cfg.get("name", "MLPClassifier"))
+    )
+    if model_architecture == "supernet_34":
+        model_architecture = "SuperNet"
+    if multitier_enabled:
+        model_architecture = "SuperNet"
+    else:
+        model_architecture = "MLPClassifier"
+    enable_submodel_training = bool(
+        multitier_enabled or model_cfg.get("enable_submodel_training", False)
+    )
+    model_width = validate_width_compatibility(float(model_cfg.get("model_width", 1.0)))
+    hidden_dims = tuple(
+        model_cfg.get(
+            "hidden_dims",
+            [
+                model_cfg.get("max_hidden_1", 128),
+                model_cfg.get("max_hidden_2", 64),
+            ],
+        )
+    )
     dropout = float(model_cfg.get("dropout", 0.2))
     num_classes = resolve_num_classes(dataset_cfg, model_cfg)
     benign_class_id = int(dataset_cfg.get("benign_class_id", 1))
@@ -495,6 +781,8 @@ def make_client_fn(config: Mapping[str, object]):
     num_clients = int(scenario_cfg.get("num_clients", 3))
     node_ids = list(scenario_cfg.get("node_ids", get_expected_node_ids(num_clients)))
     scaffold_state_dir = runtime_cfg.get("scaffold_state_dir")
+    selected_feature_indices = resolve_selected_feature_indices(config, scenario)
+    common_global_validation = bool(evaluation_cfg.get("common_global_validation", False))
 
     assert len(node_ids) == num_clients, (
         f"node_ids length mismatch: node_ids={node_ids}, num_clients={num_clients}"
@@ -529,6 +817,12 @@ def make_client_fn(config: Mapping[str, object]):
             benign_class_id=benign_class_id,
             rare_class_ids=rare_class_ids,
             scaffold_state_dir=scaffold_state_dir,
+            model_architecture=model_architecture,
+            enable_submodel_training=enable_submodel_training,
+            model_width=model_width,
+            multitier_enabled=multitier_enabled,
+            selected_feature_indices=selected_feature_indices,
+            common_global_validation=common_global_validation,
         ).to_client()
 
     return configured_client_fn

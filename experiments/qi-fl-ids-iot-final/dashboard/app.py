@@ -1,0 +1,1061 @@
+from __future__ import annotations
+
+import json
+import os
+import sys
+import time
+import urllib.error
+import urllib.request
+from pathlib import Path
+from typing import Any
+
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from starlette.requests import Request
+
+from data_loader import load_evaluations, load_figures, load_registry, load_summary
+
+
+DASHBOARD_DIR = Path(__file__).resolve().parent
+FINAL_DIR = DASHBOARD_DIR.parent
+SCRIPTS_DIR = FINAL_DIR / "src" / "scripts"
+REQUEST_TIMEOUT_SECONDS = float(os.getenv("LIVE_LAB_DASHBOARD_TIMEOUT", "0.8"))
+
+SERVICE_URLS = {
+    "controller": [
+        os.getenv("LIVE_LAB_CONTROLLER_URL"),
+        "http://live-lab-controller:8020",
+        "http://127.0.0.1:8020",
+    ],
+    "validator": [
+        os.getenv("ONLINE_VALIDATOR_URL"),
+        "http://online-validator:8015",
+        "http://127.0.0.1:8015",
+    ],
+    "bridge": [
+        os.getenv("FINAL_MQTT_BRIDGE_URL"),
+        "http://final-mqtt-bridge:8016",
+        "http://127.0.0.1:8016",
+    ],
+    "api": [
+        os.getenv("FINAL_IDS_API_URL"),
+        "http://final-ids-api:8014",
+        "http://127.0.0.1:8014",
+    ],
+}
+
+MODEL_DEFAULTS = {
+    "model_id": "p8_fedavg_qga_l1",
+    "selected_mask_id": "conservative_seed_42",
+    "supported_input_modes": ["selected_12_scaled", "original_28_scaled"],
+    "threshold": None,
+}
+
+DRONE_NODE_ID = "iot-drone-sitl"
+SMARTWATCH_NODE_ID = "iot-smart-watch-medium"
+
+DEMO_NODE_PROFILES = {
+    # ancien node: iot-rpi-weak (remplacé phase 2 live lab)
+    "iot-drone-sitl": {
+        "display_name": "iot-drone-sitl",
+        "device_type": "Drone UAV SITL",
+        "protocol": "MAVLink/UDP",
+        "mavlink_port": 14550,
+        "expected_tier": "weak",
+        "inference_path": "selected_12_scaled",
+        "qga_behavior": "12 selected scaled MAVLink/UDP packet-window features sent directly",
+        "description": "Simulated UAV node using passive PacketWindow(30) observation and server-side IDS inference.",
+    },
+    "iot-smart-watch-medium": {
+        "display_name": "iot-smart-watch-medium",
+        "device_type": "Wearable IoT / Smartwatch",
+        "expected_tier": "medium",
+        "inference_path": "original_28_scaled",
+        "qga_behavior": "QGA mask applied by final-ids-api",
+        "protocol_focus": "ICMP/TCP/HTTP-like",
+        "description": "Medium wearable IoT node using passive PacketWindow(30) observation and 28 scaled features.",
+    },
+}
+
+DEMO_STEP_TEXT = {
+    "platform_ready": "Step 1 - Platform Ready",
+    "devices_connected": "Step 2 - Devices Connected",
+    "model_assigned": "Step 3 - Model Assigned",
+    "packet_window_generated": "Step 4 - Packet Window Generated",
+    "mqtt_flows_seen": "Step 5 - MQTT Flow Received",
+    "predictions_seen": "Step 6 - IDS Prediction Produced",
+    "alerts_seen": "Step 7 - Alert Detected",
+    "zero_errors": "Step 8 - Zero Runtime Errors",
+}
+
+app = FastAPI(title="QI-FL-IDS-IoT Final L1 Dashboard", version="1.5")
+app.mount("/static", StaticFiles(directory=DASHBOARD_DIR / "static"), name="static")
+templates = Jinja2Templates(directory=DASHBOARD_DIR / "templates")
+
+
+def service_candidates(name: str) -> list[str]:
+    return [url.rstrip("/") for url in SERVICE_URLS[name] if url]
+
+
+def fetch_first(name: str, path: str, *, as_json: bool = True) -> dict[str, Any]:
+    errors: list[str] = []
+    for base_url in service_candidates(name):
+        url = f"{base_url}{path}"
+        try:
+            request = urllib.request.Request(url, headers={"User-Agent": "p16-9-dashboard/1.0"})
+            with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT_SECONDS) as response:
+                content = response.read().decode("utf-8", errors="replace")
+                data: Any = json.loads(content) if as_json and content else content
+                return {
+                    "ok": True,
+                    "service": name,
+                    "url": url,
+                    "status_code": getattr(response, "status", None),
+                    "data": data,
+                }
+        except (urllib.error.URLError, TimeoutError, OSError, json.JSONDecodeError) as exc:
+            errors.append(f"{url}: {exc}")
+    urls = service_candidates(name)
+    return {"ok": False, "service": name, "url": urls[0] if urls else "", "errors": errors, "data": {}}
+
+
+def prometheus_metric_sum(text: str, metric_name: str, labels: dict[str, str] | None = None) -> float:
+    labels = labels or {}
+    total = 0.0
+    found = False
+    for raw_line in text.splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or not line.startswith(metric_name):
+            continue
+        if labels and not all(f'{key}="{value}"' in line for key, value in labels.items()):
+            continue
+        parts = line.rsplit(maxsplit=1)
+        if len(parts) != 2:
+            continue
+        try:
+            total += float(parts[1])
+            found = True
+        except ValueError:
+            continue
+    return total if found else 0.0
+
+
+def metric_int(text: str, metric_name: str, labels: dict[str, str] | None = None) -> int:
+    return int(prometheus_metric_sum(text, metric_name, labels))
+
+
+def topic_family_total(topic_counts: dict[str, Any], family: str) -> int:
+    prefix = f"ids/{family}/"
+    total = 0
+    for topic, value in topic_counts.items():
+        if str(topic).startswith(prefix):
+            try:
+                total += int(value)
+            except (TypeError, ValueError):
+                continue
+    return total
+
+
+def parse_payload_preview(value: Any) -> dict[str, Any]:
+    if not isinstance(value, str) or not value:
+        return {}
+    try:
+        payload = json.loads(value)
+    except json.JSONDecodeError:
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def sample_payload(sample: dict[str, Any]) -> dict[str, Any]:
+    payload = sample.get("payload")
+    if isinstance(payload, dict):
+        return payload
+    return parse_payload_preview(sample.get("payload_preview"))
+
+
+def first_present(payload: dict[str, Any], *keys: str, default: Any = None) -> Any:
+    for key in keys:
+        value = payload.get(key)
+        if value is not None and value != "":
+            return value
+    return default
+
+
+def normalize_confidence(payload: dict[str, Any]) -> float | None:
+    value = first_present(payload, "confidence", "probability_attack", "attack_probability", "score")
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def node_id_from_topic(topic: str) -> str:
+    parts = topic.split("/")
+    return parts[2] if len(parts) >= 3 else "unknown"
+
+
+def merge_nodes(nodes_payload: dict[str, Any], assignments_payload: dict[str, Any]) -> list[dict[str, Any]]:
+    assignments = {
+        item.get("node_id"): item
+        for item in assignments_payload.get("assignments", [])
+        if isinstance(item, dict)
+    }
+    merged: list[dict[str, Any]] = []
+    for node in nodes_payload.get("nodes", []):
+        if not isinstance(node, dict):
+            continue
+        node_id = node.get("node_id", "unknown")
+        assignment = assignments.get(node_id, {})
+        merged.append(
+            {
+                **node,
+                "assigned_tier": assignment.get("assigned_tier", node.get("assigned_tier", "unknown")),
+                "model_id": assignment.get("model_id", MODEL_DEFAULTS["model_id"]),
+                "selected_mask_id": assignment.get("selected_mask_id", MODEL_DEFAULTS["selected_mask_id"]),
+                "supported_input_modes": assignment.get("supported_input_modes", MODEL_DEFAULTS["supported_input_modes"]),
+                "mqtt_publish_topic": assignment.get("mqtt_publish_topic", f"ids/flows/{node_id}"),
+                "mqtt_prediction_topic": assignment.get("mqtt_prediction_topic", f"ids/predictions/{node_id}"),
+                "mqtt_alert_topic": assignment.get("mqtt_alert_topic", f"ids/alerts/{node_id}"),
+                "status": "connected",
+            }
+        )
+    return merged
+
+
+def extract_recent_alerts(summary_payload: dict[str, Any]) -> list[dict[str, Any]]:
+    alerts: list[dict[str, Any]] = []
+    for sample in summary_payload.get("samples", []):
+        if not isinstance(sample, dict) or sample.get("family") != "alerts":
+            continue
+        topic = str(sample.get("topic", ""))
+        payload = sample_payload(sample)
+        predicted_label = first_present(payload, "predicted_label", "label", "prediction_label", default="unknown")
+        alerts.append(
+            {
+                "timestamp": payload.get("timestamp") or sample.get("timestamp"),
+                "node_id": payload.get("node_id") or node_id_from_topic(topic),
+                "severity": str(payload.get("severity", "medium")).lower(),
+                "predicted_label": predicted_label,
+                "predicted_label_id": payload.get("predicted_label_id"),
+                "confidence": normalize_confidence(payload),
+                "probability_attack": payload.get("probability_attack"),
+                "flow_id": payload.get("flow_id") or sample.get("flow_id"),
+                "source_topic": topic,
+                "received_at_unix": sample.get("received_at_unix"),
+                "payload_parse_status": "structured" if "payload" in sample else ("preview_json" if payload else "preview_unavailable"),
+            }
+        )
+    return sorted(alerts, key=lambda item: item.get("received_at_unix") or 0, reverse=True)[:12]
+
+
+def extract_recent_samples(
+    summary_payload: dict[str, Any],
+    family: str,
+    node_id: str | None = None,
+) -> list[dict[str, Any]]:
+    items: list[dict[str, Any]] = []
+    for sample in summary_payload.get("samples", []):
+        if not isinstance(sample, dict) or sample.get("family") != family:
+            continue
+        topic = str(sample.get("topic", ""))
+        payload = sample_payload(sample)
+        sample_node_id = payload.get("node_id") or node_id_from_topic(topic)
+        if node_id and sample_node_id != node_id:
+            continue
+        items.append(
+            {
+                "timestamp": payload.get("timestamp") or sample.get("timestamp"),
+                "node_id": sample_node_id,
+                "source_topic": topic,
+                "received_at_unix": sample.get("received_at_unix"),
+                "flow_id": payload.get("flow_id") or sample.get("flow_id"),
+                "payload": payload,
+            }
+        )
+    return sorted(items, key=lambda item: item.get("received_at_unix") or 0, reverse=True)[:12]
+
+
+def count_topic(topic_counts: dict[str, Any], topic: str) -> int:
+    try:
+        return int(topic_counts.get(topic, 0) or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def count_node_samples(samples: list[dict[str, Any]], node_id: str) -> int:
+    return sum(1 for item in samples if item.get("node_id") == node_id)
+
+
+def payload_text_contains(samples: list[dict[str, Any]], node_id: str, *needles: str) -> bool:
+    lowered = [needle.lower() for needle in needles]
+    for item in samples:
+        if item.get("node_id") != node_id:
+            continue
+        payload = item.get("payload", {})
+        text = json.dumps(payload, sort_keys=True).lower() if isinstance(payload, dict) else str(payload).lower()
+        if any(needle in text for needle in lowered):
+            return True
+    return False
+
+
+def latest_alert_for_node(alerts: list[dict[str, Any]], node_id: str) -> dict[str, Any] | None:
+    return next((alert for alert in alerts if alert.get("node_id") == node_id), None)
+
+
+def severity_counts_for_node(alerts: list[dict[str, Any]], node_id: str) -> dict[str, int]:
+    counts = {"critical": 0, "high": 0, "medium": 0, "low": 0}
+    for alert in alerts:
+        if alert.get("node_id") != node_id:
+            continue
+        severity = str(alert.get("severity", "medium")).lower()
+        counts[severity] = counts.get(severity, 0) + 1
+    return counts
+
+
+def attack_predictions_for_node(predictions: list[dict[str, Any]], node_id: str) -> int:
+    total = 0
+    for prediction in predictions:
+        if prediction.get("node_id") != node_id:
+            continue
+        payload = prediction.get("payload", {})
+        label = first_present(payload, "predicted_label", "label", "prediction_label", default="")
+        if str(label).lower() == "attack":
+            total += 1
+    return total
+
+
+def node_metric_count(metrics: dict[str, Any], node_id: str, key: str) -> int:
+    try:
+        return int(metrics.get("nodes", {}).get(node_id, {}).get(key, 0) or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def incident_confidence(alert: dict[str, Any] | None, predictions: list[dict[str, Any]], node_id: str) -> float | None:
+    if alert and alert.get("confidence") is not None:
+        return alert.get("confidence")
+    for prediction in predictions:
+        if prediction.get("node_id") != node_id:
+            continue
+        confidence = normalize_confidence(prediction.get("payload", {}))
+        if confidence is not None:
+            return confidence
+    return None
+
+
+def build_node_incident(
+    *,
+    state: dict[str, Any],
+    metrics: dict[str, Any],
+    node_id: str,
+    incident_suffix: str,
+    scenario_label: str,
+    interpretation: str,
+    active: bool,
+) -> dict[str, Any] | None:
+    if not active:
+        return None
+    topic_counts = state.get("topic_counts", {})
+    recent_alerts = state.get("recent_alerts", [])
+    recent_predictions = state.get("recent_predictions", [])
+    recent_windows = state.get("recent_windows", [])
+    latest_alert = latest_alert_for_node(recent_alerts, node_id)
+    window_count = max(
+        count_topic(topic_counts, f"ids/windows/{node_id}"),
+        count_node_samples(recent_windows, node_id),
+    )
+    flows = max(
+        node_metric_count(metrics, node_id, "flows"),
+        count_topic(topic_counts, f"ids/flows/{node_id}"),
+        count_node_samples(state.get("recent_flows", []), node_id),
+    )
+    predictions_attack = max(
+        attack_predictions_for_node(recent_predictions, node_id),
+        node_metric_count(metrics, node_id, "predictions") if latest_alert else 0,
+    )
+    alerts_total = max(
+        count_node_samples(recent_alerts, node_id),
+        node_metric_count(metrics, node_id, "alerts"),
+        count_topic(topic_counts, f"ids/alerts/{node_id}"),
+    )
+    severity_counts = severity_counts_for_node(recent_alerts, node_id)
+    runtime_errors = (
+        int(metrics.get("errors", {}).get("final_ids_api_prediction_errors_total", 0) or 0)
+        + int(metrics.get("errors", {}).get("final_mqtt_bridge_prediction_errors_total", 0) or 0)
+    )
+    latest_flow_id = (
+        (latest_alert or {}).get("flow_id")
+        or next((item.get("flow_id") for item in recent_windows if item.get("node_id") == node_id), None)
+        or None
+    )
+    return {
+        "incident_id": f"incident-{node_id}-{incident_suffix}",
+        "node_id": node_id,
+        "scenario_label": scenario_label,
+        "status": "active" if alerts_total or predictions_attack or window_count else "observed",
+        "detection_windows": int(window_count),
+        "flows": int(flows),
+        "predictions_attack": int(predictions_attack),
+        "alerts_total": int(alerts_total),
+        "alert_windows": int(alerts_total),
+        "severity_counts": severity_counts,
+        "latest_confidence": incident_confidence(latest_alert, recent_predictions, node_id),
+        "latest_flow_id": latest_flow_id,
+        "runtime_errors": int(runtime_errors),
+        "interpretation": interpretation,
+        "badge": "Scenario-level incident",
+    }
+
+
+def incident_severity_score(incident: dict[str, Any]) -> tuple[int, int, int]:
+    counts = incident.get("severity_counts", {})
+    score = (
+        int(counts.get("critical", 0) or 0) * 4
+        + int(counts.get("high", 0) or 0) * 3
+        + int(counts.get("medium", 0) or 0) * 2
+        + int(counts.get("low", 0) or 0)
+    )
+    return (score, int(incident.get("alerts_total", 0) or 0), int(incident.get("detection_windows", 0) or 0))
+
+
+def build_incident_correlation(state: dict[str, Any], metrics: dict[str, Any]) -> dict[str, Any]:
+    recent_flows = state.get("recent_flows", [])
+    recent_status = state.get("recent_status", [])
+    recent_windows = state.get("recent_windows", [])
+    recent_alerts = state.get("recent_alerts", [])
+    recent_predictions = state.get("recent_predictions", [])
+
+    smartwatch_active = (
+        payload_text_contains(recent_windows, SMARTWATCH_NODE_ID, "last_icmp_count", "icmp")
+        or payload_text_contains(recent_status, SMARTWATCH_NODE_ID, "icmp/tcp/http-like")
+        or payload_text_contains(recent_flows, SMARTWATCH_NODE_ID, "smartwatch", "icmp")
+        or count_node_samples(recent_alerts, SMARTWATCH_NODE_ID) > 0
+        or count_node_samples(recent_predictions, SMARTWATCH_NODE_ID) > 0
+    )
+    drone_active = (
+        payload_text_contains(recent_windows, DRONE_NODE_ID, "udp", "mavlink")
+        or payload_text_contains(recent_status, DRONE_NODE_ID, "mavlink/udp")
+        or payload_text_contains(recent_flows, DRONE_NODE_ID, "mavlink")
+        or count_node_samples(recent_alerts, DRONE_NODE_ID) > 0
+        or count_node_samples(recent_predictions, DRONE_NODE_ID) > 0
+    )
+
+    candidates = [
+        build_node_incident(
+            state=state,
+            metrics=metrics,
+            node_id=SMARTWATCH_NODE_ID,
+            incident_suffix="icmp-flood-like",
+            scenario_label="ICMP flood-like traffic on smartwatch",
+            interpretation="One correlated ICMP scenario produced multiple sliding PacketWindow detections.",
+            active=smartwatch_active,
+        ),
+        build_node_incident(
+            state=state,
+            metrics=metrics,
+            node_id=DRONE_NODE_ID,
+            incident_suffix="mavlink-burst-like",
+            scenario_label="MAVLink burst-like traffic on drone",
+            interpretation="One correlated MAVLink/UDP scenario produced multiple sliding PacketWindow detections.",
+            active=drone_active,
+        ),
+    ]
+    incidents = [item for item in candidates if item is not None]
+    incidents.sort(key=incident_severity_score, reverse=True)
+    return {
+        "enabled": True,
+        "grouping_rule": "Sliding windows are grouped by node_id and scenario-level protocol signature.",
+        "incidents": incidents,
+    }
+
+
+def observer_runtime_status(sample: dict[str, Any] | None) -> tuple[str, float | None]:
+    if not sample:
+        return "STOPPED", None
+    received_at = sample.get("received_at_unix")
+    if not isinstance(received_at, (int, float)):
+        return "STOPPED", None
+    age_seconds = max(time.time() - float(received_at), 0.0)
+    if age_seconds < 15:
+        return "RUNNING", round(age_seconds, 3)
+    if age_seconds <= 60:
+        return "STALE", round(age_seconds, 3)
+    return "STOPPED", round(age_seconds, 3)
+
+
+def build_drone_observer_state(state: dict[str, Any]) -> dict[str, Any]:
+    status_sample = next((item for item in state.get("recent_status", []) if item.get("node_id") == DRONE_NODE_ID), None)
+    window_sample = next((item for item in state.get("recent_windows", []) if item.get("node_id") == DRONE_NODE_ID), None)
+    prediction_sample = next(
+        (item for item in state.get("recent_predictions", []) if item.get("node_id") == DRONE_NODE_ID),
+        None,
+    )
+    alert_sample = next((item for item in state.get("recent_alerts", []) if item.get("node_id") == DRONE_NODE_ID), None)
+
+    status_payload = status_sample.get("payload", {}) if status_sample else {}
+    window_payload = window_sample.get("payload", {}) if window_sample else {}
+    prediction_payload = prediction_sample.get("payload", {}) if prediction_sample else {}
+    observer_status, age_seconds = observer_runtime_status(status_sample)
+    window_size = int(window_payload.get("window_size") or 30)
+    buffer_fill = int(window_payload.get("buffer_fill") or 0)
+    progress_percent = round(min(max(buffer_fill / window_size, 0.0), 1.0) * 100, 1) if window_size else 0.0
+    predicted_label = first_present(
+        prediction_payload,
+        "predicted_label",
+        "label",
+        "prediction_label",
+        default=alert_sample.get("predicted_label") if alert_sample else None,
+    )
+    return {
+        "node_id": DRONE_NODE_ID,
+        "protocol": "MAVLink/UDP",
+        "listen_port": int(status_payload.get("listen_port") or 14551),
+        "observer_status": observer_status,
+        "status_age_seconds": age_seconds,
+        "buffer_fill": buffer_fill,
+        "window_size": window_size,
+        "progress_percent": progress_percent,
+        "last_window_id": window_payload.get("last_window_id") or status_payload.get("last_window_id"),
+        "last_rate": window_payload.get("last_rate"),
+        "last_iat": window_payload.get("last_iat"),
+        "last_udp_count": window_payload.get("last_udp_count"),
+        "last_number": window_payload.get("last_number"),
+        "windows_published": int(status_payload.get("windows_published") or 0),
+        "packets_received": int(status_payload.get("packets_received") or 0),
+        "last_prediction_label": predicted_label,
+        "last_alert": alert_sample,
+        "status_topic": f"ids/status/{DRONE_NODE_ID}",
+        "window_topic": f"ids/windows/{DRONE_NODE_ID}",
+        "flow_topic": f"ids/flows/{DRONE_NODE_ID}",
+        "latest_status": status_sample,
+        "latest_window": window_sample,
+        "latest_prediction": prediction_sample,
+    }
+
+
+def build_smartwatch_observer_state(state: dict[str, Any]) -> dict[str, Any]:
+    status_sample = next(
+        (item for item in state.get("recent_status", []) if item.get("node_id") == SMARTWATCH_NODE_ID),
+        None,
+    )
+    window_sample = next(
+        (item for item in state.get("recent_windows", []) if item.get("node_id") == SMARTWATCH_NODE_ID),
+        None,
+    )
+    prediction_sample = next(
+        (item for item in state.get("recent_predictions", []) if item.get("node_id") == SMARTWATCH_NODE_ID),
+        None,
+    )
+    alert_sample = next(
+        (item for item in state.get("recent_alerts", []) if item.get("node_id") == SMARTWATCH_NODE_ID),
+        None,
+    )
+
+    status_payload = status_sample.get("payload", {}) if status_sample else {}
+    window_payload = window_sample.get("payload", {}) if window_sample else {}
+    prediction_payload = prediction_sample.get("payload", {}) if prediction_sample else {}
+    observer_status, age_seconds = observer_runtime_status(status_sample)
+    window_size = int(window_payload.get("window_size") or 30)
+    buffer_fill = int(window_payload.get("buffer_fill") or 0)
+    progress_percent = round(min(max(buffer_fill / window_size, 0.0), 1.0) * 100, 1) if window_size else 0.0
+    predicted_label = first_present(
+        prediction_payload,
+        "predicted_label",
+        "label",
+        "prediction_label",
+        default=alert_sample.get("predicted_label") if alert_sample else None,
+    )
+    return {
+        "node_id": SMARTWATCH_NODE_ID,
+        "device_type": "Wearable IoT / Smartwatch",
+        "tier": "medium",
+        "protocol_focus": status_payload.get("protocol_focus") or "ICMP/TCP/HTTP-like",
+        "input_mode": "original_28_scaled",
+        "observer_status": observer_status,
+        "status_age_seconds": age_seconds,
+        "interface": status_payload.get("interface") or "enp0s8",
+        "buffer_fill": buffer_fill,
+        "window_size": window_size,
+        "progress_percent": progress_percent,
+        "last_window_id": window_payload.get("last_window_id") or status_payload.get("last_window_id"),
+        "last_rate_scaled": window_payload.get("last_rate_scaled"),
+        "last_iat_scaled": window_payload.get("last_iat_scaled"),
+        "last_icmp_count": window_payload.get("last_icmp_count"),
+        "last_tcp_count": window_payload.get("last_tcp_count"),
+        "last_udp_count": window_payload.get("last_udp_count"),
+        "last_number": window_payload.get("last_number"),
+        "windows_published": int(status_payload.get("windows_published") or 0),
+        "packets_received": int(status_payload.get("packets_received") or 0),
+        "last_prediction_label": predicted_label,
+        "last_alert_severity": alert_sample.get("severity") if alert_sample else None,
+        "runtime_errors": int(status_payload.get("errors") or 0),
+        "last_alert": alert_sample,
+        "status_topic": f"ids/status/{SMARTWATCH_NODE_ID}",
+        "window_topic": f"ids/windows/{SMARTWATCH_NODE_ID}",
+        "flow_topic": f"ids/flows/{SMARTWATCH_NODE_ID}",
+        "latest_status": status_sample,
+        "latest_window": window_sample,
+        "latest_prediction": prediction_sample,
+    }
+
+
+def platform_status(services: dict[str, dict[str, Any]], api_errors: float, bridge_errors: float) -> str:
+    if any(not service.get("ok") for service in services.values()):
+        return "degraded"
+    if api_errors > 0 or bridge_errors > 0:
+        return "attention"
+    return "operational"
+
+
+def build_live_lab_state() -> dict[str, Any]:
+    from datetime import UTC, datetime
+
+    controller_health = fetch_first("controller", "/health")
+    controller_ready = fetch_first("controller", "/ready")
+    nodes_response = fetch_first("controller", "/nodes")
+    assignments_response = fetch_first("controller", "/assignments")
+    validator_health = fetch_first("validator", "/health")
+    validator_summary = fetch_first("validator", "/summary")
+    bridge_ready = fetch_first("bridge", "/ready")
+    bridge_metrics = fetch_first("bridge", "/metrics", as_json=False)
+    api_ready = fetch_first("api", "/ready")
+    api_metrics = fetch_first("api", "/metrics", as_json=False)
+
+    nodes_payload = nodes_response.get("data") if isinstance(nodes_response.get("data"), dict) else {}
+    assignments_payload = assignments_response.get("data") if isinstance(assignments_response.get("data"), dict) else {}
+    summary_payload = validator_summary.get("data") if isinstance(validator_summary.get("data"), dict) else {}
+    topic_counts = summary_payload.get("topic_counts", {}) if isinstance(summary_payload.get("topic_counts"), dict) else {}
+    family_counts = summary_payload.get("family_counts", {}) if isinstance(summary_payload.get("family_counts"), dict) else {}
+    bridge_text = bridge_metrics.get("data") if isinstance(bridge_metrics.get("data"), str) else ""
+    api_text = api_metrics.get("data") if isinstance(api_metrics.get("data"), str) else ""
+
+    nodes = merge_nodes(nodes_payload, assignments_payload)
+    api_errors = prometheus_metric_sum(api_text, "final_ids_api_prediction_errors_total")
+    bridge_errors = prometheus_metric_sum(bridge_text, "final_mqtt_bridge_prediction_errors_total")
+    flows = int(family_counts.get("flows") or topic_family_total(topic_counts, "flows"))
+    predictions = int(family_counts.get("predictions") or topic_family_total(topic_counts, "predictions"))
+    alerts = int(family_counts.get("alerts") or topic_family_total(topic_counts, "alerts"))
+
+    services = {
+        "controller": {"ok": controller_health["ok"] and controller_ready["ok"], "health": controller_health, "ready": controller_ready},
+        "validator": {"ok": validator_health["ok"] and validator_summary["ok"], "health": validator_health, "summary": validator_summary},
+        "bridge": {"ok": bridge_ready["ok"] and bridge_metrics["ok"], "ready": bridge_ready, "metrics": {k: v for k, v in bridge_metrics.items() if k != "data"}},
+        "api": {"ok": api_ready["ok"] and api_metrics["ok"], "ready": api_ready, "metrics": {k: v for k, v in api_metrics.items() if k != "data"}},
+    }
+
+    return {
+        "generated_at": datetime.now(UTC).isoformat(timespec="seconds").replace("+00:00", "Z"),
+        "platform": {"status": platform_status(services, api_errors, bridge_errors)},
+        "kpis": {
+            "connected_devices": len(nodes),
+            "flows_observed": flows,
+            "predictions": predictions,
+            "alerts": alerts,
+            "api_errors": int(api_errors),
+            "bridge_errors": int(bridge_errors),
+        },
+        "nodes": nodes,
+        "assignments": assignments_payload.get("assignments", []),
+        "model_profile": MODEL_DEFAULTS,
+        "recent_alerts": extract_recent_alerts(summary_payload),
+        "recent_flows": extract_recent_samples(summary_payload, "flows"),
+        "recent_predictions": extract_recent_samples(summary_payload, "predictions"),
+        "recent_status": extract_recent_samples(summary_payload, "status"),
+        "recent_windows": extract_recent_samples(summary_payload, "windows"),
+        "services": services,
+        "topic_counts": topic_counts,
+    }
+
+
+def assignments_by_node(assignments: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    return {
+        item.get("node_id"): item
+        for item in assignments
+        if isinstance(item, dict) and item.get("node_id")
+    }
+
+
+def build_demo_devices(state: dict[str, Any]) -> list[dict[str, Any]]:
+    nodes = {
+        node.get("node_id"): node
+        for node in state.get("nodes", [])
+        if isinstance(node, dict) and node.get("node_id")
+    }
+    assignments = assignments_by_node(state.get("assignments", []))
+    demo_devices: list[dict[str, Any]] = []
+
+    for node_id, profile in DEMO_NODE_PROFILES.items():
+        node = nodes.get(node_id, {})
+        assignment = assignments.get(node_id, {})
+        connected = bool(node)
+        model_id = assignment.get("model_id") or node.get("model_id") or MODEL_DEFAULTS["model_id"]
+        selected_mask_id = (
+            assignment.get("selected_mask_id")
+            or node.get("selected_mask_id")
+            or MODEL_DEFAULTS["selected_mask_id"]
+        )
+        demo_devices.append(
+            {
+                "node_id": node_id,
+                "hostname": node.get("hostname", "waiting"),
+                "device_type": node.get("device_type") or profile["device_type"],
+                "display_device_type": profile["device_type"],
+                "protocol": profile.get("protocol"),
+                "mavlink_port": profile.get("mavlink_port"),
+                "cpu_count": node.get("cpu_count"),
+                "ram_gb": node.get("ram_gb"),
+                "assigned_tier": assignment.get("assigned_tier") or node.get("assigned_tier") or profile["expected_tier"],
+                "expected_tier": profile["expected_tier"],
+                "model_id": model_id,
+                "selected_mask_id": selected_mask_id,
+                "supported_input_modes": assignment.get("supported_input_modes", MODEL_DEFAULTS["supported_input_modes"]),
+                "mqtt_publish_topic": assignment.get("mqtt_publish_topic", f"ids/flows/{node_id}"),
+                "mqtt_prediction_topic": assignment.get("mqtt_prediction_topic", f"ids/predictions/{node_id}"),
+                "mqtt_alert_topic": assignment.get("mqtt_alert_topic", f"ids/alerts/{node_id}"),
+                "registered_at": node.get("registered_at"),
+                "updated_at": node.get("updated_at"),
+                "status": "connected" if connected else "waiting",
+                "connected": connected,
+                "inference_path": profile["inference_path"],
+                "qga_behavior": profile["qga_behavior"],
+                "description": profile["description"],
+            }
+        )
+    return demo_devices
+
+
+def build_demo_metrics(state: dict[str, Any], bridge_text: str, api_text: str) -> dict[str, Any]:
+    node_metrics: dict[str, dict[str, int]] = {}
+    for node_id in DEMO_NODE_PROFILES:
+        node_metrics[node_id] = {
+            "flows": metric_int(bridge_text, "final_mqtt_bridge_flows_received_total", {"node_id": node_id}),
+            "predictions": metric_int(
+                bridge_text, "final_mqtt_bridge_predictions_published_total", {"node_id": node_id}
+            ),
+            "alerts": metric_int(bridge_text, "final_mqtt_bridge_alerts_published_total", {"node_id": node_id}),
+        }
+
+    api_errors = metric_int(api_text, "final_ids_api_prediction_errors_total")
+    bridge_errors = metric_int(bridge_text, "final_mqtt_bridge_prediction_errors_total")
+    if api_errors == 0:
+        api_errors = int(state.get("kpis", {}).get("api_errors", 0) or 0)
+    if bridge_errors == 0:
+        bridge_errors = int(state.get("kpis", {}).get("bridge_errors", 0) or 0)
+
+    return {
+        "nodes": node_metrics,
+        "totals": {
+            "flows": sum(item["flows"] for item in node_metrics.values())
+            or int(state.get("kpis", {}).get("flows_observed", 0) or 0),
+            "predictions": sum(item["predictions"] for item in node_metrics.values())
+            or int(state.get("kpis", {}).get("predictions", 0) or 0),
+            "alerts": sum(item["alerts"] for item in node_metrics.values())
+            or int(state.get("kpis", {}).get("alerts", 0) or 0),
+        },
+        "errors": {
+            "final_ids_api_prediction_errors_total": api_errors,
+            "final_mqtt_bridge_prediction_errors_total": bridge_errors,
+        },
+    }
+
+
+def build_demo_model_profile(model_info_response: dict[str, Any]) -> dict[str, Any]:
+    data = model_info_response.get("data") if isinstance(model_info_response.get("data"), dict) else {}
+    threshold = first_present(data, "threshold", "decision_threshold", "alert_threshold", default=0.4)
+    return {
+        "final_model": "P8 FedAvg + QGA",
+        "model_id": first_present(data, "model_id", default=MODEL_DEFAULTS["model_id"]),
+        "selected_mask_id": first_present(data, "selected_mask_id", default=MODEL_DEFAULTS["selected_mask_id"]),
+        "threshold": threshold,
+        "supported_input_modes": first_present(
+            data, "supported_input_modes", default=MODEL_DEFAULTS["supported_input_modes"]
+        ),
+        "vm1_path": "iot-drone-sitl -> PacketWindow(30) -> scaler JSON -> selected_12_scaled -> MQTT -> IDS",
+        "vm2_path": "iot-smart-watch-medium -> PacketWindow(30) -> scaler JSON -> original_28_scaled -> API QGA mask -> IDS",
+        "scaler": "JSON runtime scaler",
+        "qga_behavior": "The weak node may send 12 selected scaled features directly; the medium node may send 28 scaled features and final-ids-api applies the QGA mask.",
+        "model_info_available": bool(model_info_response.get("ok")),
+    }
+
+
+def build_demo_steps(
+    state: dict[str, Any], devices: list[dict[str, Any]], metrics: dict[str, Any]
+) -> dict[str, bool]:
+    services = state.get("services", {})
+    required_services = ("controller", "validator", "bridge", "api")
+    platform_ready = all(bool(services.get(name, {}).get("ok")) for name in required_services)
+    devices_connected = all(device.get("connected") for device in devices)
+    model_assigned = all(
+        device.get("model_id") == MODEL_DEFAULTS["model_id"]
+        and device.get("selected_mask_id") == MODEL_DEFAULTS["selected_mask_id"]
+        and device.get("assigned_tier") == device.get("expected_tier")
+        for device in devices
+    )
+    totals = metrics.get("totals", {})
+    errors = metrics.get("errors", {})
+    mqtt_flows_seen = int(totals.get("flows", 0) or 0) > 0
+    predictions_seen = int(totals.get("predictions", 0) or 0) > 0
+    alerts_seen = int(totals.get("alerts", 0) or 0) > 0 or bool(state.get("recent_alerts"))
+    zero_errors = (
+        int(errors.get("final_ids_api_prediction_errors_total", 0) or 0) == 0
+        and int(errors.get("final_mqtt_bridge_prediction_errors_total", 0) or 0) == 0
+    )
+    return {
+        "platform_ready": platform_ready,
+        "devices_connected": devices_connected,
+        "model_assigned": model_assigned,
+        "packet_window_generated": mqtt_flows_seen,
+        "mqtt_flows_seen": mqtt_flows_seen,
+        "predictions_seen": predictions_seen,
+        "alerts_seen": alerts_seen,
+        "zero_errors": zero_errors,
+    }
+
+
+def demo_platform_status(steps: dict[str, bool], state: dict[str, Any]) -> str:
+    if all(steps.values()):
+        return "ready"
+    if any(steps.values()) or any(service.get("ok") for service in state.get("services", {}).values()):
+        return "degraded"
+    return "offline"
+
+
+def build_demo_step_details(steps: dict[str, bool]) -> list[dict[str, str]]:
+    details = []
+    first_pending_seen = False
+    explanations = {
+        "platform_ready": "Docker services answer health and readiness checks.",
+        "devices_connected": "The two VirtualBox IoT nodes are registered in live-lab-controller.",
+        "model_assigned": "Each node has the expected tier and final P8 FedAvg + QGA assignment.",
+        "packet_window_generated": "A controlled PacketWindow(30) payload has entered the live path.",
+        "mqtt_flows_seen": "final-mqtt-bridge observed ids/flows/{node_id}.",
+        "predictions_seen": "final-ids-api produced predictions through the MQTT bridge.",
+        "alerts_seen": "IDS alerts appeared on ids/alerts/{node_id}.",
+        "zero_errors": "Runtime prediction error counters remain at zero.",
+    }
+    for key, label in DEMO_STEP_TEXT.items():
+        done = bool(steps.get(key))
+        if done:
+            status = "done"
+        elif not first_pending_seen:
+            status = "active"
+            first_pending_seen = True
+        else:
+            status = "pending"
+        details.append({"key": key, "label": label, "status": status, "explanation": explanations[key]})
+    return details
+
+
+def build_demo_events(state: dict[str, Any], devices: list[dict[str, Any]], metrics: dict[str, Any]) -> list[dict[str, Any]]:
+    generated_at = state.get("generated_at")
+    events: list[dict[str, Any]] = []
+    for device in devices:
+        node_id = device["node_id"]
+        timestamp = device.get("updated_at") or device.get("registered_at") or generated_at
+        if device.get("connected"):
+            events.append(
+                {
+                    "timestamp": timestamp,
+                    "type": "device_connected",
+                    "title": "device connected",
+                    "node_id": node_id,
+                    "detail": f"{node_id} registered as {device.get('assigned_tier')} tier.",
+                    "severity": "info",
+                }
+            )
+            events.append(
+                {
+                    "timestamp": timestamp,
+                    "type": "model_assigned",
+                    "title": "model assigned",
+                    "node_id": node_id,
+                    "detail": f"{device.get('model_id')} with mask {device.get('selected_mask_id')}.",
+                    "severity": "success",
+                }
+            )
+        node_counts = metrics.get("nodes", {}).get(node_id, {})
+        if int(node_counts.get("flows", 0) or 0) > 0:
+            events.append(
+                {
+                    "timestamp": generated_at,
+                    "type": "flow_published",
+                    "title": "flow published",
+                    "node_id": node_id,
+                    "detail": f"{node_counts.get('flows')} controlled PacketWindow flow(s) observed.",
+                    "severity": "info",
+                }
+            )
+        if int(node_counts.get("predictions", 0) or 0) > 0:
+            events.append(
+                {
+                    "timestamp": generated_at,
+                    "type": "prediction_received",
+                    "title": "prediction received",
+                    "node_id": node_id,
+                    "detail": f"{node_counts.get('predictions')} IDS prediction(s) published.",
+                    "severity": "success",
+                }
+            )
+    for alert in state.get("recent_alerts", [])[:8]:
+        events.append(
+            {
+                "timestamp": alert.get("timestamp") or generated_at,
+                "type": "alert_detected",
+                "title": "alert detected",
+                "node_id": alert.get("node_id"),
+                "detail": f"label {alert.get('predicted_label')} confidence {alert.get('confidence')}",
+                "severity": alert.get("severity", "medium"),
+                "flow_id": alert.get("flow_id"),
+            }
+        )
+    return events[:24]
+
+
+def build_demo_warnings(
+    state: dict[str, Any],
+    bridge_metrics: dict[str, Any],
+    api_metrics: dict[str, Any],
+    model_info: dict[str, Any],
+) -> list[str]:
+    warnings: list[str] = []
+    for name, service in state.get("services", {}).items():
+        if not service.get("ok"):
+            warnings.append(f"{name} service is not fully reachable from the dashboard container.")
+    for response, label in ((bridge_metrics, "final-mqtt-bridge metrics"), (api_metrics, "final-ids-api metrics")):
+        if not response.get("ok"):
+            warnings.append(f"{label} unavailable: {'; '.join(response.get('errors', [])[:1])}")
+    if not model_info.get("ok"):
+        warnings.append("final-ids-api /model/info unavailable; dashboard uses the final model defaults.")
+    return warnings
+
+
+def build_demo_state() -> dict[str, Any]:
+    state = build_live_lab_state()
+    bridge_metrics = fetch_first("bridge", "/metrics", as_json=False)
+    api_metrics = fetch_first("api", "/metrics", as_json=False)
+    model_info = fetch_first("api", "/model/info")
+    bridge_text = bridge_metrics.get("data") if isinstance(bridge_metrics.get("data"), str) else ""
+    api_text = api_metrics.get("data") if isinstance(api_metrics.get("data"), str) else ""
+
+    devices = build_demo_devices(state)
+    metrics = build_demo_metrics(state, bridge_text, api_text)
+    steps = build_demo_steps(state, devices, metrics)
+    platform = demo_platform_status(steps, state)
+    recent_events = build_demo_events(state, devices, metrics)
+    incident_correlation = build_incident_correlation(state, metrics)
+
+    return {
+        "generated_at": state.get("generated_at"),
+        "platform_status": platform,
+        "steps": steps,
+        "step_details": build_demo_step_details(steps),
+        "devices": devices,
+        "assignments": state.get("assignments", []),
+        "model_profile": build_demo_model_profile(model_info),
+        "latest_alert": state.get("recent_alerts", [None])[0] if state.get("recent_alerts") else None,
+        "drone_observer": build_drone_observer_state(state),
+        "smartwatch_observer": build_smartwatch_observer_state(state),
+        "incident_correlation": incident_correlation,
+        "metrics": metrics,
+        "recent_events": recent_events,
+        "services": state.get("services", {}),
+        "warnings": build_demo_warnings(state, bridge_metrics, api_metrics, model_info),
+    }
+
+
+@app.get("/", response_class=HTMLResponse)
+async def index(request: Request) -> HTMLResponse:
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={
+            "request": request,
+            "summary": load_summary(),
+            "registry": load_registry(),
+            "evaluations": load_evaluations(),
+        },
+    )
+
+
+@app.get("/demo", response_class=HTMLResponse)
+async def demo(request: Request) -> HTMLResponse:
+    return templates.TemplateResponse(
+        request=request,
+        name="demo.html",
+        context={"request": request},
+    )
+
+
+@app.get("/api/summary")
+async def api_summary() -> dict[str, Any]:
+    return load_summary()
+
+
+@app.get("/api/models")
+async def api_models() -> dict[str, Any]:
+    return load_registry()
+
+
+@app.get("/api/evaluations")
+async def api_evaluations() -> dict[str, Any]:
+    return {"models": load_evaluations()}
+
+
+@app.get("/api/figures")
+async def api_figures() -> dict[str, Any]:
+    return load_figures()
+
+
+@app.get("/api/live-lab/state")
+async def api_live_lab_state() -> dict[str, Any]:
+    return build_live_lab_state()
+
+
+@app.get("/api/live-lab/demo-state")
+async def api_live_lab_demo_state() -> dict[str, Any]:
+    return build_demo_state()
+
+
+@app.post("/api/evaluate/{model_id}")
+async def api_evaluate(model_id: str) -> dict[str, Any]:
+    registry = load_registry()
+    if model_id not in {model.get("model_id") for model in registry.get("models", [])}:
+        raise HTTPException(status_code=404, detail="Unknown model_id")
+
+    if SCRIPTS_DIR.exists() and str(SCRIPTS_DIR) not in sys.path:
+        sys.path.insert(0, str(SCRIPTS_DIR))
+    if str(DASHBOARD_DIR) not in sys.path:
+        sys.path.insert(0, str(DASHBOARD_DIR))
+
+    from evaluation.evaluator import evaluate_models, write_evaluation_outputs
+
+    rows, warnings = evaluate_models(DASHBOARD_DIR / "model_registry.json")
+    write_evaluation_outputs(rows, warnings)
+    selected = [row for row in rows if row.get("model_id") == model_id]
+    return {"model_id": model_id, "evaluation": selected, "warnings": warnings}
+
+
+@app.get("/health")
+async def health() -> dict[str, str]:
+    return {"status": "ok", "service": "p13-dashboard"}
+
+
+@app.get("/ready")
+async def ready() -> dict[str, Any]:
+    summary = load_summary()
+    registry = load_registry()
+    return {
+        "ready": bool(summary and registry.get("models")),
+        "summary_loaded": bool(summary),
+        "models": len(registry.get("models", [])),
+    }
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run("app:app", host="127.0.0.1", port=8013, reload=False)

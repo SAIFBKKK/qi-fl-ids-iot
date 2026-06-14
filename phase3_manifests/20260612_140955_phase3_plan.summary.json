@@ -1,0 +1,9 @@
+{
+  "timestamp": "20260612_140955",
+  "mode": "Plan",
+  "records": 13214,
+  "total_size_bytes": 16329755890,
+  "total_size_mb": 15573.269,
+  "csv": "phase3_manifests/20260612_140955_phase3_plan.csv",
+  "json": "phase3_manifests/20260612_140955_phase3_plan.json"
+}

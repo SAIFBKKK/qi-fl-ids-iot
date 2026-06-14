@@ -2,17 +2,15 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
-  lint-and-test-v2:
-    name: Lint & Test — fl-iot-ids-v2
+  public-smoke:
+    name: Public smoke checks
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: experiments/fl-iot-ids-v2
 
     steps:
       - uses: actions/checkout@v4
@@ -22,78 +20,17 @@ jobs:
         with:
           python-version: "3.11"
           cache: "pip"
-          cache-dependency-path: experiments/fl-iot-ids-v2/requirements.txt
 
-      - name: Install dependencies
+      - name: Install lightweight test dependencies
         run: |
-          pip install --upgrade pip
-          pip install ruff pytest
-          pip install torch --index-url https://download.pytorch.org/whl/cpu
-          pip install -r requirements.txt
-          pip install -e .
+          python -m pip install --upgrade pip
+          python -m pip install pytest
 
-      - name: Lint with ruff
-        run: ruff check src/
+      - name: Compile maintenance and smoke-test code
+        run: python -m compileall scripts tests
 
-      - name: Run smoke tests
-        env:
-          PYTHONPATH: ${{ github.workspace }}/experiments/fl-iot-ids-v2:${{ github.workspace }}/experiments/fl-iot-ids-v2/src
-        run: pytest tests/ -v --tb=short -m "not slow"
-
-  lint-and-test-v3:
-    name: Lint & Test — fl-iot-ids-v3
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: experiments/fl-iot-ids-v3
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: "pip"
-          cache-dependency-path: experiments/fl-iot-ids-v3/requirements.txt
-
-      - name: Install dependencies
-        run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install -e ".[dev]"
-
-      - name: Lint with ruff
-        run: ruff check src/ tests/
-
-      - name: Run smoke tests
-        run: pytest tests/ -v --tb=short -m "not slow"
-
-  lint-and-test-v1:
-    name: Lint & Test — fl-iot-ids-v1 (legacy)
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: experiments/fl-iot-ids-v1
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-          cache: "pip"
-          cache-dependency-path: experiments/fl-iot-ids-v1/requirements.txt
-
-      - name: Install dependencies
-        run: |
-          pip install --upgrade pip
-          pip install ruff pytest
-          pip install -r requirements.txt
-
-      - name: Lint with ruff
-        run: ruff check src/
-
-      - name: Run smoke tests
-        run: pytest tests/ -v --tb=short -m "not slow"
+      - name: Run public-safe tests
+        run: >
+          python -m pytest
+          -m "not slow and not requires_dataset and not requires_artifacts and not requires_docker and not requires_live_lab"
+          --tb=short

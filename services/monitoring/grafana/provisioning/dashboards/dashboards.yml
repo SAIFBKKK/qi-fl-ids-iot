@@ -1,0 +1,13 @@
+apiVersion: 1
+
+providers:
+  - name: "qi-fl-ids-iot"
+    orgId: 1
+    folder: "QI-FL-IDS-IoT"
+    folderUid: "qi-fl-ids-iot"
+    type: file
+    disableDeletion: false
+    editable: true
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards

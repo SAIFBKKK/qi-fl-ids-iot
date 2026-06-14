@@ -1,0 +1,155 @@
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2.0.18
+    container_name: p14-mosquitto
+    ports:
+      - "1883:1883"
+    volumes:
+      - ../../../services/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ../../../services/mosquitto/passwords:/mosquitto/config/passwords:ro
+    networks:
+      - p14-net
+
+  final-ids-api:
+    build:
+      context: ./final_ids_api
+    container_name: p14-final-ids-api
+    environment:
+      DEPLOYMENT_BUNDLE_DIR: /app/l1_final
+    ports:
+      - "8014:8014"
+    volumes:
+      - ./l1_final:/app/l1_final:ro
+    networks:
+      - p14-net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8014/health', timeout=3).read()"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  dashboard-p13:
+    build:
+      context: ../dashboard
+    container_name: p14-dashboard-p13
+    ports:
+      - "8013:8013"
+    depends_on:
+      - final-ids-api
+    networks:
+      - p14-net
+
+  traffic-generator:
+    profiles: ["demo"]
+    build:
+      context: ../../../services/traffic-generator
+    container_name: p14-traffic-generator
+    env_file:
+      - ../../../services/.env
+    environment:
+      MQTT_BROKER: mosquitto
+      MQTT_PORT: "1883"
+      MQTT_USERNAME: ids_user
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-changeme_in_dotenv}
+      NODE_ID: node1
+      TARGET_NODE_IDS: node1
+      REPLAY_SCENARIO: deployment_15
+      DATASET_DIR: /data/deployment
+      ARTIFACTS_DIR: /artifacts
+    depends_on:
+      - mosquitto
+    ports:
+      - "8010:8000"
+    volumes:
+      - ../../../experiments/fl-iot-ids-v3/outputs/model_factory_30rounds/deployment_data:/data/deployment:ro
+      - ../../../experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights:/artifacts:ro
+    networks:
+      - p14-net
+
+  online-validator:
+    profiles: ["online"]
+    build:
+      context: ./online_validator
+    container_name: p15-online-validator
+    env_file:
+      - ../../../services/.env
+    environment:
+      MQTT_BROKER: mosquitto
+      MQTT_PORT: "1883"
+      MQTT_USERNAME: ids_user
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-changeme_in_dotenv}
+      OBSERVE_TOPICS: "ids/flows/#,ids/predictions/#,ids/alerts/#,ids/status/#,ids/windows/#"
+    depends_on:
+      - mosquitto
+    ports:
+      - "8015:8015"
+    networks:
+      - p14-net
+
+  final-mqtt-bridge:
+    profiles: ["online"]
+    build:
+      context: ./final_mqtt_bridge
+    container_name: p15-final-mqtt-bridge
+    env_file:
+      - ../../../services/.env
+    environment:
+      MQTT_HOST: mosquitto
+      MQTT_PORT: "1883"
+      MQTT_USERNAME: ids_user
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-changeme_in_dotenv}
+      MQTT_SUBSCRIBE_TOPIC: ids/flows/#
+      FINAL_IDS_API_URL: http://final-ids-api:8014
+      BRIDGE_NODE_ID: final-mqtt-bridge
+      FEATURE_SCHEMA_PATH: /app/l1_final/feature_schema.json
+    depends_on:
+      - mosquitto
+      - final-ids-api
+    ports:
+      - "8016:8016"
+    volumes:
+      - ./l1_final:/app/l1_final:ro
+    networks:
+      - p14-net
+
+  live-lab-controller:
+    profiles: ["live-lab"]
+    build:
+      context: ./live_lab_controller
+    container_name: p16-live-lab-controller
+    ports:
+      - "8020:8020"
+    networks:
+      - p14-net
+
+  prometheus:
+    image: prom/prometheus:v2.51.2
+    container_name: p14-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.final.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - p14-net
+
+  grafana:
+    image: grafana/grafana:10.4.3
+    container_name: p14-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-qi-lab-2026}
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../../../services/monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../../../services/monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - p14-net
+    depends_on:
+      - prometheus
+
+networks:
+  p14-net:
+    driver: bridge

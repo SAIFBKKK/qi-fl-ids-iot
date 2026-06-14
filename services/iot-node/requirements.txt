@@ -1,0 +1,13 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+fastapi
+uvicorn[standard]
+paho-mqtt
+loguru
+numpy
+joblib
+scikit-learn
+torch==2.5.1+cpu
+python-dotenv
+psutil
+requests

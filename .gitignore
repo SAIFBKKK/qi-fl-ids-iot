@@ -21,7 +21,12 @@ __pypackages__/
 
 # --- Environments ---
 .env
+.env.*
+!.env.example
+!**/.env.example
 .envrc
+services/.env
+services/mosquitto/passwords
 .venv/
 .venv.zip
 venv/
@@ -36,6 +41,8 @@ ENV/
 *.npz
 *.npy
 *.pkl
+*.pickle
+*.joblib
 *.h5
 *.hdf5
 *.safetensors
@@ -43,6 +50,8 @@ ENV/
 *.pt
 *.pth
 *.onnx
+*.ckpt
+*.bin
 
 # --- Datasets & données réseau (JAMAIS versionnés) ---
 *.csv
@@ -52,9 +61,33 @@ ENV/
 *.pcapng
 *.pcap.csv
 *.zip
+*.tar
 *.tar.gz
+*.tgz
 *.gz
+*.rar
+*.bz2
+*.xz
 *.7z
+
+# --- Credentials / local secrets ---
+kaggle.json
+.kaggle/
+**/kaggle.json
+**/.kaggle/
+**/secrets/
+**/credentials/
+**/*secret*.json
+**/*secret*.yaml
+**/*secret*.yml
+**/*credentials*.json
+**/*credentials*.yaml
+**/*credentials*.yml
+*.pem
+*.key
+id_rsa
+id_rsa.pub
+*.ppk
 
 # --- Project-local generated assets ---
 mlruns/
@@ -76,28 +109,46 @@ experiments/**/checkpoints/
 data/balancing_v3_fixed300k_outputs/
 data/Federated-Learning-Based-Intrusion-Detection-System-main/data/
 data/UNSW_NB15-dataset.zip
+external_artifacts/*
+!external_artifacts/
+!external_artifacts/README.md
+_cleanup_quarantine/
+_private_local_only/
+
+# --- Microservices P1 data policy ---
+# Dataset volumineux existant ailleurs.
+data/balancing_v3_fixed300k_outputs/
+
+# Garder les demo subsets versionnes Git.
+!data/cic-iot-2023/
+!data/cic-iot-2023/demo_subsets/
+!data/cic-iot-2023/demo_subsets/*.parquet
+!data/README.md
+!data/samples/
+!data/samples/**
+!tests/fixtures/
+!tests/fixtures/**
 
 # --- Logs & outputs ---
+*.log
+logs/
 outputs/logs/*.log
 outputs/checkpoints/
 outputs/metrics/
 outputs/reports/**
 !outputs/reports/
-!outputs/reports/*.html
-!outputs/reports/*.md
-!outputs/reports/*.csv
-!outputs/reports/*.json
 !outputs/reports/.gitkeep
 experiments/**/outputs/checkpoints/
 experiments/**/outputs/metrics/
 experiments/**/outputs/logs/
 experiments/**/outputs/reports/**
 !experiments/**/outputs/reports/
-!experiments/**/outputs/reports/*.html
-!experiments/**/outputs/reports/*.md
-!experiments/**/outputs/reports/*.csv
-!experiments/**/outputs/reports/*.json
 !experiments/**/outputs/reports/.gitkeep
+experiments/fl-iot-ids-v3/outputs/reports/qi_benchmark_reduced/logs/*.log
+**/figures/generated/
+**/generated_figures/
+**/generated_reports/
+**/reports/generated/
 
 # --- Tests / coverage ---
 .tox/
@@ -112,6 +163,7 @@ htmlcov/
 # --- IDE ---
 .idea/
 .vscode/
+.claude/
 .cursorignore
 .cursorindexingignore
 .ruff_cache/
@@ -125,10 +177,22 @@ cython_debug/
 .DS_Store
 Thumbs.db
 desktop.ini
+$RECYCLE.BIN/
 
 # --- DVC (si utilisé plus tard) ---
 # /data.dvc
 # .dvc/tmp/
+
+# --- Docker local runtime state ---
+docker-compose.override.yml
+services/**/volumes/
+services/**/data/
+services/**/logs/
+services/**/tmp/
+services/**/.env
+services/mosquitto/data/
+services/mosquitto/log/
+services/mosquitto/passwords
 
 # ================================================================
 # EXCEPTIONS — ne jamais ignorer ces fichiers
@@ -136,12 +200,38 @@ desktop.ini
 !**/README.md
 !**/.gitkeep
 !configs/**/*.yaml
+!configs/**/*.yml
+!**/selected_model.json
+!**/selected_features.json
+!**/feature_mask.json
+!**/deployment_manifest.json
+!**/feature_schema.json
 !experiments/**/results*/*.json
-!experiments/**/figures/*.png
-!experiments/**/figures/*.svg
 !docs/**/*.png
 !docs/**/*.svg
 !docs/**/*.mmd
 !docs/**/*.pdf
 !deployments/docker/*.Dockerfile
 !deployments/docker/docker-compose.yml
+
+# Keep official US1 deployment bundle for microservices runtime
+!experiments/fl-iot-ids-v3/outputs/deployment/
+!experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights/
+!experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights/**
+tmp/
+
+# PFE generated heavy artifacts
+experiments/qi-fl-ids-iot-final/**/__pycache__/
+experiments/qi-fl-ids-iot-final/**/.pytest_cache/
+experiments/qi-fl-ids-iot-final/**/checkpoints/*.pth
+experiments/qi-fl-ids-iot-final/**/runs/*/checkpoints/*.pth
+experiments/qi-fl-ids-iot-final/**/logs/*.log
+experiments/qi-fl-ids-iot-final/outputs/preprocessed/**/*.npz
+experiments/qi-fl-ids-iot-final/outputs/partitions/
+experiments/qi-fl-ids-iot-final/outputs/fl_l1_fedavg/
+experiments/qi-fl-ids-iot-final/outputs/fl_l1_flower/
+experiments/qi-fl-ids-iot-final/outputs/hierarchical_flower/
+experiments/qi-fl-ids-iot-final/outputs/multitier/
+experiments/qi-fl-ids-iot-final/outputs/qga_feature_selection/calibration/
+experiments/qi-fl-ids-iot-final/outputs/qga_l2_feature_selection/calibration/
+experiments/qi-fl-ids-iot-final/outputs/qifa_l1/

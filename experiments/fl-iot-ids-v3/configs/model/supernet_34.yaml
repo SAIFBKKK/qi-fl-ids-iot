@@ -1,0 +1,14 @@
+model:
+  name: supernet_34
+  architecture: SuperNet
+  input_dim: 28
+  output_dim: 34
+  max_hidden_1: 256
+  max_hidden_2: 128
+  dropout: 0.2
+  widths:
+    weak: 0.25
+    medium: 0.5
+    powerful: 1.0
+  extraction:
+    strategy: static

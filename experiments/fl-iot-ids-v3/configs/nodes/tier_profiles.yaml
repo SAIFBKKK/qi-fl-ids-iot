@@ -1,0 +1,19 @@
+tiers:
+  weak:
+    model_width: 0.25
+    local_epochs: 1
+    batch_size: 128
+    max_ram_mb: 512
+  medium:
+    model_width: 0.5
+    local_epochs: 2
+    batch_size: 64
+    max_ram_mb: 2048
+  powerful:
+    model_width: 1.0
+    local_epochs: 3
+    batch_size: 32
+    max_ram_mb: null
+    device_types:
+      - edge_pc
+      - server

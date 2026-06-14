@@ -1,0 +1,8 @@
+node_id: iot-smart-watch-medium
+device_type: smart_watch
+tier: medium
+ip: 192.168.56.102
+mqtt_topic: ids/flows/iot-smart-watch-medium
+input_mode: original_28_scaled
+protocol_focus: ICMP/TCP/HTTP-like
+description: Wearable IoT smart-watch-like node for passive network observation

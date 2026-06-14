@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Branch `feat/multitier-fl` created from `baseline-fl-v1` for Multi-tier FL development.
+
 ### Planned
 
 - Quantum Genetic Algorithm (QGA) for feature selection
@@ -18,6 +22,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Kubernetes deployment manifests
 - Enhanced monitoring (Prometheus + Grafana)
 - Real-time threat response system
+
+---
+
+## [0.3.0] — 2026-05-02
+### Added
+- service `feature-extractor` v2.0.0
+  - Pipeline complet : raw MQTT events → 28-feature IDS vector → StandardScaler → inference-ready
+  - Schéma raw_event v2 avec flags TCP et protocol encoding
+  - 54 tests unitaires (window aggregation, feature extraction, scaler, mapping)
+  - Dockerfile multi-stage, user non-root, HEALTHCHECK
+  - Intégration edge-ids-gateway via topic MQTT `iot/features`
+
+## [0.2.0] — Phase FL (fl-iot-ids-v3)
+### Added
+- Pipeline FL Flower + FedAvg, 3 nœuds, Dirichlet non-IID α=0.5
+- TinyMLP 28 features, 34 classes CIC-IoT-2023
+- Artefacts deployment : scaler.pkl (StandardScaler), feature_names.pkl, global_model.pth
+
+## [0.1.0] — Baseline centralisée
+### Added
+- Baseline centralisée CIC-IoT-2023
+- Pipeline preprocessing + RobustScaler
+
+---
+
+## [multitier-v1-frozen] — 2026-04-26
+
+### Decision
+
+Multi-tier Static HeteroFL frozen at US6 (validated).
+Microservices implementation will proceed with baseline US1 bundle.
+
+### Rationale
+
+- Core algorithm validated (52.3% bandwidth reduction)
+- Sprint capacity reallocated to microservices + QI modules
+- US7 (per-tier export) reported to Phase 5 perspective
+
+---
+
+## [multitier-v1] — 2026-04-26
+
+### Added
+
+- Static HeteroFL masked aggregation
+- 3 tier-specific sub-models (weak/medium/powerful)
+- Heterogeneous experiment `exp_v4_multitier_fedavg_normal_classweights`
+- Control experiment `exp_v4_homogeneous_control_normal_classweights`
+
+### Validated
+
+- Bandwidth reduction: 52.3% (target was >=30%)
+- Macro-F1: 0.7445 (vs control 0.7584, delta -1.8%)
+- Training time: 955s (vs control 2381s)
+- Trade-off: rare class recall -16.7% (HeteroFL theory consistent)
 
 ---
 

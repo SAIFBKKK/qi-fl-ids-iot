@@ -1,0 +1,74 @@
+project_root: "."
+final_experiment_dir: "experiments/qi-fl-ids-iot-final"
+
+inputs:
+  l2_train_npz: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/train_scaled.npz"
+  l2_val_npz: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/val_scaled.npz"
+  l2_test_npz: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/test_scaled.npz"
+  l2_manifest: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/manifest.json"
+  l2_family_mapping: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l2_family/family_mapping.json"
+  label_mapping: "experiments/qi-fl-ids-iot-final/outputs/artifacts/mappings/label_mapping.json"
+  id_to_label: "experiments/qi-fl-ids-iot-final/outputs/artifacts/mappings/id_to_label.json"
+  label_to_family: "experiments/qi-fl-ids-iot-final/outputs/artifacts/mappings/label_to_family.json"
+  feature_names: "experiments/qi-fl-ids-iot-final/outputs/artifacts/features/feature_names.json"
+  l2_partitions_root: "experiments/qi-fl-ids-iot-final/outputs/partitions/l2_family"
+  p4_l1_metrics: "experiments/qi-fl-ids-iot-final/outputs/centralized_l1/artifacts/metrics_test.json"
+  p5_grid_summary: "experiments/qi-fl-ids-iot-final/outputs/reports/p5_grid_summary.csv"
+
+scenario:
+  default_alpha: 0.5
+  default_k: 3
+  rounds: 30
+
+tasks:
+  run_l2: true
+  run_l3: true
+  deploy_l2_l3: false
+
+models:
+  l2:
+    name: "FlowerL2FamilyMLP"
+    input_dim: 28
+    hidden_layers: [128, 64]
+    output_dim: "auto"
+    dropout: 0.2
+    activation: "relu"
+  l3:
+    name: "FlowerL3AttackTypeMLP"
+    input_dim: 28
+    hidden_layers: [128, 64]
+    output_dim: "auto"
+    dropout: 0.2
+    activation: "relu"
+
+training:
+  seed: 42
+  batch_size: 512
+  local_epochs: 1
+  optimizer: "adam"
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  loss: "cross_entropy"
+  use_class_weights: true
+  device: "auto"
+
+flower:
+  runtime: "manual_or_subprocess"
+  strategy: "FedAvg"
+  address: "127.0.0.1:8081"
+  fraction_fit: 1.0
+  fraction_evaluate: 1.0
+  min_fit_clients: 3
+  min_evaluate_clients: 3
+  min_available_clients: 3
+
+execution:
+  smoke_rounds: 1
+  smoke_max_samples_per_client: 1000
+  full_rounds: 30
+  skip_full_by_default: true
+
+outputs:
+  run_dir: "experiments/qi-fl-ids-iot-final/outputs/hierarchical_flower"
+  reports_dir: "experiments/qi-fl-ids-iot-final/outputs/reports"
+  figures_dir: "experiments/qi-fl-ids-iot-final/outputs/figures/hierarchical_flower"

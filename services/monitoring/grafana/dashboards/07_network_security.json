@@ -1,0 +1,313 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "refresh": "5s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["qi-fl-ids", "security", "iot"],
+  "time": { "from": "now-15m", "to": "now" },
+  "timepicker": {},
+  "timezone": "",
+  "title": "D1 — IDS Network Security",
+  "uid": "qi-fl-ids-d1",
+  "version": 1,
+  "weekStart": "",
+  "templating": { "list": [] },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Nœuds IoT Actifs",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "value": null, "color": "red" }, { "value": 3, "color": "green" }]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "orientation": "auto",
+        "textMode": "auto",
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center"
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [{ "expr": "sum(up{job=~\"iot-node.*\"})", "legendFormat": "Nœuds", "refId": "A" }]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Benign Recall (KPI Principal)",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "red" },
+              { "value": 0.90, "color": "yellow" },
+              { "value": 0.95, "color": "green" }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [{ "expr": "fl_benign_recall", "legendFormat": "Benign Recall", "refId": "A" }]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Attaques Détectées",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "value": null, "color": "blue" }]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [{ "expr": "sum(ids_alerts_total)", "legendFormat": "Alertes", "refId": "A" }]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "F1-Macro Score",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 12, "y": 0, "w": 4, "h": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 3,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [{ "value": null, "color": "red" }, { "value": 0.85, "color": "green" }]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [{ "expr": "fl_f1_macro", "legendFormat": "F1-Macro", "refId": "A" }]
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Taux Faux Positifs",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 16, "y": 0, "w": 4, "h": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "green" },
+              { "value": 0.05, "color": "yellow" },
+              { "value": 0.10, "color": "red" }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [{ "expr": "ids_false_positive_rate", "legendFormat": "FP Rate", "refId": "A" }]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Alertes IDS — Timeline par Type d'Attaque",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 4, "w": 16, "h": 8 },
+      "fieldConfig": {
+        "defaults": { "unit": "short" },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "DDoS" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "red" } }] },
+          { "matcher": { "id": "byName", "options": "Recon" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "orange" } }] },
+          { "matcher": { "id": "byName", "options": "BruteForce" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "yellow" } }] },
+          { "matcher": { "id": "byName", "options": "Mirai" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "blue" } }] }
+        ]
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "none" },
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [
+        { "expr": "rate(ids_alerts_total{attack_type=\"DDoS\"}[1m])*60",       "legendFormat": "DDoS",       "refId": "A" },
+        { "expr": "rate(ids_alerts_total{attack_type=\"Recon\"}[1m])*60",      "legendFormat": "Recon",      "refId": "B" },
+        { "expr": "rate(ids_alerts_total{attack_type=\"BruteForce\"}[1m])*60", "legendFormat": "BruteForce", "refId": "C" },
+        { "expr": "rate(ids_alerts_total{attack_type=\"Mirai\"}[1m])*60",      "legendFormat": "Mirai",      "refId": "D" }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "piechart",
+      "title": "Répartition Types d'Attaques",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 16, "y": 4, "w": 8, "h": 8 },
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "options": {
+        "pieType": "donut",
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [
+        { "expr": "sum(ids_alerts_total) by (attack_type)", "legendFormat": "{{attack_type}}", "refId": "A" }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "gauge",
+      "title": "Accuracy NODE_1",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 12, "w": 4, "h": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "red" },
+              { "value": 0.85, "color": "yellow" },
+              { "value": 0.92, "color": "green" }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto" },
+      "pluginVersion": "10.4.3",
+      "targets": [{ "expr": "fl_node_accuracy{node=\"node1\"}", "legendFormat": "NODE_1", "refId": "A" }]
+    },
+    {
+      "id": 9,
+      "type": "gauge",
+      "title": "Accuracy NODE_2",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 4, "y": 12, "w": 4, "h": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "red" },
+              { "value": 0.85, "color": "yellow" },
+              { "value": 0.92, "color": "green" }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto" },
+      "pluginVersion": "10.4.3",
+      "targets": [{ "expr": "fl_node_accuracy{node=\"node2\"}", "legendFormat": "NODE_2", "refId": "A" }]
+    },
+    {
+      "id": 10,
+      "type": "gauge",
+      "title": "Accuracy NODE_3",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 8, "y": 12, "w": 4, "h": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "value": null, "color": "red" },
+              { "value": 0.85, "color": "yellow" },
+              { "value": 0.92, "color": "green" }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "orientation": "auto" },
+      "pluginVersion": "10.4.3",
+      "targets": [{ "expr": "fl_node_accuracy{node=\"node3\"}", "legendFormat": "NODE_3", "refId": "A" }]
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "Bande Passante — Transferts Modèles (KB/round)",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 4 },
+      "fieldConfig": {
+        "defaults": { "unit": "kbytes" },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "none" },
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true }
+      },
+      "pluginVersion": "10.4.3",
+      "targets": [
+        { "expr": "fl_bandwidth_bytes{node=\"node1\"}/1024", "legendFormat": "NODE_1", "refId": "A" },
+        { "expr": "fl_bandwidth_bytes{node=\"node2\"}/1024", "legendFormat": "NODE_2", "refId": "B" },
+        { "expr": "fl_bandwidth_bytes{node=\"node3\"}/1024", "legendFormat": "NODE_3", "refId": "C" }
+      ]
+    }
+  ]
+}

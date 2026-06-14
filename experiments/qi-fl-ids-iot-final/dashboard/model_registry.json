@@ -1,0 +1,95 @@
+{
+  "models": [
+    {
+      "model_id": "p5_fedavg_l1",
+      "phase": "P5",
+      "method": "FedAvg L1",
+      "task": "l1_binary",
+      "feature_count": 28,
+      "uses_qga_mask": false,
+      "selected_mask_id": null,
+      "summary_source": "experiments/qi-fl-ids-iot-final/outputs/reports/p12_global_ablation_summary.csv",
+      "checkpoint_candidates": [
+        "experiments/qi-fl-ids-iot-final/outputs/fl_l1_fedavg/alpha_0.5/k3/checkpoints/best_global_model.pth",
+        "experiments/qi-fl-ids-iot-final/outputs/fl_l1_fedavg/alpha_0.5/k3/checkpoints/last_global_model.pth"
+      ],
+      "model_config_candidates": [
+        "experiments/qi-fl-ids-iot-final/outputs/fl_l1_fedavg/alpha_0.5/k3/artifacts/model_config.json"
+      ],
+      "scaler_candidates": [
+        "experiments/qi-fl-ids-iot-final/outputs/artifacts/scalers/l1_binary_robust_scaler.pkl"
+      ],
+      "status": "evaluable",
+      "recommended_use_case": "Reference FL baseline"
+    },
+    {
+      "model_id": "p8_fedavg_qga_l1",
+      "phase": "P8",
+      "method": "FedAvg + QGA L1",
+      "task": "l1_binary",
+      "feature_count": 12,
+      "uses_qga_mask": true,
+      "selected_mask_id": "conservative_seed_42",
+      "summary_source": "experiments/qi-fl-ids-iot-final/outputs/reports/p12_global_ablation_summary.csv",
+      "checkpoint_candidates": [
+        "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/*/checkpoints/best_global_model.pth",
+        "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/*/checkpoints/last_global_model.pth"
+      ],
+      "model_config_candidates": [
+        "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/latest_run_summary.json"
+      ],
+      "scaler_candidates": [
+        "experiments/qi-fl-ids-iot-final/outputs/artifacts/scalers/l1_binary_robust_scaler.pkl"
+      ],
+      "status": "evaluable",
+      "recommended_use_case": "Recommended production L1"
+    },
+    {
+      "model_id": "p9_qifa_l1",
+      "phase": "P9",
+      "method": "QIFA L1",
+      "task": "l1_binary",
+      "feature_count": 28,
+      "uses_qga_mask": false,
+      "selected_mask_id": null,
+      "summary_source": "experiments/qi-fl-ids-iot-final/outputs/reports/p12_global_ablation_summary.csv",
+      "checkpoint_candidates": [
+        "experiments/qi-fl-ids-iot-final/outputs/qifa_l1/full_features/alpha_0.5/k3/variant_hybrid/gamma_0.5/runs/*/checkpoints/best_global_model.pth",
+        "experiments/qi-fl-ids-iot-final/outputs/qifa_l1/alpha_0.5/k3/variant_hybrid/gamma_0.5/runs/*/checkpoints/best_global_model.pth"
+      ],
+      "model_config_candidates": [
+        "experiments/qi-fl-ids-iot-final/outputs/qifa_l1/full_features/alpha_0.5/k3/variant_hybrid/gamma_0.5/latest_run_summary.json"
+      ],
+      "scaler_candidates": [
+        "experiments/qi-fl-ids-iot-final/outputs/artifacts/scalers/l1_binary_robust_scaler.pkl"
+      ],
+      "status": "evaluable",
+      "recommended_use_case": "Lowest FPR alternative"
+    },
+    {
+      "model_id": "p9_qifa_qga_l1",
+      "phase": "P9",
+      "method": "QIFA + QGA L1",
+      "task": "l1_binary",
+      "feature_count": 12,
+      "uses_qga_mask": true,
+      "selected_mask_id": "conservative_seed_42",
+      "summary_source": "experiments/qi-fl-ids-iot-final/outputs/reports/p12_global_ablation_summary.csv",
+      "checkpoint_candidates": [
+        "experiments/qi-fl-ids-iot-final/outputs/qifa_l1/qga_mask/alpha_0.5/k3/variant_hybrid/gamma_0.5/runs/*/checkpoints/best_global_model.pth",
+        "experiments/qi-fl-ids-iot-final/outputs/qifa_l1/qga_mask/alpha_0.5/k3/variant_hybrid/gamma_0.5/runs/*/checkpoints/last_global_model.pth"
+      ],
+      "model_config_candidates": [
+        "experiments/qi-fl-ids-iot-final/outputs/qifa_l1/qga_mask/alpha_0.5/k3/variant_hybrid/gamma_0.5/latest_run_summary.json"
+      ],
+      "scaler_candidates": [
+        "experiments/qi-fl-ids-iot-final/outputs/artifacts/scalers/l1_binary_robust_scaler.pkl"
+      ],
+      "status": "evaluable",
+      "recommended_use_case": "Best attack recall / robustness alternative"
+    }
+  ],
+  "recommended_model_id": "p8_fedavg_qga_l1",
+  "qga_mask_source": "experiments/qi-fl-ids-iot-final/outputs/qga_feature_selection/final_selected_mask/feature_mask.json",
+  "test_npz": "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/test_scaled.npz"
+}

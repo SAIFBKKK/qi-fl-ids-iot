@@ -1,0 +1,66 @@
+project_root: "."
+final_experiment_dir: "experiments/qi-fl-ids-iot-final"
+
+inputs:
+  parquet_path: "data/balancing_v3_fixed300k_outputs/balancing_v3_fixed300k_balanced.parquet"
+  p1_report: "experiments/qi-fl-ids-iot-final/docs/01_data_validation.md"
+  feature_names_path: "experiments/qi-fl-ids-iot-final/outputs/artifacts/features/feature_names.json"
+  label_mapping_path: "experiments/qi-fl-ids-iot-final/outputs/artifacts/mappings/label_mapping.json"
+  id_to_label_path: "experiments/qi-fl-ids-iot-final/outputs/artifacts/mappings/id_to_label.json"
+  label_to_binary_path: "experiments/qi-fl-ids-iot-final/outputs/artifacts/mappings/label_to_binary.json"
+  label_to_family_path: "experiments/qi-fl-ids-iot-final/outputs/artifacts/mappings/label_to_family.json"
+
+schema:
+  label_column: "label_id"
+  benign_label_id: 1
+  benign_label_name: "BenignTraffic"
+  expected_num_features: 28
+  expected_num_classes: 34
+  expected_num_attack_classes: 33
+
+split:
+  train_ratio: 0.70
+  val_ratio: 0.15
+  test_ratio: 0.15
+  random_seed: 42
+  anti_leakage_id: "row_id"
+
+l1_binary:
+  enabled: true
+  normal_count: 300000
+  attack_samples_per_class: 10000
+  expected_attack_classes: 33
+  expected_attack_count: 330000
+  expected_total_count: 630000
+  stratify_by: "binary_label"
+  binary_labels:
+    normal: 0
+    attack: 1
+
+l2_family:
+  enabled: true
+  attack_only: true
+  sampling: false
+  expected_total_count: 9101350
+  expected_families:
+    - DDoS
+    - DoS
+    - Recon
+    - Web-based
+    - BruteForce
+    - Spoofing
+    - Mirai
+    - Malware
+  stratify_by: "family_id"
+
+scaling:
+  scaler: "RobustScaler"
+  train_only: true
+  check_if_already_scaled: true
+  skip_scaling_if_already_scaled: true
+
+outputs:
+  preprocessed_dir: "experiments/qi-fl-ids-iot-final/outputs/preprocessed"
+  reports_dir: "experiments/qi-fl-ids-iot-final/outputs/reports"
+  figures_dir: "experiments/qi-fl-ids-iot-final/outputs/figures/preprocessing"
+  scalers_dir: "experiments/qi-fl-ids-iot-final/outputs/artifacts/scalers"

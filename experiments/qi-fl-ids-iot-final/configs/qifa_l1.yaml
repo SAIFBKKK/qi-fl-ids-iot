@@ -1,0 +1,111 @@
+project_root: "."
+final_experiment_dir: "experiments/qi-fl-ids-iot-final"
+
+inputs:
+  partitions_root: "experiments/qi-fl-ids-iot-final/outputs/partitions/l1_binary"
+  global_test_npz: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/test_scaled.npz"
+  p5_grid_summary: "experiments/qi-fl-ids-iot-final/outputs/reports/p5_grid_summary.csv"
+  p8_ablation_summary: "experiments/qi-fl-ids-iot-final/outputs/reports/p8_qga_ablation_summary.csv"
+  centralized_l1_metrics: "experiments/qi-fl-ids-iot-final/outputs/centralized_l1/artifacts/metrics_test.json"
+  qga_final_mask_dir: "experiments/qi-fl-ids-iot-final/outputs/qga_feature_selection/final_selected_mask"
+
+scenario:
+  alpha: 0.5
+  clients: 3
+  rounds: 30
+
+scenarios:
+  principal:
+    alpha: 0.5
+    clients: 3
+    rounds: 30
+  robustness:
+    alphas: [0.1, 0.5, 5.0]
+    clients: 3
+    rounds: 30
+
+model:
+  name: "QIFAL1MLP"
+  input_dim: 28
+  hidden_layers: [128, 64]
+  output_dim: 2
+  dropout: 0.2
+  activation: "relu"
+
+training:
+  seed: 42
+  device: "auto"
+  batch_size: 512
+  local_epochs: 1
+  optimizer: "adam"
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  loss: "cross_entropy"
+
+flower:
+  address: "127.0.0.1:8085"
+  strategy: "QIFA-Hybrid"
+  fraction_fit: 1.0
+  fraction_evaluate: 1.0
+  min_fit_clients: 3
+  min_evaluate_clients: 3
+  min_available_clients: 3
+  true_runtime_required: true
+
+threshold:
+  tune_on: "server_validation"
+  start: 0.05
+  stop: 0.95
+  step: 0.05
+  primary_objective: "f1_attack"
+  also_evaluate_threshold_0_5: true
+
+qifa_variants:
+  performance:
+    macro_f1_weight: 0.6
+    attack_recall_weight: 0.3
+    fpr_penalty: 0.1
+    loss_penalty: 0.0
+    drift_penalty: 0.0
+  loss_aware:
+    macro_f1_weight: 0.5
+    attack_recall_weight: 0.3
+    fpr_penalty: 0.1
+    loss_penalty: 0.1
+    drift_penalty: 0.0
+  drift_aware:
+    macro_f1_weight: 0.5
+    attack_recall_weight: 0.25
+    fpr_penalty: 0.1
+    loss_penalty: 0.0
+    drift_penalty: 0.15
+  hybrid:
+    macro_f1_weight: 0.5
+    attack_recall_weight: 0.25
+    fpr_penalty: 0.1
+    loss_penalty: 0.05
+    drift_penalty: 0.10
+
+gamma_values: [0.25, 0.5, 0.75]
+default_variant: "hybrid"
+default_gamma: 0.5
+
+monitoring:
+  track_round_metrics: true
+  track_client_metrics: true
+  track_bandwidth: true
+  track_model_size: true
+  track_qifa_scores: true
+  track_qifa_probabilities: true
+  track_qifa_entropy: true
+
+execution:
+  smoke_rounds: 1
+  smoke_max_samples_per_client: 1000
+  full_rounds: 30
+  skip_full_by_default: true
+
+outputs:
+  run_dir: "experiments/qi-fl-ids-iot-final/outputs/qifa_l1"
+  reports_dir: "experiments/qi-fl-ids-iot-final/outputs/reports"
+  figures_dir: "experiments/qi-fl-ids-iot-final/outputs/figures/qifa"

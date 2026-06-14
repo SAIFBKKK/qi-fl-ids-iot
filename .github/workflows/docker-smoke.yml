@@ -1,0 +1,15 @@
+name: Docker Smoke
+
+on:
+  workflow_dispatch:
+
+jobs:
+  compose-config:
+    name: Compose config validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate services compose file
+        run: docker compose -f services/docker-compose.yml config

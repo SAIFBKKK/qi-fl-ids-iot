@@ -1,0 +1,44 @@
+server:
+  host_ip: 192.168.56.1
+  network: VirtualBox Host-Only
+  storage_root: "E:\\VirtualBox VMs\\qi-fl-ids-iot-live-lab\\"
+
+vms:
+  - name: iot-drone-sitl
+    node_id: iot-drone-sitl
+    role: drone_sitl_weak_node
+    os: ubuntu_server_minimal
+    ip: 192.168.56.101
+    tier: weak
+    cpu: 1
+    ram_mb: 1024
+    disk_gb: 12
+    inference_mode: server_side
+    input_mode: selected_12_scaled
+    device_type: drone_sitl
+    protocol: MAVLink/UDP
+    mavlink_port: 14550
+    description: "Drone UAV simulé — ArduPilot SITL — nœud IoT faible ressource"
+    replaced_node: iot-rpi-weak
+  - name: iot-smart-watch-medium
+    node_id: iot-smart-watch-medium
+    role: smart_watch_like_medium_node
+    os: ubuntu_server_minimal
+    ip: 192.168.56.102
+    tier: medium
+    cpu: 1
+    ram_mb: 1536
+    disk_gb: 15
+    inference_mode: edge_future
+    input_mode: original_28_scaled
+    device_type: smart_watch
+    protocol_focus: ICMP/TCP/HTTP-like
+    description: "Wearable IoT smart-watch-like node for passive network observation"
+  - name: lab-attacker-kali
+    role: ciciot2023_inspired_controlled_attacker
+    os: kali_linux
+    ip: 192.168.56.103
+    cpu: 1
+    ram_mb: 1536
+    disk_gb: 20
+    scenario_mode: controlled_scenarios_only

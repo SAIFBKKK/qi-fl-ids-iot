@@ -47,6 +47,134 @@ experiments:
     imbalance_strategy: class_weights
     description: "FedAvg sur scenario absent_local avec class weights."
 
+  - name: exp_v3_qifa_normal_classweights
+    architecture: flat_34
+    fl_strategy: qifa
+    fl_config: qifa
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    description: "QIFA sur partition normal_noniid avec class weights."
+
+  - name: exp_v3_qifa_absentlocal_classweights
+    architecture: flat_34
+    fl_strategy: qifa
+    fl_config: qifa
+    data_scenario: absent_local
+    imbalance_strategy: class_weights
+    description: "QIFA sur scenario absent_local avec class weights."
+
+  - name: exp_v3_qga_fedavg_normal_classweights
+    architecture: flat_34_qga_k16
+    fl_strategy: fedavg
+    fl_config: fedavg
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    description: "QGA feature selection K=16 + FedAvg sur normal_noniid."
+
+  - name: exp_v3_qga_qifa_normal_classweights
+    architecture: flat_34_qga_k16
+    fl_strategy: qifa
+    fl_config: qifa
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    description: "QGA feature selection K=16 + QIFA sur normal_noniid."
+
+  - name: exp_qi_baseline_fedavg_28f
+    architecture: flat_34
+    fl_strategy: fedavg
+    fl_config: fedavg
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    description: "QI sprint baseline: FedAvg avec les 28 features."
+
+  - name: exp_qi_qga15_fedavg
+    architecture: flat_28_qga_k15
+    fl_strategy: fedavg
+    fl_config: fedavg
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    description: "QI sprint: QGA K=15 + FedAvg."
+
+  - name: exp_qi_qifa_28f
+    architecture: flat_34
+    fl_strategy: qifa
+    fl_config: qifa_formula
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    description: "QI sprint: QIFA formule normalisee avec les 28 features."
+
+  - name: exp_qi_qga15_qifa
+    architecture: flat_28_qga_k15
+    fl_strategy: qifa
+    fl_config: qifa_formula
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    description: "QI sprint: QGA K=15 + QIFA formule normalisee."
+
+  - name: exp_bench30_normal_fedavg_28f
+    architecture: flat_34
+    fl_strategy: fedavg
+    fl_config: fedavg_30rounds
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    description: "Reduced QI benchmark E1: normal_noniid + FedAvg + 28 features + 30 rounds."
+
+  - name: exp_bench30_normal_qifa_28f
+    architecture: flat_34
+    fl_strategy: qifa
+    fl_config: qifa_formula_30rounds
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    description: "Reduced QI benchmark E2: normal_noniid + QIFA + 28 features + 30 rounds."
+
+  - name: exp_bench30_normal_fedavg_qga15
+    architecture: flat_28_qga_k15
+    fl_strategy: fedavg
+    fl_config: fedavg_30rounds
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    description: "Reduced QI benchmark E3: normal_noniid + FedAvg + QGA-15 + 30 rounds."
+
+  - name: exp_bench30_normal_qifa_qga15
+    architecture: flat_28_qga_k15
+    fl_strategy: qifa
+    fl_config: qifa_formula_30rounds
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    description: "Reduced QI benchmark E4: normal_noniid + QIFA + QGA-15 + 30 rounds."
+
+  - name: exp_bench30_absent_fedavg_28f
+    architecture: flat_34
+    fl_strategy: fedavg
+    fl_config: fedavg_30rounds
+    data_scenario: absent_local
+    imbalance_strategy: class_weights
+    description: "Reduced QI benchmark E5: absent_local + FedAvg + 28 features + 30 rounds."
+
+  - name: exp_bench30_absent_qifa_28f
+    architecture: flat_34
+    fl_strategy: qifa
+    fl_config: qifa_formula_30rounds
+    data_scenario: absent_local
+    imbalance_strategy: class_weights
+    description: "Reduced QI benchmark E6: absent_local + QIFA + 28 features + 30 rounds."
+
+  - name: exp_bench30_absent_fedavg_qga15
+    architecture: flat_28_qga_k15
+    fl_strategy: fedavg
+    fl_config: fedavg_30rounds
+    data_scenario: absent_local
+    imbalance_strategy: class_weights
+    description: "Reduced QI benchmark E7: absent_local + FedAvg + QGA-15 + 30 rounds."
+
+  - name: exp_bench30_absent_qifa_qga15
+    architecture: flat_28_qga_k15
+    fl_strategy: qifa
+    fl_config: qifa_formula_30rounds
+    data_scenario: absent_local
+    imbalance_strategy: class_weights
+    description: "Reduced QI benchmark E8: absent_local + QIFA + QGA-15 + 30 rounds."
+
   - name: exp_v3_scaffold_absentlocal_classweights
     architecture: flat_34
     fl_strategy: scaffold
@@ -116,3 +244,73 @@ experiments:
     data_scenario: normal_noniid
     imbalance_strategy: class_weights
     description: "SCAFFOLD standard sur partition normal_noniid avec class weights."
+
+  - name: exp_v4_multitier_fedavg_normal_classweights
+    architecture: supernet_34
+    fl_strategy: fedavg
+    fl_config: multitier
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    description: "Multi-tier FedAvg avec SuperNet, NodeProfiler et masked aggregation static."
+
+  - name: exp_v4_homogeneous_control_normal_classweights
+    architecture: flat_34
+    fl_strategy: fedavg
+    fl_config: fedavg_control
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    description: "Controle homogene FedAvg avec MLPClassifier et local_epochs=2."
+
+  - name: exp_diag_normal_qifa_guard_5r
+    architecture: flat_34
+    fl_strategy: qifa_guard
+    fl_config: qifa_guard_30rounds
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    rounds_override: 5
+    description: "Diagnostic only: QIFA-Guard on normal_noniid for 5 rounds."
+
+  - name: exp_diag_absent_qifa_guard_5r
+    architecture: flat_34
+    fl_strategy: qifa_guard
+    fl_config: qifa_guard_30rounds
+    data_scenario: absent_local
+    imbalance_strategy: class_weights
+    rounds_override: 5
+    description: "Diagnostic only: QIFA-Guard on absent_local for 5 rounds."
+
+  - name: exp_diag_normal_fedprox_5r
+    architecture: flat_34
+    fl_strategy: fedprox
+    fl_config: fedprox
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    rounds_override: 5
+    description: "Diagnostic only: FedProx on normal_noniid for 5 rounds."
+
+  - name: exp_diag_absent_fedprox_5r
+    architecture: flat_34
+    fl_strategy: fedprox
+    fl_config: fedprox
+    data_scenario: absent_local
+    imbalance_strategy: class_weights
+    rounds_override: 5
+    description: "Diagnostic only: FedProx on absent_local for 5 rounds."
+
+  - name: exp_diag_normal_scaffold_5r
+    architecture: flat_34
+    fl_strategy: scaffold
+    fl_config: scaffold
+    data_scenario: normal_noniid
+    imbalance_strategy: class_weights
+    rounds_override: 5
+    description: "Diagnostic only: SCAFFOLD on normal_noniid for 5 rounds."
+
+  - name: exp_diag_absent_scaffold_5r
+    architecture: flat_34
+    fl_strategy: scaffold
+    fl_config: scaffold
+    data_scenario: absent_local
+    imbalance_strategy: class_weights
+    rounds_override: 5
+    description: "Diagnostic only: SCAFFOLD on absent_local for 5 rounds."

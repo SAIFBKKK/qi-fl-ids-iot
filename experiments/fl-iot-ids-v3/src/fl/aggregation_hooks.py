@@ -10,6 +10,24 @@ FIT_METRIC_KEYS = (
     "update_size_bytes",
     "scaffold_delta_c_norm",
     "scaffold_c_local_norm",
+    "qifa_lambda",
+    "qifa_diversity_norm",
+    "qifa_perturbation_norm",
+    "qifa_effective_clients",
+    "qifa/diversity_mean",
+    "qifa/perturbation_applied",
+    "qifa/weight_norm_delta",
+    "local_val_macro_f1",
+    "global_val_macro_f1",
+    "local_rare_recall",
+    "global_rare_recall",
+    "global_val_loss",
+    "qifa_guard_lambda",
+    "qifa_guard_beta_loss",
+    "qifa_guard_rho_rare",
+    "qifa_guard_effective_clients",
+    "qifa_guard_diversity_mean",
+    "qifa_guard_weight_norm_delta",
 )
 
 FIT_SUM_KEYS = {
@@ -25,6 +43,11 @@ EVALUATE_METRIC_KEYS = (
     "false_positive_rate",
     "rare_class_recall",
     "rare_macro_f1",
+    "local_val_macro_f1",
+    "global_val_macro_f1",
+    "local_rare_recall",
+    "global_rare_recall",
+    "global_val_loss",
 )
 RARE_CLASS_IDS = (0, 3, 30, 31, 33)
 

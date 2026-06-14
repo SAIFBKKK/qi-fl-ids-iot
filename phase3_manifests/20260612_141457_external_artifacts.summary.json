@@ -1,0 +1,9 @@
+{
+  "timestamp": "20260612_141457",
+  "mode": "MoveExternalArtifacts",
+  "records": 12092,
+  "total_size_bytes": 9478111862,
+  "total_size_mb": 9039.032,
+  "csv": "phase3_manifests/20260612_141457_external_artifacts.csv",
+  "json": "phase3_manifests/20260612_141457_external_artifacts.json"
+}

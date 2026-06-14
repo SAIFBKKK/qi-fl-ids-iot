@@ -1,0 +1,725 @@
+# QI-FL-IDS-IoT - Microservices stack
+# Architecture validated on 5 axes (services, communication, stack, volumes, demo)
+# Profiles: default | training | preprocessing | orchestration | extraction
+
+x-future-service-mounts:
+  artifacts_ro: &artifacts_ro
+    - ../experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights:/artifacts:ro
+  data_ro:
+    - ../data/balancing_v3_fixed300k_outputs:/data/full:ro
+    - ../data/cic-iot-2023/demo_subsets:/data/demo:ro
+
+networks:
+  iot-net:
+    driver: bridge
+
+volumes:
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  node_red_data:
+    driver: local
+  mlflow_data:
+    driver: local
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2.0.18
+    container_name: mosquitto
+    ports:
+      - "${MQTT_PORT:-1883}:1883"
+    environment:
+      MQTT_USERNAME: ${MQTT_USERNAME:-ids_user}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-changeme_in_dotenv}
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto/passwords:/mosquitto/config/passwords:ro
+    networks:
+      - iot-net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mosquitto_sub -h localhost -u \"$${MQTT_USERNAME}\" -P \"$${MQTT_PASSWORD}\" -t '$$SYS/broker/version' -C 1 -W 3 >/dev/null 2>&1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  iot-node-1:
+    build:
+      context: ./iot-node
+    container_name: iot-node-1
+    environment:
+      NODE_ID: node1
+      MQTT_BROKER: mosquitto
+      MQTT_PORT: ${MQTT_PORT:-1883}
+      MQTT_USERNAME: ${MQTT_USERNAME:-ids_user}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-changeme_in_dotenv}
+      INFERENCE_THRESHOLD: ${INFERENCE_THRESHOLD:-0.5}
+      MODEL_PATH: /artifacts/global_model.pth
+      SCALER_PATH: /artifacts/scaler.pkl
+      FEATURE_NAMES_PATH: /artifacts/feature_names.json
+      LABEL_MAPPING_PATH: /artifacts/label_mapping.json
+      MODEL_CONFIG_PATH: /artifacts/model_config.json
+      MODEL_SERVER_URL: http://fl-server:8080
+      DEVICE_TYPE: raspberrypi-zero
+      NETWORK_QUALITY: low
+      BATTERY_POWERED: "true"
+      MODEL_TIER: weak
+      NODE_TIER_OVERRIDE: weak
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    ports:
+      - "8001:8000"
+    volumes:
+      - ../experiments/fl-iot-ids-v3/outputs/model_factory_30rounds/weak:/artifacts:ro
+    networks:
+      - iot-net
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+      fl-server:
+        condition: service_started
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3).read()",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  traffic-generator:
+    build:
+      context: ./traffic-generator
+    container_name: traffic-generator
+    env_file:
+      - .env
+    environment:
+      NODE_ID: ${NODE_ID:-node1}
+      # Round-robin distribution across 3 IDS tiers (weak, medium, powerful).
+      # Future work: profile-aware routing (route by flow size/class to matching tier).
+      # See rapport § Perspectives.
+      TARGET_NODE_IDS: node1,node2,node3
+      MQTT_BROKER: ${MQTT_BROKER:-mosquitto}
+      MQTT_PORT: ${MQTT_PORT:-1883}
+      MQTT_USERNAME: ${MQTT_USERNAME:-ids_user}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-changeme_in_dotenv}
+      REPLAY_SCENARIO: deployment_15
+      REPLAY_RATE: ${REPLAY_RATE:-5}
+      DATASET_DIR: /data/deployment
+      ARTIFACTS_DIR: /artifacts
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    ports:
+      - "8010:8000"
+    volumes:
+      - ../experiments/fl-iot-ids-v3/outputs/model_factory_30rounds/deployment_data:/data/deployment:ro
+      - ../experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights:/artifacts:ro
+    networks:
+      - iot-net
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+      iot-node-1:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3).read()",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  feature-extractor:
+    build:
+      context: ./feature-extractor
+      dockerfile: Dockerfile
+    container_name: feature-extractor
+    profiles: ["extraction"]
+    environment:
+      NODE_ID: fx1
+      MQTT_BROKER: mosquitto
+      MQTT_PORT: ${MQTT_PORT:-1883}
+      MQTT_USERNAME: ${MQTT_USERNAME:-ids_user}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-changeme_in_dotenv}
+      SCALER_PATH: /artifacts/scaler.pkl
+      FEATURE_NAMES_PATH: /artifacts/feature_names.pkl
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    ports:
+      - "8040:8000"
+    volumes:
+      - ../experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights:/artifacts:ro
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    networks:
+      - iot-net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3).read()"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v2.51.2
+    container_name: prometheus
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - iot-net
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:10.4.3
+    container_name: grafana
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    # Embedding/anonymized viewer mode is required by dashboard /tab/monitoring.
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-qi-lab-2026}
+      GF_SECURITY_ALLOW_EMBEDDING: "true"
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_SECURITY_DISABLE_INITIAL_ADMIN_CREATION: "false"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    networks:
+      - iot-net
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.18.0
+    container_name: mlflow
+    ports:
+      - "${MLFLOW_PORT:-5000}:5000"
+    volumes:
+      - mlflow_data:/mlruns
+    command: mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri /mlruns
+    networks:
+      - iot-net
+    restart: unless-stopped
+
+  fl-server:
+    build:
+      context: ./fl-server
+    container_name: fl-server
+    env_file:
+      - .env
+    environment:
+      FL_SERVER_HOST: 0.0.0.0
+      FL_SERVER_PORT: ${FL_SERVER_PORT:-8080}
+      FL_NUM_ROUNDS: ${FL_NUM_ROUNDS:-10}
+      REAL_FL_EXPERIMENT: ${REAL_FL_EXPERIMENT:-exp_v4_multitier_fedavg_normal_classweights}
+      REAL_FL_ROUNDS: ${REAL_FL_ROUNDS:-1}
+      REAL_FL_WORKDIR: /app/experiments/fl-iot-ids-v3
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      TRAINING_MODE: ${FL_SERVER_MODE:-registry}
+      MODEL_FACTORY_PATH: /model_factory
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    ports:
+      - "${FL_SERVER_PORT:-8080}:8080"
+      - "8000:8000"
+    volumes:
+      - ../experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights:/artifacts:ro
+      - ../experiments/fl-iot-ids-v3/outputs/model_factory_30rounds:/model_factory:ro
+      - ../experiments/fl-iot-ids-v3:/app/experiments/fl-iot-ids-v3
+      - ./fl-server/schedule.yaml:/app/schedule.yaml
+    networks:
+      - iot-net
+    depends_on:
+      - mlflow
+    restart: "no"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/health', timeout=3).read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    container_name: dashboard
+    ports:
+      - "8090:8090"
+    # Backend URLs consumed by dashboard proxy/health aggregation routes.
+    environment:
+      FL_SERVER_URL: http://fl-server:8080
+      PROMETHEUS_URL: http://prometheus:9090
+      MLFLOW_URL: http://mlflow:5000
+      MLFLOW_EXPERIMENT_IDS: ""
+      GRAFANA_URL: http://grafana:3000
+    depends_on:
+      fl-server:
+        condition: service_healthy
+    networks:
+      - iot-net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8090/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  iot-node-2:
+    build:
+      context: ./iot-node
+    container_name: iot-node-2
+    environment:
+      NODE_ID: node2
+      MQTT_BROKER: mosquitto
+      MQTT_PORT: ${MQTT_PORT:-1883}
+      MQTT_USERNAME: ${MQTT_USERNAME:-ids_user}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-changeme_in_dotenv}
+      INFERENCE_THRESHOLD: ${INFERENCE_THRESHOLD:-0.5}
+      MODEL_PATH: /artifacts/global_model.pth
+      SCALER_PATH: /artifacts/scaler.pkl
+      FEATURE_NAMES_PATH: /artifacts/feature_names.json
+      LABEL_MAPPING_PATH: /artifacts/label_mapping.json
+      MODEL_CONFIG_PATH: /artifacts/model_config.json
+      MODEL_SERVER_URL: http://fl-server:8080
+      DEVICE_TYPE: raspberrypi-3
+      NETWORK_QUALITY: medium
+      BATTERY_POWERED: "false"
+      MODEL_TIER: medium
+      NODE_TIER_OVERRIDE: medium
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    ports:
+      - "8002:8000"
+    volumes:
+      - ../experiments/fl-iot-ids-v3/outputs/model_factory_30rounds/medium:/artifacts:ro
+    networks:
+      - iot-net
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+      fl-server:
+        condition: service_started
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3).read()",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  iot-node-3:
+    build:
+      context: ./iot-node
+    container_name: iot-node-3
+    environment:
+      NODE_ID: node3
+      MQTT_BROKER: mosquitto
+      MQTT_PORT: ${MQTT_PORT:-1883}
+      MQTT_USERNAME: ${MQTT_USERNAME:-ids_user}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-changeme_in_dotenv}
+      INFERENCE_THRESHOLD: ${INFERENCE_THRESHOLD:-0.5}
+      MODEL_PATH: /artifacts/global_model.pth
+      SCALER_PATH: /artifacts/scaler.pkl
+      FEATURE_NAMES_PATH: /artifacts/feature_names.json
+      LABEL_MAPPING_PATH: /artifacts/label_mapping.json
+      MODEL_CONFIG_PATH: /artifacts/model_config.json
+      MODEL_SERVER_URL: http://fl-server:8080
+      DEVICE_TYPE: raspberrypi-4
+      NETWORK_QUALITY: high
+      BATTERY_POWERED: "false"
+      MODEL_TIER: powerful
+      NODE_TIER_OVERRIDE: powerful
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    ports:
+      - "8003:8000"
+    volumes:
+      - ../experiments/fl-iot-ids-v3/outputs/model_factory_30rounds/powerful:/artifacts:ro
+    networks:
+      - iot-net
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+      fl-server:
+        condition: service_started
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3).read()",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  iot-node-4:
+    build:
+      context: ./iot-node
+    container_name: iot-node-4
+    profiles: ["extended"]
+    environment:
+      NODE_ID: node4
+      MQTT_BROKER: mosquitto
+      MQTT_PORT: ${MQTT_PORT:-1883}
+      MQTT_USERNAME: ${MQTT_USERNAME:-ids_user}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-changeme_in_dotenv}
+      INFERENCE_THRESHOLD: ${INFERENCE_THRESHOLD:-0.5}
+      MODEL_PATH: /artifacts/global_model.pth
+      SCALER_PATH: /artifacts/scaler.pkl
+      FEATURE_NAMES_PATH: /artifacts/feature_names.json
+      LABEL_MAPPING_PATH: /artifacts/label_mapping.json
+      MODEL_CONFIG_PATH: /artifacts/model_config.json
+      MODEL_SERVER_URL: http://fl-server:8080
+      DEVICE_TYPE: raspberrypi-zero
+      NETWORK_QUALITY: low
+      BATTERY_POWERED: "true"
+      MODEL_TIER: weak
+      NODE_TIER_OVERRIDE: weak
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    ports:
+      - "8004:8000"
+    volumes:
+      - ../experiments/fl-iot-ids-v3/outputs/model_factory_30rounds/weak:/artifacts:ro
+    networks:
+      - iot-net
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+      fl-server:
+        condition: service_started
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3).read()",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  iot-node-5:
+    build:
+      context: ./iot-node
+    container_name: iot-node-5
+    profiles: ["extended"]
+    environment:
+      NODE_ID: node5
+      MQTT_BROKER: mosquitto
+      MQTT_PORT: ${MQTT_PORT:-1883}
+      MQTT_USERNAME: ${MQTT_USERNAME:-ids_user}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-changeme_in_dotenv}
+      INFERENCE_THRESHOLD: ${INFERENCE_THRESHOLD:-0.5}
+      MODEL_PATH: /artifacts/global_model.pth
+      SCALER_PATH: /artifacts/scaler.pkl
+      FEATURE_NAMES_PATH: /artifacts/feature_names.json
+      LABEL_MAPPING_PATH: /artifacts/label_mapping.json
+      MODEL_CONFIG_PATH: /artifacts/model_config.json
+      MODEL_SERVER_URL: http://fl-server:8080
+      DEVICE_TYPE: raspberrypi-4
+      NETWORK_QUALITY: high
+      BATTERY_POWERED: "false"
+      MODEL_TIER: powerful
+      NODE_TIER_OVERRIDE: powerful
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    ports:
+      - "8005:8000"
+    volumes:
+      - ../experiments/fl-iot-ids-v3/outputs/model_factory_30rounds/powerful:/artifacts:ro
+    networks:
+      - iot-net
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+      fl-server:
+        condition: service_started
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3).read()",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  fl-client-1:
+    build:
+      context: ./fl-client
+    container_name: fl-client-1
+    profiles: ["training"]
+    env_file:
+      - .env
+    environment:
+      CLIENT_ID: client1
+      FL_SERVER_ADDRESS: fl-server:8080
+      TRAINING_MODE: ${TRAINING_MODE:-mock}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    networks:
+      - iot-net
+    depends_on:
+      - fl-server
+    restart: "no"
+
+  fl-client-2:
+    build:
+      context: ./fl-client
+    container_name: fl-client-2
+    profiles: ["training"]
+    env_file:
+      - .env
+    environment:
+      CLIENT_ID: client2
+      FL_SERVER_ADDRESS: fl-server:8080
+      TRAINING_MODE: ${TRAINING_MODE:-mock}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    networks:
+      - iot-net
+    depends_on:
+      - fl-server
+    restart: "no"
+
+  fl-client-3:
+    build:
+      context: ./fl-client
+    container_name: fl-client-3
+    profiles: ["training"]
+    env_file:
+      - .env
+    environment:
+      CLIENT_ID: client3
+      FL_SERVER_ADDRESS: fl-server:8080
+      TRAINING_MODE: ${TRAINING_MODE:-mock}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    networks:
+      - iot-net
+    depends_on:
+      - fl-server
+    restart: "no"
+
+  fl-server-mock-runner:
+    build:
+      context: ./fl-server
+    container_name: fl-server-mock-runner
+    profiles: ["demo-data"]
+    command:
+      [
+        "python",
+        "-c",
+        "from server_entrypoint import configure_logging, run_mock_training; configure_logging(); run_mock_training('mock')",
+      ]
+    env_file:
+      - .env
+    environment:
+      FL_SERVER_HOST: 0.0.0.0
+      FL_SERVER_PORT: 8081
+      FL_NUM_ROUNDS: 10
+      REAL_FL_EXPERIMENT: qi-fl-ids-mock-demo
+      MLFLOW_EXPERIMENT_NAME: qi-fl-ids-mock-demo
+      MLFLOW_RUN_NAME: qi-fl-ids-mock-runner
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      TRAINING_MODE: mock
+      MODEL_FACTORY_PATH: /model_factory
+      GIT_PYTHON_REFRESH: quiet
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    volumes:
+      - ../experiments/fl-iot-ids-v3/outputs/deployment/baseline_fedavg_normal_classweights:/artifacts:ro
+      - ../experiments/fl-iot-ids-v3/outputs/model_factory_30rounds:/model_factory:ro
+      - ../experiments/fl-iot-ids-v3:/app/experiments/fl-iot-ids-v3
+      - ./fl-server/schedule.yaml:/app/schedule.yaml
+    networks:
+      - iot-net
+    depends_on:
+      - mlflow
+    restart: "no"
+
+  fl-client-mock-1:
+    build:
+      context: ./fl-client
+    container_name: fl-client-mock-1
+    profiles: ["demo-data"]
+    env_file:
+      - .env
+    environment:
+      CLIENT_ID: client1
+      FL_SERVER_ADDRESS: fl-server-mock-runner:8081
+      TRAINING_MODE: mock
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    networks:
+      - iot-net
+    depends_on:
+      - fl-server-mock-runner
+    restart: "no"
+
+  fl-client-mock-2:
+    build:
+      context: ./fl-client
+    container_name: fl-client-mock-2
+    profiles: ["demo-data"]
+    env_file:
+      - .env
+    environment:
+      CLIENT_ID: client2
+      FL_SERVER_ADDRESS: fl-server-mock-runner:8081
+      TRAINING_MODE: mock
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    networks:
+      - iot-net
+    depends_on:
+      - fl-server-mock-runner
+    restart: "no"
+
+  fl-client-mock-3:
+    build:
+      context: ./fl-client
+    container_name: fl-client-mock-3
+    profiles: ["demo-data"]
+    env_file:
+      - .env
+    environment:
+      CLIENT_ID: client3
+      FL_SERVER_ADDRESS: fl-server-mock-runner:8081
+      TRAINING_MODE: mock
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    networks:
+      - iot-net
+    depends_on:
+      - fl-server-mock-runner
+    restart: "no"
+
+  node-red:
+    image: nodered/node-red:latest
+    container_name: node-red
+    profiles: ["orchestration"]
+    ports:
+      - "1880:1880"
+    volumes:
+      - node_red_data:/data
+      - ./node-red/flows.json:/data/flows.json:ro
+    networks:
+      - iot-net
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    restart: unless-stopped
+
+  qga-service:
+    build:
+      context: ./qga-service
+    container_name: qga-service
+    profiles: ["preprocessing"]
+    environment:
+      QGA_DEFAULT_ITERATIONS: ${QGA_DEFAULT_ITERATIONS:-20}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-json}
+    ports:
+      - "${QGA_SERVICE_PORT:-8020}:8000"
+    networks:
+      - iot-net
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3).read()",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  edge-ids-gateway:
+    build:
+      context: ./edge-ids-gateway
+    container_name: edge-ids-gateway-node1
+    profiles: ["gateway"]
+    environment:
+      GATEWAY_ID: node1
+      NODE_GROUP: room-a
+      MQTT_ENABLED: "true"
+      MQTT_BROKER: mosquitto
+      MQTT_PORT: ${MQTT_PORT:-1883}
+      MQTT_USERNAME: ${MQTT_USERNAME:-ids_user}
+      MQTT_PASSWORD: ${MQTT_PASSWORD:-changeme_in_dotenv}
+      MQTT_CLIENT_ID: edge-ids-gateway-node1
+      MQTT_KEEPALIVE: 30
+      MQTT_QOS: 1
+      RAW_INPUT_TOPIC: iot/raw/node1
+      ACCEPTED_TOPIC: iot/accepted/node1
+      BLOCKED_TOPIC: iot/blocked/node1
+      PREDICTIONS_TOPIC: ids/predictions/node1
+      ALERTS_TOPIC: ids/alerts/node1
+      STATUS_TOPIC: ids/status/gateway/node1
+      MODEL_PATH: /artifacts/global_model.pth
+      SCALER_PATH: /artifacts/scaler.pkl
+      FEATURE_NAMES_PATH: /artifacts/feature_names.pkl
+      LABEL_MAPPING_PATH: /artifacts/label_mapping.json
+      INFERENCE_THRESHOLD: ${EDGE_GATEWAY_INFERENCE_THRESHOLD:-0.5}
+    ports:
+      - "8030:8000"
+    volumes: *artifacts_ro
+    networks:
+      - iot-net
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/ready', timeout=3).read()",
+        ]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped

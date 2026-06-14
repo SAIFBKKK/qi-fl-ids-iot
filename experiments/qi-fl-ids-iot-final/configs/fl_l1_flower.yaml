@@ -1,0 +1,64 @@
+project_root: "."
+final_experiment_dir: "experiments/qi-fl-ids-iot-final"
+
+inputs:
+  partitions_root: "experiments/qi-fl-ids-iot-final/outputs/partitions/l1_binary"
+  global_test_npz: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/test_scaled.npz"
+  centralized_l1_metrics: "experiments/qi-fl-ids-iot-final/outputs/centralized_l1/artifacts/metrics_test.json"
+  centralized_l1_threshold: "experiments/qi-fl-ids-iot-final/outputs/centralized_l1/artifacts/threshold.json"
+  centralized_l1_model_config: "experiments/qi-fl-ids-iot-final/outputs/centralized_l1/artifacts/model_config.json"
+
+scenario:
+  alpha: 0.5
+  clients: 3
+  rounds: 30
+
+model:
+  input_dim: 28
+  hidden_layers: [128, 64]
+  output_dim: 2
+  dropout: 0.2
+  activation: "relu"
+
+training:
+  seed: 42
+  batch_size: 512
+  local_epochs: 1
+  optimizer: "adam"
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  loss: "cross_entropy"
+  device: "auto"
+
+flower:
+  mode: "simulation"
+  strategy: "FedAvg"
+  address: "127.0.0.1:8080"
+  connect_timeout_sec: 60
+  fraction_fit: 1.0
+  fraction_evaluate: 1.0
+  min_fit_clients: 3
+  min_evaluate_clients: 3
+  min_available_clients: 3
+  stream_logs: true
+
+threshold:
+  tune_on: "server_validation"
+  start: 0.05
+  stop: 0.95
+  step: 0.05
+  primary_objective: "f1_attack"
+  also_evaluate_threshold_0_5: true
+
+monitoring:
+  track_round_metrics: true
+  track_client_metrics: true
+  track_bandwidth: true
+  track_model_size: true
+  track_round_time: true
+  track_fit_eval_time: true
+
+outputs:
+  run_dir: "experiments/qi-fl-ids-iot-final/outputs/fl_l1_flower"
+  reports_dir: "experiments/qi-fl-ids-iot-final/outputs/reports"
+  figures_dir: "experiments/qi-fl-ids-iot-final/outputs/figures/fl_l1_flower"

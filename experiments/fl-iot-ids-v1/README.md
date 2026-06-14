@@ -1,4 +1,4 @@
-# FL IoT IDS v1.1 — Classical Federated Learning Baseline
+ # FL IoT IDS v1.1 — Classical Federated Learning Baseline
 
 [![Experiment Status](https://img.shields.io/badge/Status-Validated-brightgreen.svg)](#validation-results)
 [![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg)](deployments/docker/)

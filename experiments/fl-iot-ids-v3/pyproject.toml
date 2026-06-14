@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "fl-iot-ids-v3"
 version = "0.3.0"
 description = "Federated IoT IDS v3 with leakage-safe data pipeline and Flower strategies"
-license = "Apache-2.0"
+license = "MIT"
 dependencies = [
     "flwr[simulation]==1.29.0",
     "torch>=2.2",

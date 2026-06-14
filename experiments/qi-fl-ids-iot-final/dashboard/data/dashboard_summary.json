@@ -1,0 +1,557 @@
+{
+  "alternatives": [
+    {
+      "attack_recall": "0.9436",
+      "fpr": "0.0524",
+      "macro_f1": "0.9454",
+      "method": "P9 QIFA L1",
+      "model_id": "p9_qifa_l1",
+      "use_case": "Lowest FPR alternative."
+    },
+    {
+      "attack_recall": "0.9592",
+      "fpr": "0.0658",
+      "macro_f1": "0.9471",
+      "method": "P9 QIFA + QGA L1",
+      "model_id": "p9_qifa_qga_l1",
+      "use_case": "Best attack recall / robustness alternative."
+    }
+  ],
+  "compression": {
+    "method": "P11 FedTN/MPS rank 8 dry-run",
+    "result_type": "dry_run",
+    "row": {
+      "accepted": "True",
+      "attack_recall": "",
+      "bandwidth_reduction_ratio": "0.703681592039801",
+      "base_model": "fedavg_qga",
+      "compressed_bandwidth_total_bytes": "2144160",
+      "compressed_model_size_bytes": "11912",
+      "compressed_num_parameters": "2978",
+      "compression_ratio": "0.296318407960199",
+      "dense_bandwidth_total_bytes": "7236000",
+      "dense_model_size_bytes": "40200",
+      "dense_num_parameters": "10050",
+      "dry_run": "True",
+      "fpr": "",
+      "macro_f1": "",
+      "parameter_reduction_ratio": "0.703681592039801",
+      "rank": "8",
+      "run_id": "run_20260513_022321"
+    },
+    "warning": "Structural compression estimates only; no measured Macro-F1 because checkpoint evaluation was unavailable."
+  },
+  "evidence_paths": {
+    "model_registry": "experiments/qi-fl-ids-iot-final/dashboard/model_registry.json",
+    "p10_robustness": "experiments/qi-fl-ids-iot-final/outputs/reports/p10_robustness_full_summary.csv",
+    "p11_compression": "experiments/qi-fl-ids-iot-final/outputs/reports/p11_fedtn_mps_summary.csv",
+    "p12_global": "experiments/qi-fl-ids-iot-final/outputs/reports/p12_global_ablation_summary.csv",
+    "p13_evaluation": "experiments/qi-fl-ids-iot-final/outputs/reports/p13_dashboard_model_evaluation.csv"
+  },
+  "figures": {
+    "p10_robustness": [
+      {
+        "name": "p10_attack_recall_vs_poison_rate.png",
+        "path": "experiments/qi-fl-ids-iot-final/outputs/figures/robustness_l1/p10_attack_recall_vs_poison_rate.png"
+      },
+      {
+        "name": "p10_best_method_under_poisoning.png",
+        "path": "experiments/qi-fl-ids-iot-final/outputs/figures/robustness_l1/p10_best_method_under_poisoning.png"
+      },
+      {
+        "name": "p10_clean_vs_poisoned_comparison.png",
+        "path": "experiments/qi-fl-ids-iot-final/outputs/figures/robustness_l1/p10_clean_vs_poisoned_comparison.png"
+      },
+      {
+        "name": "p10_fpr_vs_poison_rate.png",
+        "path": "experiments/qi-fl-ids-iot-final/outputs/figures/robustness_l1/p10_fpr_vs_poison_rate.png"
+      },
+      {
+        "name": "p10_macro_f1_vs_poison_rate.png",
+        "path": "experiments/qi-fl-ids-iot-final/outputs/figures/robustness_l1/p10_macro_f1_vs_poison_rate.png"
+      },
+      {
+        "name": "p10_qifa_weights_under_attack.png",
+        "path": "experiments/qi-fl-ids-iot-final/outputs/figures/robustness_l1/p10_qifa_weights_under_attack.png"
+      },
+      {
+        "name": "p10_robustness_score_by_method.png",
+        "path": "experiments/qi-fl-ids-iot-final/outputs/figures/robustness_l1/p10_robustness_score_by_method.png"
+      }
+    ],
+    "p11_compression": [
+      {
+        "name": "p11_attack_recall_vs_compression_ratio.png",
+        "path": "experiments/qi-fl-ids-iot-final/outputs/figures/fedtn_mps_l1/p11_attack_recall_vs_compression_ratio.png"
+      },
+      {
+        "name": "p11_bandwidth_reduction_by_rank.png",
+        "path": "experiments/qi-fl-ids-iot-final/outputs/figures/fedtn_mps_l1/p11_bandwidth_reduction_by_rank.png"
+      },
+      {
+        "name": "p11_best_rank_tradeoff.png",
+        "path": "experiments/qi-fl-ids-iot-final/outputs/figures/fedtn_mps_l1/p11_best_rank_tradeoff.png"
+      },
+      {
+        "name": "p11_macro_f1_vs_compression_ratio.png",
+        "path": "experiments/qi-fl-ids-iot-final/outputs/figures/fedtn_mps_l1/p11_macro_f1_vs_compression_ratio.png"
+      },
+      {
+        "name": "p11_model_size_vs_rank.png",
+        "path": "experiments/qi-fl-ids-iot-final/outputs/figures/fedtn_mps_l1/p11_model_size_vs_rank.png"
+      }
+    ],
+    "p12_ablation": [
+      {
+        "name": "p12_best_model_by_objective.png",
+        "path": "experiments/qi-fl-ids-iot-final/outputs/figures/p12_ablation/p12_best_model_by_objective.png"
+      },
+      {
+        "name": "p12_compression_size_reduction.png",
+        "path": "experiments/qi-fl-ids-iot-final/outputs/figures/p12_ablation/p12_compression_size_reduction.png"
+      },
+      {
+        "name": "p12_final_method_ranking_table.png",
+        "path": "experiments/qi-fl-ids-iot-final/outputs/figures/p12_ablation/p12_final_method_ranking_table.png"
+      },
+      {
+        "name": "p12_l1_attack_recall_fpr_tradeoff.png",
+        "path": "experiments/qi-fl-ids-iot-final/outputs/figures/p12_ablation/p12_l1_attack_recall_fpr_tradeoff.png"
+      },
+      {
+        "name": "p12_l1_bandwidth_comparison.png",
+        "path": "experiments/qi-fl-ids-iot-final/outputs/figures/p12_ablation/p12_l1_bandwidth_comparison.png"
+      },
+      {
+        "name": "p12_l1_macro_f1_comparison.png",
+        "path": "experiments/qi-fl-ids-iot-final/outputs/figures/p12_ablation/p12_l1_macro_f1_comparison.png"
+      },
+      {
+        "name": "p12_l2_p6_vs_p8b.png",
+        "path": "experiments/qi-fl-ids-iot-final/outputs/figures/p12_ablation/p12_l2_p6_vs_p8b.png"
+      },
+      {
+        "name": "p12_qga_qifa_contribution_summary.png",
+        "path": "experiments/qi-fl-ids-iot-final/outputs/figures/p12_ablation/p12_qga_qifa_contribution_summary.png"
+      },
+      {
+        "name": "p12_robustness_under_poisoning.png",
+        "path": "experiments/qi-fl-ids-iot-final/outputs/figures/p12_ablation/p12_robustness_under_poisoning.png"
+      }
+    ]
+  },
+  "l1_comparison": [
+    {
+      "accepted": "True",
+      "accuracy": "0.9409",
+      "attack_recall": "0.9474",
+      "bandwidth_reduction_ratio": "",
+      "bandwidth_total_bytes": "8710560",
+      "compression_ratio": "",
+      "evidence_level": "final_full",
+      "features_count": "28",
+      "fpr": "0.0663",
+      "macro_f1": "0.9407",
+      "method": "P5 FedAvg L1",
+      "model_size_bytes": "48392",
+      "phase": "P5",
+      "result_type": "measured",
+      "robustness_score": "",
+      "runtime": "in_process",
+      "source": "outputs/reports/p5_grid_summary.csv",
+      "task": "l1_binary",
+      "true_flower_runtime": "False",
+      "weighted_f1": "0.9409"
+    },
+    {
+      "accepted": "True",
+      "accuracy": "0.9481",
+      "attack_recall": "0.955",
+      "bandwidth_reduction_ratio": "",
+      "bandwidth_total_bytes": "7236000",
+      "compression_ratio": "",
+      "evidence_level": "final_full",
+      "features_count": "12",
+      "fpr": "0.0594",
+      "macro_f1": "0.948",
+      "method": "P8 FedAvg + QGA L1",
+      "model_size_bytes": "40200",
+      "phase": "P8",
+      "result_type": "measured",
+      "robustness_score": "",
+      "runtime": "manual",
+      "source": "outputs/reports/p8_qga_ablation_summary.csv",
+      "task": "l1_binary",
+      "true_flower_runtime": "True",
+      "weighted_f1": ""
+    },
+    {
+      "accepted": "True",
+      "accuracy": "0.9455",
+      "attack_recall": "0.9436",
+      "bandwidth_reduction_ratio": "",
+      "bandwidth_total_bytes": "8710560",
+      "compression_ratio": "",
+      "evidence_level": "final_full",
+      "features_count": "28",
+      "fpr": "0.0524",
+      "macro_f1": "0.9454",
+      "method": "P9 QIFA L1",
+      "model_size_bytes": "48392",
+      "phase": "P9",
+      "result_type": "measured",
+      "robustness_score": "",
+      "runtime": "true_flower",
+      "source": "outputs/reports/p9_qifa_ablation_summary.csv",
+      "task": "l1_binary",
+      "true_flower_runtime": "True",
+      "weighted_f1": "0.9455"
+    },
+    {
+      "accepted": "True",
+      "accuracy": "0.9473",
+      "attack_recall": "0.9592",
+      "bandwidth_reduction_ratio": "",
+      "bandwidth_total_bytes": "7236000",
+      "compression_ratio": "",
+      "evidence_level": "final_full",
+      "features_count": "12",
+      "fpr": "0.0658",
+      "macro_f1": "0.9471",
+      "method": "P9 QIFA + QGA L1",
+      "model_size_bytes": "40200",
+      "phase": "P9",
+      "result_type": "measured",
+      "robustness_score": "",
+      "runtime": "true_flower",
+      "source": "outputs/reports/p9_qifa_ablation_summary.csv",
+      "task": "l1_binary",
+      "true_flower_runtime": "True",
+      "weighted_f1": "0.9472"
+    }
+  ],
+  "model_evaluations": [
+    {
+      "FN": "3064",
+      "FP": "2863",
+      "TN": "42137",
+      "TP": "46436",
+      "accuracy": "0.9372804232804233",
+      "attack_recall": "0.9381010101010101",
+      "bandwidth_total_bytes": "8710560",
+      "feature_count": "28",
+      "fnr": "0.0618989898989899",
+      "fpr": "0.06362222222222222",
+      "macro_f1": "0.9371503541886343",
+      "method": "FedAvg L1",
+      "metric_source": "recomputed_test",
+      "model_id": "p5_fedavg_l1",
+      "model_size_bytes": "48392",
+      "phase": "P5",
+      "status": "evaluable",
+      "warning": "",
+      "weighted_f1": "0.937286504668525"
+    },
+    {
+      "FN": "3302",
+      "FP": "2064",
+      "TN": "42936",
+      "TP": "46198",
+      "accuracy": "0.9432169312169312",
+      "attack_recall": "0.9332929292929293",
+      "bandwidth_total_bytes": "7236000",
+      "feature_count": "12",
+      "fnr": "0.0667070707070707",
+      "fpr": "0.04586666666666667",
+      "macro_f1": "0.9431491918803714",
+      "method": "FedAvg + QGA L1",
+      "metric_source": "recomputed_test",
+      "model_id": "p8_fedavg_qga_l1",
+      "model_size_bytes": "40200",
+      "phase": "P8",
+      "status": "evaluable",
+      "warning": "",
+      "weighted_f1": "0.9432426397695556"
+    },
+    {
+      "FN": "3370",
+      "FP": "1761",
+      "TN": "43239",
+      "TP": "46130",
+      "accuracy": "0.9457037037037037",
+      "attack_recall": "0.9319191919191919",
+      "bandwidth_total_bytes": "8710560",
+      "feature_count": "28",
+      "fnr": "0.06808080808080808",
+      "fpr": "0.03913333333333333",
+      "macro_f1": "0.9456528398312053",
+      "method": "QIFA L1",
+      "metric_source": "recomputed_test",
+      "model_id": "p9_qifa_l1",
+      "model_size_bytes": "48392",
+      "phase": "P9",
+      "status": "evaluable",
+      "warning": "",
+      "weighted_f1": "0.9457320122373772"
+    },
+    {
+      "FN": "3215",
+      "FP": "1800",
+      "TN": "43200",
+      "TP": "46285",
+      "accuracy": "0.946931216931217",
+      "attack_recall": "0.935050505050505",
+      "bandwidth_total_bytes": "7236000",
+      "feature_count": "12",
+      "fnr": "0.06494949494949495",
+      "fpr": "0.04",
+      "macro_f1": "0.9468745996597796",
+      "method": "QIFA + QGA L1",
+      "metric_source": "recomputed_test",
+      "model_id": "p9_qifa_qga_l1",
+      "model_size_bytes": "40200",
+      "phase": "P9",
+      "status": "evaluable",
+      "warning": "",
+      "weighted_f1": "0.946957185631082"
+    }
+  ],
+  "model_registry": [
+    {
+      "checkpoint_candidates": [
+        "experiments/qi-fl-ids-iot-final/outputs/fl_l1_fedavg/alpha_0.5/k3/checkpoints/best_global_model.pth",
+        "experiments/qi-fl-ids-iot-final/outputs/fl_l1_fedavg/alpha_0.5/k3/checkpoints/last_global_model.pth"
+      ],
+      "feature_count": 28,
+      "method": "FedAvg L1",
+      "model_config_candidates": [
+        "experiments/qi-fl-ids-iot-final/outputs/fl_l1_fedavg/alpha_0.5/k3/artifacts/model_config.json"
+      ],
+      "model_id": "p5_fedavg_l1",
+      "phase": "P5",
+      "recommended_use_case": "Reference FL baseline",
+      "scaler_candidates": [
+        "experiments/qi-fl-ids-iot-final/outputs/artifacts/scalers/l1_binary_robust_scaler.pkl"
+      ],
+      "selected_mask_id": null,
+      "status": "evaluable",
+      "summary_source": "experiments/qi-fl-ids-iot-final/outputs/reports/p12_global_ablation_summary.csv",
+      "task": "l1_binary",
+      "uses_qga_mask": false
+    },
+    {
+      "checkpoint_candidates": [
+        "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/*/checkpoints/best_global_model.pth",
+        "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/runs/*/checkpoints/last_global_model.pth"
+      ],
+      "feature_count": 12,
+      "method": "FedAvg + QGA L1",
+      "model_config_candidates": [
+        "experiments/qi-fl-ids-iot-final/outputs/qga_fedavg_flower_l1/alpha_0.5/k3/latest_run_summary.json"
+      ],
+      "model_id": "p8_fedavg_qga_l1",
+      "phase": "P8",
+      "recommended_use_case": "Recommended production L1",
+      "scaler_candidates": [
+        "experiments/qi-fl-ids-iot-final/outputs/artifacts/scalers/l1_binary_robust_scaler.pkl"
+      ],
+      "selected_mask_id": "conservative_seed_42",
+      "status": "evaluable",
+      "summary_source": "experiments/qi-fl-ids-iot-final/outputs/reports/p12_global_ablation_summary.csv",
+      "task": "l1_binary",
+      "uses_qga_mask": true
+    },
+    {
+      "checkpoint_candidates": [
+        "experiments/qi-fl-ids-iot-final/outputs/qifa_l1/full_features/alpha_0.5/k3/variant_hybrid/gamma_0.5/runs/*/checkpoints/best_global_model.pth",
+        "experiments/qi-fl-ids-iot-final/outputs/qifa_l1/alpha_0.5/k3/variant_hybrid/gamma_0.5/runs/*/checkpoints/best_global_model.pth"
+      ],
+      "feature_count": 28,
+      "method": "QIFA L1",
+      "model_config_candidates": [
+        "experiments/qi-fl-ids-iot-final/outputs/qifa_l1/full_features/alpha_0.5/k3/variant_hybrid/gamma_0.5/latest_run_summary.json"
+      ],
+      "model_id": "p9_qifa_l1",
+      "phase": "P9",
+      "recommended_use_case": "Lowest FPR alternative",
+      "scaler_candidates": [
+        "experiments/qi-fl-ids-iot-final/outputs/artifacts/scalers/l1_binary_robust_scaler.pkl"
+      ],
+      "selected_mask_id": null,
+      "status": "evaluable",
+      "summary_source": "experiments/qi-fl-ids-iot-final/outputs/reports/p12_global_ablation_summary.csv",
+      "task": "l1_binary",
+      "uses_qga_mask": false
+    },
+    {
+      "checkpoint_candidates": [
+        "experiments/qi-fl-ids-iot-final/outputs/qifa_l1/qga_mask/alpha_0.5/k3/variant_hybrid/gamma_0.5/runs/*/checkpoints/best_global_model.pth",
+        "experiments/qi-fl-ids-iot-final/outputs/qifa_l1/qga_mask/alpha_0.5/k3/variant_hybrid/gamma_0.5/runs/*/checkpoints/last_global_model.pth"
+      ],
+      "feature_count": 12,
+      "method": "QIFA + QGA L1",
+      "model_config_candidates": [
+        "experiments/qi-fl-ids-iot-final/outputs/qifa_l1/qga_mask/alpha_0.5/k3/variant_hybrid/gamma_0.5/latest_run_summary.json"
+      ],
+      "model_id": "p9_qifa_qga_l1",
+      "phase": "P9",
+      "recommended_use_case": "Best attack recall / robustness alternative",
+      "scaler_candidates": [
+        "experiments/qi-fl-ids-iot-final/outputs/artifacts/scalers/l1_binary_robust_scaler.pkl"
+      ],
+      "selected_mask_id": "conservative_seed_42",
+      "status": "evaluable",
+      "summary_source": "experiments/qi-fl-ids-iot-final/outputs/reports/p12_global_ablation_summary.csv",
+      "task": "l1_binary",
+      "uses_qga_mask": true
+    }
+  ],
+  "modes": {
+    "demo_replay": "Optional future replay mode for P14; not required for P13.",
+    "evaluation": "Recomputes L1 test metrics only when compatible local checkpoints are available.",
+    "evidence": "Uses validated P12/P10/P11 reports without retraining."
+  },
+  "project": {
+    "branch": "final/quantum-inspired-fl-iot-ids-final",
+    "deployment_model_recommendation": "P8 FedAvg + QGA L1",
+    "latest_input_tag": "final-v1.4-ablation-evaluation-reports",
+    "name": "Quantum-Inspired Federated Learning IDS for IoT",
+    "phase": "P13",
+    "task": "L1 binary IDS dashboard"
+  },
+  "recommended_model": {
+    "accuracy": "0.9481",
+    "attack_recall": "0.955",
+    "bandwidth_total_bytes": "7236000",
+    "features_count": 12,
+    "fpr": "0.0594",
+    "macro_f1": "0.948",
+    "method": "P8 FedAvg + QGA L1",
+    "model_id": "p8_fedavg_qga_l1",
+    "recommended_use_case": "Best production L1 tradeoff: high Macro-F1, QGA feature reduction, true Flower runtime evidence.",
+    "selected_features": [
+      "flow_duration",
+      "Protocol Type",
+      "Duration",
+      "Rate",
+      "syn_flag_number",
+      "urg_count",
+      "rst_count",
+      "TCP",
+      "UDP",
+      "Std",
+      "IAT",
+      "Number"
+    ],
+    "selected_mask_id": "conservative_seed_42"
+  },
+  "robustness": {
+    "best_method": "qifa_qga",
+    "best_row": {
+      "accepted": "True",
+      "accuracy": "0.9457037037037037",
+      "alpha": "0.5",
+      "attack_recall": "0.9565858585858585",
+      "attack_type": "label_flip",
+      "clients": "3",
+      "fnr": "0.04341414141414141",
+      "fpr": "0.06626666666666667",
+      "macro_f1": "0.9455302294225977",
+      "max_samples": "",
+      "method": "qifa_qga",
+      "poison_rate": "0.2",
+      "poisoned_clients": "1",
+      "robustness_score": "0.7464875389537231",
+      "rounds": "30",
+      "run_id": "run_20260513_014922",
+      "run_type": "full",
+      "scientific_use": "scientific"
+    },
+    "full_results": [
+      {
+        "accepted": "True",
+        "accuracy": "0.9345185185185185",
+        "alpha": "0.5",
+        "attack_recall": "0.9185252525252525",
+        "attack_type": "label_flip",
+        "clients": "3",
+        "fnr": "0.08147474747474748",
+        "fpr": "0.04788888888888889",
+        "macro_f1": "0.9344680692677046",
+        "max_samples": "",
+        "method": "fedavg",
+        "poison_rate": "0.2",
+        "poisoned_clients": "1",
+        "robustness_score": "0.7332138326136503",
+        "rounds": "30",
+        "run_id": "run_20260513_014813",
+        "run_type": "full",
+        "scientific_use": "scientific"
+      },
+      {
+        "accepted": "True",
+        "accuracy": "0.9391957671957673",
+        "alpha": "0.5",
+        "attack_recall": "0.9368484848484848",
+        "attack_type": "label_flip",
+        "clients": "3",
+        "fnr": "0.06315151515151515",
+        "fpr": "0.058222222222222224",
+        "macro_f1": "0.939086958704671",
+        "max_samples": "",
+        "method": "fedavg_qga",
+        "poison_rate": "0.2",
+        "poisoned_clients": "1",
+        "robustness_score": "0.7389535803624364",
+        "rounds": "30",
+        "run_id": "run_20260513_014903",
+        "run_type": "full",
+        "scientific_use": "scientific"
+      },
+      {
+        "accepted": "True",
+        "accuracy": "0.9377142857142857",
+        "alpha": "0.5",
+        "attack_recall": "0.9425454545454546",
+        "attack_type": "label_flip",
+        "clients": "3",
+        "fnr": "0.05745454545454545",
+        "fpr": "0.0676",
+        "macro_f1": "0.9375599645294771",
+        "max_samples": "",
+        "method": "qifa",
+        "poison_rate": "0.2",
+        "poisoned_clients": "1",
+        "robustness_score": "0.738023618628375",
+        "rounds": "30",
+        "run_id": "run_20260513_015325",
+        "run_type": "full",
+        "scientific_use": "scientific"
+      },
+      {
+        "accepted": "True",
+        "accuracy": "0.9457037037037037",
+        "alpha": "0.5",
+        "attack_recall": "0.9565858585858585",
+        "attack_type": "label_flip",
+        "clients": "3",
+        "fnr": "0.04341414141414141",
+        "fpr": "0.06626666666666667",
+        "macro_f1": "0.9455302294225977",
+        "max_samples": "",
+        "method": "qifa_qga",
+        "poison_rate": "0.2",
+        "poisoned_clients": "1",
+        "robustness_score": "0.7464875389537231",
+        "rounds": "30",
+        "run_id": "run_20260513_014922",
+        "run_type": "full",
+        "scientific_use": "scientific"
+      }
+    ],
+    "scenario": "label_flip, poison_rate=0.2, poisoned_clients=1, alpha=0.5, K=3, rounds=30"
+  },
+  "warnings": [
+    "p11_fedtn_mps_rank8_is_dry_run_no_measured_macro_f1"
+  ]
+}

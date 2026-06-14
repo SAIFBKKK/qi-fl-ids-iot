@@ -1,0 +1,81 @@
+project_root: "."
+final_experiment_dir: "experiments/qi-fl-ids-iot-final"
+
+task: "l1_binary"
+alphas: [0.5]
+clients: [3]
+rounds: 30
+
+inputs:
+  l1_partitions_root: "experiments/qi-fl-ids-iot-final/outputs/partitions/l1_binary"
+  l1_test_npz: "experiments/qi-fl-ids-iot-final/outputs/preprocessed/l1_binary/test_scaled.npz"
+  p5_grid_summary: "experiments/qi-fl-ids-iot-final/outputs/reports/p5_grid_summary.csv"
+  p8_qga_ablation_summary: "experiments/qi-fl-ids-iot-final/outputs/reports/p8_qga_ablation_summary.csv"
+  p9_qifa_ablation_summary: "experiments/qi-fl-ids-iot-final/outputs/reports/p9_qifa_ablation_summary.csv"
+  qga_final_mask_dir: "experiments/qi-fl-ids-iot-final/outputs/qga_feature_selection/final_selected_mask"
+
+attack_types:
+  - clean
+  - label_flip
+  - attack_to_normal
+  - feature_noise
+
+poison_rates:
+  - 0.0
+  - 0.1
+  - 0.2
+  - 0.3
+
+poisoned_clients:
+  - 1
+  - 2
+
+methods:
+  - fedavg
+  - fedavg_qga
+  - qifa
+  - qifa_qga
+
+default_scenario:
+  alpha: 0.5
+  clients: 3
+  rounds: 30
+  attack_type: "label_flip"
+  poison_rate: 0.2
+  poisoned_clients: 1
+
+model:
+  input_dim: 28
+  hidden_layers: [128, 64]
+  output_dim: 2
+  dropout: 0.2
+  activation: "relu"
+
+training:
+  seed: 42
+  device: "auto"
+  batch_size: 512
+  local_epochs: 1
+  optimizer: "adam"
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  loss: "cross_entropy"
+
+qifa:
+  variant: "hybrid"
+  gamma: 0.5
+
+execution:
+  smoke_rounds: 1
+  smoke_max_samples_per_client: 1000
+  full_requires_manual_launch: true
+
+noise:
+  gaussian_std: 0.05
+  clip_min: -10.0
+  clip_max: 10.0
+
+outputs:
+  run_dir: "experiments/qi-fl-ids-iot-final/outputs/robustness_l1"
+  reports_dir: "experiments/qi-fl-ids-iot-final/outputs/reports"
+  figures_dir: "experiments/qi-fl-ids-iot-final/outputs/figures/robustness_l1"

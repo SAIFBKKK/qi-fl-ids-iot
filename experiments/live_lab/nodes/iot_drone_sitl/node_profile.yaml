@@ -1,0 +1,14 @@
+node_id: iot-drone-sitl
+device_type: drone_sitl
+tier: weak
+ip: 192.168.56.101
+input_mode: selected_12_scaled
+mqtt_topic_flows: ids/flows/iot-drone-sitl
+mqtt_topic_predictions: ids/predictions/iot-drone-sitl
+mqtt_topic_alerts: ids/alerts/iot-drone-sitl
+protocol: MAVLink/UDP
+mavlink_port: 14550
+passive_listen_port: 14551
+scaler_artifact: experiments/live_lab/artifacts/l1_binary_robust_scaler.json
+qga_mask_indices: [0, 2, 3, 4, 6, 13, 14, 19, 20, 25, 26, 27]
+replaced_node: iot-rpi-weak

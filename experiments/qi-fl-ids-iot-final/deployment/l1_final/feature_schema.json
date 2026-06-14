@@ -1,0 +1,72 @@
+{
+  "all_features": [
+    "flow_duration",
+    "Header_Length",
+    "Protocol Type",
+    "Duration",
+    "Rate",
+    "fin_flag_number",
+    "syn_flag_number",
+    "rst_flag_number",
+    "psh_flag_number",
+    "ack_flag_number",
+    "ack_count",
+    "syn_count",
+    "fin_count",
+    "urg_count",
+    "rst_count",
+    "HTTP",
+    "HTTPS",
+    "DNS",
+    "SSH",
+    "TCP",
+    "UDP",
+    "ARP",
+    "ICMP",
+    "Tot sum",
+    "Min",
+    "Std",
+    "IAT",
+    "Number"
+  ],
+  "input_modes": [
+    "selected_12_scaled",
+    "original_28_scaled"
+  ],
+  "original_feature_count": 28,
+  "scaler": {
+    "available_locally": true,
+    "note": "The final API expects scaled features. The local scaler path is documented but the pickle is not packaged to keep the delivery bundle lightweight and auditable.",
+    "packaged": false,
+    "source": "experiments/qi-fl-ids-iot-final/outputs/artifacts/scalers/l1_binary_robust_scaler.pkl"
+  },
+  "selected_feature_count": 12,
+  "selected_features": [
+    "flow_duration",
+    "Protocol Type",
+    "Duration",
+    "Rate",
+    "syn_flag_number",
+    "urg_count",
+    "rst_count",
+    "TCP",
+    "UDP",
+    "Std",
+    "IAT",
+    "Number"
+  ],
+  "selected_indices": [
+    0,
+    2,
+    3,
+    4,
+    6,
+    13,
+    14,
+    19,
+    20,
+    25,
+    26,
+    27
+  ]
+}

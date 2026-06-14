@@ -8,6 +8,7 @@ def create_dataloaders_for_node(
     node_dir: str | Path,
     batch_size: int = 256,
     num_workers: int = 0,
+    selected_feature_indices: list[int] | None = None,
 ):
     """Create train and eval dataloaders for a federated client node.
     
@@ -30,8 +31,14 @@ def create_dataloaders_for_node(
             f"splits are forbidden to avoid leakage. Missing: {missing}"
         )
 
-    train_dataset = IoTLocalDataset(train_npz)
-    eval_dataset = IoTLocalDataset(val_npz)
+    train_dataset = IoTLocalDataset(
+        train_npz,
+        selected_feature_indices=selected_feature_indices,
+    )
+    eval_dataset = IoTLocalDataset(
+        val_npz,
+        selected_feature_indices=selected_feature_indices,
+    )
 
     train_loader = DataLoader(
         train_dataset,

@@ -1,0 +1,4 @@
+# Placeholder P11.
+# Contiendra les parametres FedTN/MPS pour la compression tensor-network
+# appliquee au tier powerful uniquement.
+# Aucun module de compression n'est implemente en P0.

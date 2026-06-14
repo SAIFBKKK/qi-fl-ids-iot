@@ -1,0 +1,6 @@
+fastapi
+uvicorn[standard]
+jinja2
+httpx
+pydantic
+pyyaml>=6.0
