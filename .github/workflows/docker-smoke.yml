@@ -11,5 +11,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Validate services compose file
+      - name: Prepare CI environment file
+        run: |
+          if [ -f services/.env.example ]; then
+            cp services/.env.example services/.env
+          else
+            cat > services/.env <<'EOF'
+            MQTT_HOST=mosquitto
+            MQTT_PORT=1883
+            MQTT_USERNAME=ci_user
+            MQTT_PASSWORD=ci_password
+            IDS_API_HOST=final-ids-api
+            IDS_API_PORT=8000
+            PROMETHEUS_PORT=9090
+            GRAFANA_PORT=3000
+            MLFLOW_TRACKING_URI=http://mlflow:5000
+            EOF
+          fi
+
+      - name: Compose config validation
         run: docker compose -f services/docker-compose.yml config
