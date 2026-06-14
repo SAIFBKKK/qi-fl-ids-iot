@@ -9,7 +9,7 @@ from typing import Any
 import matplotlib.pyplot as plt
 import numpy as np
 
-from src.common.paths import OUTPUTS_DIR, ROOT_DIR
+from src.common.paths import OUTPUTS_DIR
 
 
 REPORT_DIR = OUTPUTS_DIR / "reports" / "qi_benchmark_reduced"
