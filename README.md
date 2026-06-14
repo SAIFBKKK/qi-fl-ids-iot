@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/SAIFBKKK/qi-fl-ids-iot/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/SAIFBKKK/qi-fl-ids-iot/actions/workflows/ci.yml)
 [![Docs](https://github.com/SAIFBKKK/qi-fl-ids-iot/actions/workflows/docs.yml/badge.svg?branch=main)](https://github.com/SAIFBKKK/qi-fl-ids-iot/actions/workflows/docs.yml)
-[![Docker Smoke](https://github.com/SAIFBKKK/qi-fl-ids-iot/actions/workflows/docker-smoke.yml/badge.svg)](https://github.com/SAIFBKKK/qi-fl-ids-iot/actions/workflows/docker-smoke.yml)
+![Docker Smoke](https://img.shields.io/badge/Docker%20Smoke-manual-blue)
 [![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.x-EE4C2C.svg)](https://pytorch.org/)
 [![Flower](https://img.shields.io/badge/Flower-Federated%20Learning-FF6B6B.svg)](https://flower.ai/)
@@ -282,8 +282,8 @@ Some nested legacy experiment metadata still declares Apache-2.0 and should be a
 
 ## Author and Acknowledgements
 
-Author: ** Saif Eddinne Boukhatem**
+Author: **SLt Saif Eddinne Boukhatem**
 
-Academic context: final year engineering project, National Engineering Degree in Computer Engineering .
+Academic context: final year engineering project, National Engineering Degree in Computer Engineering, Military Academy, Tunisia.
 
 Acknowledgements go to the academic supervisors, reviewers, open-source communities behind Flower, PyTorch, Docker, Prometheus, Grafana, and the CICIoT2023 dataset authors.
