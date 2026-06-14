@@ -4,6 +4,12 @@ External artifacts archive: `COMING_SOON`
 
 Heavy generated artifacts were externalized during Phase 3 so the GitHub repository can remain focused on source, configs, docs, scripts, Docker files, tests, selected metadata, and tiny samples.
 
+During Phase 6A, the full external-artifacts JSON manifest was moved out of GitHub because it was larger than needed for public traceability. A compact summary is kept at:
+
+```text
+phase3_manifests/phase3_external_artifacts_summary.json
+```
+
 Local developer archive name:
 
 ```text

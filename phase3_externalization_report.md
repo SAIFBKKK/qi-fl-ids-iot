@@ -16,25 +16,25 @@ No permanent deletion, upload, Git history rewrite, training, or source-code ref
 Kaggle staging folder:
 
 ```text
-C:\Users\saifb\dev\qi-fl-ids-iot-kaggle-dataset\phase3_20260612_140955
+../qi-fl-ids-iot-kaggle-dataset/phase3_20260612_140955
 ```
 
 External artifact staging folder:
 
 ```text
-C:\Users\saifb\dev\qi-fl-ids-iot-external-artifacts\phase3_20260612_140955
+../qi-fl-ids-iot-external-artifacts/phase3_20260612_140955
 ```
 
 Release manifest mirror:
 
 ```text
-C:\Users\saifb\dev\qi-fl-ids-iot-release-manifests\phase3_20260612_140955
+../qi-fl-ids-iot-release-manifests/phase3_20260612_140955
 ```
 
 Compressed external artifact archive:
 
 ```text
-C:\Users\saifb\dev\qi-fl-ids-iot-external-artifacts\qi-fl-ids-iot-artifacts-v1-20260612.zip
+../qi-fl-ids-iot-external-artifacts/qi-fl-ids-iot-artifacts-v1-20260612.zip
 ```
 
 Archive SHA256:
@@ -107,9 +107,14 @@ Important manifest files:
 - `phase3_manifests/20260612_141032_kaggle_staging.csv`
 - `phase3_manifests/20260612_141032_kaggle_staging.json`
 - `phase3_manifests/20260612_141457_external_artifacts.csv`
-- `phase3_manifests/20260612_141457_external_artifacts.json`
 - `phase3_manifests/20260612_142207_archive.summary.json`
 - `phase3_manifests/20260612_142547_verify.summary.json`
+- `phase3_manifests/phase3_external_artifacts_summary.json`
+
+Phase 6A note:
+
+- The full external-artifacts JSON manifest, `phase3_manifests/20260612_141457_external_artifacts.json`, was moved out of GitHub to ignored local-only storage because it was large and duplicated by the external artifact package.
+- The compact replacement is `phase3_manifests/phase3_external_artifacts_summary.json`.
 
 External checksum files:
 
